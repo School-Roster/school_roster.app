@@ -17,6 +17,19 @@ pub struct Docente
     rendimiento_materia: Vec<u8>, // rendimiento por materia sera un vector de numeros del 1 al 5
 }
 
+pub enum MateriaError
+{
+    InvalidId,
+    InvalidNombre,
+    InvalidApellido,
+    InvalidEmail,
+    InvalidHorasCom,
+    InvalidMaterias,
+    InvalidColor,
+    InvalidRendimiento,
+    InvalidRendimientoMat
+}
+
 /* Implementación de métodos para la estructura Docente. */
 impl Docente
 {
@@ -149,6 +162,22 @@ impl Docente
         if let Some(i) = index
         {
             self.rendimiento_materia.remove(i);
+        }
+    }
+}
+
+/* Implementar los errores */
+pub impl MateriaError
+{
+    pub fn description(&self) -> &str
+    {
+        match *self
+        {
+            MateriaError::InvalidId => "El id del grupo es invalido.",
+            MateriaError::InvalidNombre => "El nombre de la materia es invalido.",
+            MateriaError::InvalidAbreviacion => "Abreviacion invalida.",
+            MateriaError::InvalidTipo => "El tipo de materia no es valido.",
+            MateriaError::InvalidColor => "El color definido no existe.",
         }
     }
 }
