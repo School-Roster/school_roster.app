@@ -13,6 +13,12 @@
   <nav>
     <div class="navbar1">
       <button
+        style="background-color:#094067; border:none;  font-size: 10px;
+    color: aliceblue;
+    padding: 0.2rem 0.2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;"
         on:click={() => {
           selectecMenu = Menus.principal;
         }}
@@ -42,6 +48,12 @@
       </a>
 
       <button
+        style="background-color:#094067; border:none;  font-size: 10px;
+    color: aliceblue;
+    padding: 0.2rem 0.2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;"
         on:click={() => {
           selectecMenu = Menus.grupos;
         }}
@@ -102,7 +114,7 @@
     {:else if selectecMenu === Menus.grupos}
       <FormGrupos />
     {:else}
-      <p>No true Condition is true</p>
+      <p></p>
     {/if}
   </div>
 </div>

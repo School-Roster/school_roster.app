@@ -47,7 +47,7 @@
   .prueba {
     display: flex;
     flex-direction: row;
-    width: 50%;
+    width: 70%;
     margin: 100px auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;
