@@ -90,15 +90,78 @@ impl Aula
         self.capacidad = capacidad;
     }
 
-    /* Método de validación de la estructura Aula. */
-    /* TODO: este metodo ira en el frontend */
-    pub fn validar(&self) -> bool
+    /* Database methods */
+    pub fn save(&self) -> Result<(), AulaError>
     {
-        if self.salon.is_empty() || self.edificio.is_empty() || self.tipo.is_empty() || self.capacidad <= 0
-        {
-            return false;
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare(
+            "INSERT INTO aulas (salon, edificio, tipo, capacidad) VALUES (?, ?, ?, ?)"
+        )?;
+        stmt.execute(&[&self.salon, &self.edificio, &self.tipo, &self.capacidad])?;
+        Ok(())
+    }
+
+    pub fn update(&self) -> Result<(), AulaError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare(
+            "UPDATE aulas SET salon = ?, edificio = ?, tipo = ?, capacidad = ? WHERE id = ?"
+        )?;
+        stmt.execute(&[&self.salon, &self.edificio, &self.tipo, &self.capacidad, &self.id])?;
+        Ok(())
+    }
+
+    pub fn delete(&self) -> Result<(), AulaError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare("DELETE FROM aulas WHERE id = ?")?;
+        stmt.execute(&[&self.id])?;
+        Ok(())
+    }
+
+    pub fn get_all() -> Result<Vec<Aula>, AulaError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare("SELECT * FROM aulas")?;
+        let aulas_iter = stmt.query_map(&[], |row| {
+            Ok(Aula::new(
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?
+            ))
+        })?;
+        let mut aulas = Vec::new();
+        for aula in aulas_iter {
+            aulas.push(aula?);
         }
-        true
+        Ok(aulas)
+    }
+
+    /* Get aula by search parameters */
+    pub fn get_by_id(id: i32) -> Result<Aula, AulaError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare("SELECT * FROM aulas WHERE id = ?")?;
+        let aula_iter = stmt.query_map(&[&id], |row| {
+            Ok(Aula::new(
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?
+            ))
+        })?;
+        let mut aulas = Vec::new();
+        for aula in aula_iter {
+            aulas.push(aula?);
+        }
+        if aulas.len() == 0 {
+            Err(AulaError::InvalidId)
+        } else {
+            Ok(aulas[0])
+        }
     }
 }
 

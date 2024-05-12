@@ -78,6 +78,155 @@ pub impl Grupo
     {
         self.num_alumnos
     }
+
+    /* Metodos setter para la estructura Grupo. */
+    pub fn set_id(&mut self, id: i16)
+    {
+        self.id = id;
+    }
+
+    pub fn set_grado(&mut self, grado: i16)
+    {
+        self.grado = grado;
+    }
+
+    pub fn set_grupo(&mut self, grupo: String)
+    {
+        self.grupo = grupo;
+    }
+
+    pub fn set_carrera(&mut self, carrera: String)
+    {
+        self.carrera = carrera;
+    }
+
+    pub fn set_turno(&mut self, turno: String)
+    {
+        self.turno = turno;
+    }
+
+    pub fn set_aula(&mut self, aula: String)
+    {
+        self.aula = aula;
+    }
+
+    pub fn set_num_alumnos(&mut self, num_alumnos: i32)
+    {
+        self.num_alumnos = num_alumnos;
+    }
+
+    /* Metodo para validar los datos de un grupo. */
+    pub fn validate(&self) -> Result<(), GrupoError>
+    {
+        if self.id < 0
+        {
+            return Err(GrupoError::InvalidId);
+        }
+        if self.grado < 0
+        {
+            return Err(GrupoError::InvalidGrado);
+        }
+        if self.grupo.is_empty()
+        {
+            return Err(GrupoError::InvalidGrupo);
+        }
+        if self.carrera.is_empty()
+        {
+            return Err(GrupoError::InvalidCarrera);
+        }
+        if self.turno.is_empty()
+        {
+            return Err(GrupoError::InvalidTurno);
+        }
+        if self.aula.is_empty()
+        {
+            return Err(GrupoError::InvalidAula);
+        }
+        if self.num_alumnos < 0
+        {
+            return Err(GrupoError::InvalidNumAlumnos);
+        }
+        Ok(())
+    }
+
+    /* Database methods */
+    pub fn save(&self) -> Result<(), GrupoError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare(
+            "INSERT INTO grupo (id, grado, grupo, carrera, turno, aula, num_alumnos) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        )?;
+        stmt.execute(&[&self.id, &self.grado, &self.grupo, &self.carrera, &self.turno, &self.aula, &self.num_alumnos])?;
+        Ok(())
+    }
+
+    pub fn update(&self) -> Result<(), GrupoError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare(
+            "UPDATE grupo SET grado = ?, grupo = ?, carrera = ?, turno = ?, aula = ?, num_alumnos = ? WHERE id = ?"
+        )?;
+        stmt.execute(&[&self.grado, &self.grupo, &self.carrera, &self.turno, &self.aula, &self.num_alumnos, &self.id])?;
+        Ok(())
+    }
+
+    pub fn delete(&self) -> Result<(), GrupoError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare("DELETE FROM grupo WHERE id = ?")?;
+        stmt.execute(&[&self.id])?;
+        Ok(())
+    }
+
+    pub fn get_all() -> Result<Vec<Grupo>, GrupoError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare("SELECT * FROM grupo")?;
+        let grupos_iter = stmt.query_map(&[], |row| {
+            Ok(Grupo::new(
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+                row.get(6)?,
+            ))
+        })?;
+
+        let mut grupos = Vec::new();
+        for grupo in grupos_iter
+        {
+            grupos.push(grupo?);
+        }
+
+        Ok(grupos)
+    }
+
+    pub fn get_by_id(id: i16) -> Result<Grupo, GrupoError>
+    {
+        let conn = db::get_conn();
+        let mut stmt = conn.prepare("SELECT * FROM grupo WHERE id = ?")?;
+        let grupo_iter = stmt.query_map(&[&id], |row| {
+            Ok(Grupo::new(
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+                row.get(6)?,
+            ))
+        })?;
+
+        let mut grupo = Grupo::new(0, 0, "".to_string(), "".to_string(), "".to_string(), "".to_string(), 0);
+        for g in grupo_iter
+        {
+            grupo = g?;
+        }
+
+        Ok(grupo)
+    }
 }
 
 /* Implementación de métodos para la estructura GrupoError. */
