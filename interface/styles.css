@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --azulp: #094067;
+}
+
+body,
+input[type="text"],
+button,
+input[type="color"] {
+  font-family: "Nunito", sans-serif;
+}

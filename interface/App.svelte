@@ -3,6 +3,7 @@
   import Navbar from "./app/Navbar.svelte";
   import LoginForm from "./app/LoginForm.svelte";
   import FormGrupos from "./app/FormGrupos.svelte";
+  import FormAulas from "./app/FormAulas.svelte";
 </script>
 
 <main>

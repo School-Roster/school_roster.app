@@ -1,11 +1,20 @@
 <script>
   const Menus = {
     principal: "principal",
-
-    grupos: "grupos",
+    aulas: "aulas",
+    materias: "materias",
+    maestros: "maestros",
+    Bienvenida: "bienvenida",
+    RegistroGrupos: "registrogrupos",
   };
 
   import FormGrupos from "./FormGrupos.svelte";
+  import FormAulas from "./FormAulas.svelte";
+  import FormMaterias from "./FormMaterias.svelte";
+  import FormMaestros from "./FormMaestros.svelte";
+  import FormTopics from "./FormTopics.svelte";
+  import Bienvenida from "./bienvenida.svelte";
+  import RegistroGrupos from "./RegistroGrupos.svelte";
   let selectecMenu = Menus.principal;
 </script>
 
@@ -55,27 +64,57 @@
     flex-direction: column;
     align-items: center;"
         on:click={() => {
-          selectecMenu = Menus.grupos;
+          selectecMenu = Menus.RegistroGrupos;
         }}
       >
         <img src="/group.svg" class="" alt="" />
         <span>Grupos</span>
       </button>
 
-      <a href="/#" target="_blank" title="materias">
+      <button
+        style="background-color:#094067; border:none;  font-size: 10px;
+    color: aliceblue;
+    padding: 0.2rem 0.2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;"
+        on:click={() => {
+          selectecMenu = Menus.materias;
+        }}
+      >
         <img src="/materias.svg" class="" alt="" />
         <span>Materias</span>
-      </a>
+      </button>
 
-      <a href="/#" target="_blank" title="maestros">
+      <button
+        style="background-color:#094067; border:none;  font-size: 10px;
+    color: aliceblue;
+    padding: 0.2rem 0.2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;"
+        on:click={() => {
+          selectecMenu = Menus.maestros;
+        }}
+      >
         <img src="/maestro.svg" class="" alt="" />
-        <span>Maestros</span>
-      </a>
+        <span>Mestros</span>
+      </button>
 
-      <a href="/#" target="_blank" title="aulas">
+      <button
+        style="background-color:#094067; border:none;  font-size: 10px;
+    color: aliceblue;
+    padding: 0.2rem 0.2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;"
+        on:click={() => {
+          selectecMenu = Menus.aulas;
+        }}
+      >
         <img src="/aulas.svg" class="" alt="" />
         <span>Aulas</span>
-      </a>
+      </button>
 
       <a href="/#" target="_blank" title="IA">
         <img src="/ia.svg" class="" alt="" />
@@ -87,10 +126,20 @@
         <span>H.Versiones</span>
       </a>
 
-      <a href="/generate_form" target="_blank" title="generador">
+      <button
+        style="background-color:#094067; border:none;  font-size: 10px;
+    color: aliceblue;
+    padding: 0.2rem 0.2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;"
+        on:click={() => {
+          selectecMenu = Menus.Bienvenida;
+        }}
+      >
         <img src="/generador.svg" class="" alt="" />
-        <span>Generar horario</span>
-      </a>
+        <span>G. Horario</span>
+      </button>
 
       <a href="/#" target="_blank" title="school">
         <img src="/school.svg" class="" alt="" />
@@ -108,11 +157,52 @@
       </a>
     </div>
   </nav>
+
   <div style="width: 100%;">
     {#if selectecMenu === Menus.principal}
-      <p>Condition is true</p>
-    {:else if selectecMenu === Menus.grupos}
-      <FormGrupos />
+      <p></p>
+    {:else if selectecMenu === Menus.RegistroGrupos}
+      <RegistroGrupos />
+    {:else}
+      <p></p>
+    {/if}
+  </div>
+
+  <div style="width: 100%;">
+    {#if selectecMenu === Menus.principal}
+      <p></p>
+    {:else if selectecMenu === Menus.aulas}
+      <FormAulas />
+    {:else}
+      <p></p>
+    {/if}
+  </div>
+
+  <div style="width: 100%;">
+    {#if selectecMenu === Menus.principal}
+      <p></p>
+    {:else if selectecMenu === Menus.materias}
+      <!-- <FormMaterias /> -->
+      <FormMaterias />
+    {:else}
+      <p></p>
+    {/if}
+  </div>
+
+  <div style="width: 100%;">
+    {#if selectecMenu === Menus.principal}
+      <p></p>
+    {:else if selectecMenu === Menus.maestros}
+      <FormMaestros />
+    {:else}
+      <p></p>
+    {/if}
+  </div>
+  <div style="width: 100%;">
+    {#if selectecMenu === Menus.principal}
+      <p></p>
+    {:else if selectecMenu === Menus.Bienvenida}
+      <Bienvenida />
     {:else}
       <p></p>
     {/if}

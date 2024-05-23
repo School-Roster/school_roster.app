@@ -22,22 +22,53 @@
       <div
         style="display: flex; width:100%; justify-content:flex-start; height:100% "
       >
-        <img style="width:45px; align-self:end" src="./public/antes.svg" />
+        <img style="width:35px; align-self:end" src="./public/antes.svg" />
       </div>
     </div>
 
     <div class="card">
       <div style="display: flex; flex-direction:column; margin:auto">
-        <input type="text" placeholder="Grado" bind:value={grado} />
-        <input type="text" placeholder="Grupo" bind:value={grupo} />
-        <input type="text" placeholder="Carrera" bind:value={carrera} />
-        <input type="text" placeholder="Turno" bind:value={turno} />
-        <input
-          type="text"
-          placeholder="cantidad de alumnos"
-          bind:value={cantidadAlumnos}
-        />
-        <button type="button">Guardar</button>
+        <div style="display: flex; flex-direction:column; margin:auto">
+          <input
+            type="text"
+            placeholder="Grado"
+            style="font-family: 'Inria Serif', serif; font-size: 16px; text-indent: 30px;"
+            bind:value={grado}
+          />
+          <div style="display: flex; flex-direction:column; margin:auto">
+            <input
+              type="text"
+              placeholder="Grupo"
+              style="font-family: 'Inria Serif', serif; font-size: 16px; text-indent: 30px; "
+              bind:value={grupo}
+            />
+            <div style="display: flex; flex-direction:column; margin:auto">
+              <input
+                type="text"
+                placeholder="Carrera"
+                style="font-family: 'Inria Serif', serif; font-size: 16px; text-indent: 30px;"
+                bind:value={carrera}
+              />
+              <div style="display: flex; flex-direction:column; margin:auto">
+                <input
+                  type="text"
+                  placeholder="Turno"
+                  style="font-family: 'Inria Serif', serif; font-size: 16px; text-indent: 30px;"
+                  bind:value={turno}
+                />
+                <div style="display: flex; flex-direction:column; margin:auto">
+                  <input
+                    type="text"
+                    placeholder="Cantidad de alumnos"
+                    style="font-family: 'Inria Serif', serif; font-size: 16px; text-indent: 30px;"
+                    bind:value={cantidadAlumnos}
+                  />
+                  <button type="button">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -47,14 +78,14 @@
   .prueba {
     display: flex;
     flex-direction: row;
-    width: 70%;
+    width: 50%;
     margin: 100px auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;
     border-radius: 5rem;
   }
   h1 {
-    color: #094067;
+    color: var(--azulp);
     font-size: 28px;
   }
 
@@ -80,12 +111,11 @@
     border-radius: 20px;
     margin-bottom: 15px;
     background-color: #edf4f8;
-    border-color: #edf4f8;
+    border-color: rgb(148 163 184);
     height: 3rem;
     width: 35rem;
     justify-content: center;
     align-items: center;
-    border: none;
     font-weight: bold;
   }
 
