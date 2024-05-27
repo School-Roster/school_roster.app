@@ -20,141 +20,81 @@
 
 <div>
   <nav>
-    <div class="navbar1">
-      <button
-        style="background-color:#094067; border:none;  font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;"
-        on:click={() => {
-          selectecMenu = Menus.principal;
-        }}
-      >
+    <div class="navbar">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/new_file.svg" class="" alt="" />
         <span>Nuevo archivo</span>
       </button>
 
-      <a href="/#" target="_blank" title="Nueva carpeta">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/new_folder.svg" class="" alt="" />
         <span>Nueva carpeta</span>
-      </a>
+      </button>
 
-      <a href="/#" target="_blank" title="Guardar">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/save.svg" class="" alt="" />
         <span>Guadar</span>
-      </a>
+      </button>
 
-      <a href="/#" target="_blank" title="preview">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/preview.svg" class="" alt="" />
         <span>Vista previa</span>
-      </a>
+      </button>
 
-      <a class="" href="/#" target="_blank" title="printer">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/printer.svg" class="" alt="" />
         <span>Imprimir</span>
-      </a>
+      </button>
 
-      <button
-        style="background-color:#094067; border:none;  font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;"
-        on:click={() => {
-          selectecMenu = Menus.RegistroGrupos;
-        }}
-      >
+      <button class="btn" on:click={() => { selectecMenu = Menus.RegistroGrupos; }}>
         <img src="/group.svg" class="" alt="" />
         <span>Grupos</span>
       </button>
 
-      <button
-        style="background-color:#094067; border:none;  font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;"
-        on:click={() => {
-          selectecMenu = Menus.materias;
-        }}
-      >
+      <button class="btn" on:click={() => { selectecMenu = Menus.materias; }}>
         <img src="/materias.svg" class="" alt="" />
         <span>Materias</span>
       </button>
 
-      <button
-        style="background-color:#094067; border:none;  font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;"
-        on:click={() => {
-          selectecMenu = Menus.maestros;
-        }}
-      >
+      <button class="btn" on:click={() => { selectecMenu = Menus.maestros; }}>
         <img src="/maestro.svg" class="" alt="" />
         <span>Mestros</span>
       </button>
 
-      <button
-        style="background-color:#094067; border:none;  font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;"
-        on:click={() => {
-          selectecMenu = Menus.aulas;
-        }}
-      >
+      <button class="btn" on:click={() => { selectecMenu = Menus.aulas; }}>
         <img src="/aulas.svg" class="" alt="" />
         <span>Aulas</span>
       </button>
 
-      <a href="/#" target="_blank" title="IA">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/ia.svg" class="" alt="" />
         <span>IA</span>
-      </a>
-
-      <a href="/#" target="_blank" title="hv">
-        <img src="/hv.svg" class="" alt="" />
-        <span>H.Versiones</span>
-      </a>
-
-      <button
-        style="background-color:#094067; border:none;  font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;"
-        on:click={() => {
-          selectecMenu = Menus.Bienvenida;
-        }}
-      >
-        <img src="/generador.svg" class="" alt="" />
-        <span>G. Horario</span>
       </button>
 
-      <a href="/#" target="_blank" title="school">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
+        <img src="/hv.svg" class="" alt="" />
+        <span>H.Versiones</span>
+      </button>
+
+      <button class="btn" on:click={() => { selectecMenu = Menus.Bienvenida; }}>
+        <img src="/generador.svg" class="" alt="" />
+        <span>Generar</span>
+      </button>
+
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/school.svg" class="" alt="" />
         <span>Institucion</span>
-      </a>
+      </button>
 
-      <a href="/#" target="_blank" title="nosotros">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/nosotros.svg" class="" alt="" />
         <span>Sobre nosotros</span>
-      </a>
+      </button>
 
-      <a href="/#" target="_blank" title="ayuda">
+      <button class="btn" on:click={() => { selectecMenu = Menus.principal; }}>
         <img src="/ayuda.svg" class="" alt="" />
         <span>Ayuda</span>
-      </a>
+      </button>
     </div>
   </nav>
 
@@ -211,45 +151,49 @@
 
 <style>
   nav {
-    background-color: #094067;
+    /* use headline variable as background color */
+    background-color: var(--headline);
+    color: var(--text);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
+    top: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
   }
 
-  .logo img {
-    height: 35px;
-    width: 45px;
-    border-radius: 50%;
+  .navbar {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     display: inline;
+    width: 100%;
+    padding: 0.5rem 0.5rem;
   }
 
-  a {
+  .btn {
+    background-color: var(--headline);
+    border: none;
     font-size: 10px;
-    color: aliceblue;
-    padding: 0.2rem 0.2rem;
+    font-weight: bold;
+    color: var(--background);
+    cursor: pointer;
+    padding: 0.5rem 1rem;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
   }
 
-  .navbar1 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    display: inline;
+  .btn img {
+    width: 2rem;
+    height: 2rem;
   }
 
-  .navbar2 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    display: inline;
-    align-items: center;
-    justify-content: space-between;
+  .btn span {
+    margin-top: 0.5rem;
   }
+
 </style>

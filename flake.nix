@@ -21,6 +21,8 @@
         ];
 
         packages = with pkgs; [
+          rustc
+          cargo
           curl
           wget
           pkg-config
