@@ -28,7 +28,7 @@
   <div class="prueba">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
-        <img src="./public/logicirculo.png" />
+        <img src="/logicirculo.png" alt="logo" />
         <h1>Materias</h1>
       </div>
       <div
@@ -39,7 +39,7 @@
       <div
         style="display: flex; width:100%; justify-content:flex-start; height:100% "
       >
-        <img style="width:45px; align-self:end" src="./public/antes.svg" />
+        <img style="width:45px; align-self:end" src="/antes.svg" alt="antes" />
       </div>
     </div>
 
