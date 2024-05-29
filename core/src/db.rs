@@ -1,47 +1,38 @@
 /* Connect to SQLite database */
 
 use sqlite::{Connection, Error};
-use thiserror::Error;
-
-/* Error handling */
-enum DBErrors {
-    #[error("Failed to connect to the database")]
-    ConnectionError(#[from] Error),
-    #[error("Failed to execute query")]
-    QueryError(#[from] Error),
-}
 
 /*
 *** Connect to the database ***
 * Return: Connection or Error
 */
-pub fn connect() -> Result<Connection, DBErrors> {
-    let conn = sqlite::open("ss.db")?;
-    create_table(&conn)?;
-    Ok(conn)
+pub fn connect() -> Connection {
+    let conn = sqlite::open("ss.db");
+    create_table(&conn.as_ref().unwrap());
+    conn.unwrap()
 }
 
 // Create tables
 // It checks if the table exists, if not, it creates it
-fn create_table(conn: &Connection) -> Result<(), DBErrors> {
-    if !table_exists(conn, "users")? {
-        users_table(conn)?;
+fn create_table(conn: &Connection) {
+    if !table_exists(&conn, "users").unwrap() {
+        users_table(&conn);
     }
 
-    if !table_exists(conn, "classrooms")? {
-        classrooms_table(conn)?;
+    if !table_exists(&conn, "classrooms").unwrap() {
+        classrooms_table(&conn);
     }
 
-    if !table_exists(conn, "groups")? {
-        groups_table(conn)?;
+    if !table_exists(&conn, "groups").unwrap() {
+        groups_table(&conn);
     }
 
-    if !table_exists(conn, "subjects")? {
-        subjects_table(conn)?;
+    if !table_exists(&conn, "subjects").unwrap() {
+        subjects_table(&conn);
     }
 
-    if !table_exists(conn, "teachers")? {
-        teachers_table(conn)?;
+    if !table_exists(&conn, "teachers").unwrap() {
+        teachers_table(&conn);
     }
 }
 
@@ -55,7 +46,7 @@ fn create_table(conn: &Connection) -> Result<(), DBErrors> {
 
 * Return: bool or Error if cannot execute the query
 */
-fn table_exists(conn: &Connection, table_name: &str) -> Result<bool, DBErrors> {
+fn table_exists(conn: &Connection, table_name: &str) -> Result<bool, Error> {
     let mut result = false;
     let mut statement = conn.prepare(&format!(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='{}'",
@@ -70,7 +61,7 @@ fn table_exists(conn: &Connection, table_name: &str) -> Result<bool, DBErrors> {
     Ok(result)
 }
 
-fn users_table(conn: &Connection) -> Result<(), DBErrors> {
+fn users_table(conn: &Connection) {
     conn.execute(
         "
         CREATE TABLE users (
@@ -81,12 +72,10 @@ fn users_table(conn: &Connection) -> Result<(), DBErrors> {
             password TEXT NOT NULL
         )
         ",
-    )?;
-
-    Ok(())
+    ).unwrap();
 }
 
-fn classrooms_table(conn: &Connection) -> Result<(), DBErrors> {
+fn classrooms_table(conn: &Connection) {
     conn.execute(
         "
         CREATE TABLE classrooms (
@@ -97,12 +86,10 @@ fn classrooms_table(conn: &Connection) -> Result<(), DBErrors> {
             capacity INTEGER NOT NULL,
         )
         ",
-    )?;
-
-    Ok(())
+    ).unwrap();
 }
 
-fn groups_table(conn: &Connection) -> Result<(), DBErrors> {
+fn groups_table(conn: &Connection) {
     conn.execute(
         "
         CREATE TABLE groups (
@@ -114,12 +101,10 @@ fn groups_table(conn: &Connection) -> Result<(), DBErrors> {
             students_quantity INTEGER NOT NULL,
         )
         ",
-    )?;
-
-    Ok(())
+    ).unwrap();
 }
 
-fn subjects_table(conn: &Connection) -> Result<(), DBErrors> {
+fn subjects_table(conn: &Connection) {
     conn.execute(
         "
         CREATE TABLE subjects (
@@ -131,12 +116,10 @@ fn subjects_table(conn: &Connection) -> Result<(), DBErrors> {
             teacher_id INTEGER NOT NULL,
         )
         ",
-    )?;
-
-    Ok(())
+    ).unwrap();
 }
 
-fn teachers_table(conn: &Connection) -> Result<(), DBErrors> {
+fn teachers_table(conn: &Connection) {
     conn.execute(
         "
         CREATE TABLE IF NOT EXISTS teachers (
@@ -150,6 +133,5 @@ fn teachers_table(conn: &Connection) -> Result<(), DBErrors> {
             general_stars INTEGER NOT NULL
         )
         ",
-    )?;
-    Ok(())
+    ).unwrap();
 }
