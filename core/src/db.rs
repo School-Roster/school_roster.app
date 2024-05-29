@@ -1,24 +1,70 @@
 /* Connect to SQLite database */
 
-use sqlite;
+use sqlite::{Connection, Error};
 
 /*
 *** Connect to the database ***
-* TODO: the database if not exists it creates one, put a default directory
-        for the installation (if not it will create the database in the current directory)
-* This function returns a connection to the database
+* Return: Connection or Error
 */
-pub fn connect() -> sqlite::Connection {
-    let conn = sqlite::open("ss.db").unwrap();
-    create_table(&conn);
-    conn
+pub fn connect() -> Connection {
+    let conn = sqlite::open("ss.db");
+    create_table(&conn.as_ref().unwrap());
+    conn.unwrap()
 }
 
-// Create table if not exists
-fn create_table(conn: &sqlite::Connection) {
+// Create tables
+// It checks if the table exists, if not, it creates it
+fn create_table(conn: &Connection) {
+    if !table_exists(&conn, "users").unwrap() {
+        users_table(&conn);
+    }
+
+    if !table_exists(&conn, "classrooms").unwrap() {
+        classrooms_table(&conn);
+    }
+
+    if !table_exists(&conn, "groups").unwrap() {
+        groups_table(&conn);
+    }
+
+    if !table_exists(&conn, "subjects").unwrap() {
+        subjects_table(&conn);
+    }
+
+    if !table_exists(&conn, "teachers").unwrap() {
+        teachers_table(&conn);
+    }
+}
+
+/*
+*** Check if table exists ***
+* Why?
+- Minimal Query Overhead: The table_exists function runs a simple query against
+    the sqlite_master table, which is a lightweight operation.
+- Avoid unnecessary table creation: If the table already exists, we can avoid
+    executing the CREATE TABLE statement, which can be a costly operation.
+
+* Return: bool or Error if cannot execute the query
+*/
+fn table_exists(conn: &Connection, table_name: &str) -> Result<bool, Error> {
+    let mut result = false;
+    let mut statement = conn.prepare(&format!(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='{}'",
+        table_name
+    ))?;
+
+    /* Here we iterate over the rows of the result if any it means the table exists */
+    while let sqlite::State::Row = statement.next()? {
+        result = true;
+    }
+
+    Ok(result)
+}
+
+fn users_table(conn: &Connection) {
     conn.execute(
         "
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT NOT NULL,
             name TEXT NOT NULL,
@@ -26,12 +72,13 @@ fn create_table(conn: &sqlite::Connection) {
             password TEXT NOT NULL
         )
         ",
-    )
-    .unwrap();
+    ).unwrap();
+}
 
+fn classrooms_table(conn: &Connection) {
     conn.execute(
         "
-        CREATE TABLE IF NOT EXISTS classrooms (
+        CREATE TABLE classrooms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             number INTEGER NOT NULL,
             building TEXT NOT NULL,
@@ -40,10 +87,12 @@ fn create_table(conn: &sqlite::Connection) {
         )
         ",
     ).unwrap();
+}
 
+fn groups_table(conn: &Connection) {
     conn.execute(
         "
-        CREATE TABLE IF NOT EXISTS groups (
+        CREATE TABLE groups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             grade INTEGER NOT NULL,
             group TEXT NOT NULL,
@@ -53,10 +102,12 @@ fn create_table(conn: &sqlite::Connection) {
         )
         ",
     ).unwrap();
-            
+}
+
+fn subjects_table(conn: &Connection) {
     conn.execute(
         "
-        CREATE TABLE IF NOT EXISTS subjects (
+        CREATE TABLE subjects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             abbreviation TEXT NOT NULL,
@@ -66,7 +117,9 @@ fn create_table(conn: &sqlite::Connection) {
         )
         ",
     ).unwrap();
+}
 
+fn teachers_table(conn: &Connection) {
     conn.execute(
         "
         CREATE TABLE IF NOT EXISTS teachers (
@@ -77,21 +130,7 @@ fn create_table(conn: &sqlite::Connection) {
             email TEXT NOT NULL,
             commissioned_hours INTEGER NOT NULL,
             active_hours INTEGER NOT NULL,
-            general_stars INTEGER NOT NULL,
-        )
-        ",
-    ).unwrap();
-
-    conn.execute(
-        "
-        CREATE TABLE IF NOT EXISTS schedules (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject_id INTEGER NOT NULL,
-            group_id INTEGER NOT NULL,
-            classroom_id INTEGER NOT NULL,
-            day TEXT NOT NULL,
-            start_time TEXT NOT NULL,
-            end_time TEXT NOT NULL,
+            general_stars INTEGER NOT NULL
         )
         ",
     ).unwrap();
