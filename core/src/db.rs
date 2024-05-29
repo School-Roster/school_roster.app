@@ -6,34 +6,36 @@ use sqlite::{Connection, Error};
 *** Connect to the database ***
 * Return: Connection or Error
 */
-pub fn connect() -> Connection {
-    let conn = sqlite::open("ss.db");
-    create_table(&conn.as_ref().unwrap());
-    conn.unwrap()
+pub fn connect() -> Result<Connection, Error> {
+    let conn = sqlite::open("ss.db")?;
+    create_table(&conn)?;
+    Ok(conn)
 }
 
 // Create tables
 // It checks if the table exists, if not, it creates it
-fn create_table(conn: &Connection) {
-    if !table_exists(&conn, "users").unwrap() {
-        users_table(&conn);
+fn create_table(conn: &Connection) -> Result<(), Error> {
+    if !table_exists(conn, "users")? {
+        users_table(conn)?;
     }
 
-    if !table_exists(&conn, "classrooms").unwrap() {
-        classrooms_table(&conn);
+    if !table_exists(conn, "classrooms")? {
+        classrooms_table(conn)?;
     }
 
-    if !table_exists(&conn, "groups").unwrap() {
-        groups_table(&conn);
+    if !table_exists(conn, "groups")? {
+        groups_table(conn)?;
     }
 
-    if !table_exists(&conn, "subjects").unwrap() {
-        subjects_table(&conn);
+    if !table_exists(conn, "subjects")? {
+        subjects_table(conn)?;
     }
 
-    if !table_exists(&conn, "teachers").unwrap() {
-        teachers_table(&conn);
+    if !table_exists(conn, "teachers")? {
+        teachers_table(conn)?;
     }
+
+    Ok(())
 }
 
 /*
@@ -61,7 +63,7 @@ fn table_exists(conn: &Connection, table_name: &str) -> Result<bool, Error> {
     Ok(result)
 }
 
-fn users_table(conn: &Connection) {
+fn users_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
         CREATE TABLE users (
@@ -72,10 +74,12 @@ fn users_table(conn: &Connection) {
             password TEXT NOT NULL
         )
         ",
-    ).unwrap();
+    )?;
+
+    Ok(())
 }
 
-fn classrooms_table(conn: &Connection) {
+fn classrooms_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
         CREATE TABLE classrooms (
@@ -86,10 +90,12 @@ fn classrooms_table(conn: &Connection) {
             capacity INTEGER NOT NULL,
         )
         ",
-    ).unwrap();
+    )?;
+
+    Ok(())
 }
 
-fn groups_table(conn: &Connection) {
+fn groups_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
         CREATE TABLE groups (
@@ -101,10 +107,12 @@ fn groups_table(conn: &Connection) {
             students_quantity INTEGER NOT NULL,
         )
         ",
-    ).unwrap();
+    )?;
+
+    Ok(())
 }
 
-fn subjects_table(conn: &Connection) {
+fn subjects_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
         CREATE TABLE subjects (
@@ -116,10 +124,12 @@ fn subjects_table(conn: &Connection) {
             teacher_id INTEGER NOT NULL,
         )
         ",
-    ).unwrap();
+    )?;
+
+    Ok(())
 }
 
-fn teachers_table(conn: &Connection) {
+fn teachers_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
         CREATE TABLE IF NOT EXISTS teachers (
@@ -133,5 +143,7 @@ fn teachers_table(conn: &Connection) {
             general_stars INTEGER NOT NULL
         )
         ",
-    ).unwrap();
+    )?;
+
+    Ok(())
 }
