@@ -30,7 +30,7 @@
   <class class="prueba">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
-        <img src="./public/logicirculo.png" />
+        <img src="/logicirculo.png" />
         <h1>Grupos</h1>
       </div>
       <div

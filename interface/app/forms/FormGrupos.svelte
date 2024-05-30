@@ -11,7 +11,7 @@
   <div class="prueba">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
-        <img src="./public/logicirculo.png" />
+        <img src="/logicirculo.png" />
         <h1>Grupos</h1>
       </div>
       <div
@@ -22,7 +22,7 @@
       <div
         style="display: flex; width:100%; justify-content:flex-start; height:100% "
       >
-        <img style="width:35px; align-self:end" src="./public/antes.svg" />
+        <img style="width:35px; align-self:end" src="/antes.svg" />
       </div>
     </div>
 
@@ -127,19 +127,6 @@
     border-radius: 50px;
     color: #ffffff;
     font-size: 1rem;
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      Oxygen,
-      Ubuntu,
-      Cantarell,
-      "Open Sans",
-      "Helvetica Neue",
-      sans-serif;
-
     justify-content: left;
     font-weight: bold;
     border: none;

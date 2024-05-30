@@ -1,5 +1,5 @@
 <script>
-  import InputText from "./components/InputText.svelte";
+  import InputText from "../components/InputText.svelte";
 </script>
 
 <div class="container shadow-sm border p-6">
