@@ -8,31 +8,26 @@ use sqlite::{Connection, Error};
 */
 pub fn connect() -> Result<Connection, Error> {
     let conn = sqlite::open("ss.db")?;
-    create_table(&conn)?;
+    create_table(&conn, "users")?;
+    create_table(&conn, "classrooms")?;
+    create_table(&conn, "groups")?;
+    create_table(&conn, "subjects")?;
+    create_table(&conn, "teachers")?;
     Ok(conn)
 }
 
 // Create tables
 // It checks if the table exists, if not, it creates it
-fn create_table(conn: &Connection) -> Result<(), Error> {
-    if !table_exists(conn, "users")? {
-        users_table(conn)?;
-    }
-
-    if !table_exists(conn, "classrooms")? {
-        classrooms_table(conn)?;
-    }
-
-    if !table_exists(conn, "groups")? {
-        groups_table(conn)?;
-    }
-
-    if !table_exists(conn, "subjects")? {
-        subjects_table(conn)?;
-    }
-
-    if !table_exists(conn, "teachers")? {
-        teachers_table(conn)?;
+fn create_table(conn: &Connection, tname: &str) -> Result<(), Error> {
+    if !table_exists(conn, tname)? {
+        match tname {
+            "users" => users_table(conn)?,
+            "classrooms" => classrooms_table(conn)?,
+            "groups" => groups_table(conn)?,
+            "subjects" => subjects_table(conn)?,
+            "teachers" => teachers_table(conn)?,
+            _ => println!("Table not found"),
+        }
     }
 
     Ok(())
