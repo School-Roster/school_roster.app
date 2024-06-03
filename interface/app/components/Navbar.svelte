@@ -1,17 +1,18 @@
 <script lang="ts">
-  import { MenuData } from '../data/MenuData';
+  import { MenuData } from "../data/MenuData";
 
-  let selectecMenu = 'principal';
+  let selectecMenu = "principal";
 
   const changeMenu = (menu: string) => {
     selectecMenu = menu;
   };
 
-  import RegistroGrupos from '../forms/RegistroGrupos.svelte';
-  import FormAulas from '../forms/FormAulas.svelte';
-  import FormMaterias from '../forms/FormMaterias.svelte';
-  import FormMaestros from '../forms/FormMaestros.svelte';
-  import Login from '../pages/Login.svelte';
+  import RegistroGrupos from "../forms/RegistroGrupos.svelte";
+  import FormAulas from "../forms/FormAulas.svelte";
+  import FormMaterias from "../forms/FormMaterias.svelte";
+  import FormMaestros from "../forms/FormMaestros.svelte";
+  import RegistroAulas from "../forms/RegistroAulas.svelte";
+  import Login from "../pages/Login.svelte";
 </script>
 
 <div>
@@ -27,17 +28,17 @@
   </nav>
 
   <div style="width: 100%;">
-    {#if selectecMenu === 'principal'}
+    {#if selectecMenu === "principal"}
       <p></p>
-    {:else if selectecMenu === 'RegistroGrupos'}
+    {:else if selectecMenu === "RegistroGrupos"}
       <RegistroGrupos />
-    {:else if selectecMenu === 'aulas'}
-      <FormAulas />
-    {:else if selectecMenu === 'materias'}
+    {:else if selectecMenu === "RegistroAulas"}
+      <RegistroAulas />
+    {:else if selectecMenu === "materias"}
       <FormMaterias />
-    {:else if selectecMenu === 'maestros'}
+    {:else if selectecMenu === "maestros"}
       <FormMaestros />
-    {:else if selectecMenu === 'Login'}
+    {:else if selectecMenu === "Login"}
       <Login />
     {:else}
       <p></p>

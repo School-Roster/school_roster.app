@@ -18,4 +18,14 @@ export default defineConfig(async () => ({
       ignored: ["**/core/**"],
     },
   },
+  resolve: {
+    alias: {
+      // Aquí configuramos alias para resolver módulos npm
+      // Puedes agregar tantos como necesites
+      // En este caso, estamos configurando alias para resolver '@lukeed/uuid'
+      // Esto significa que podrás importar '@lukeed/uuid' sin tener que especificar la ruta completa
+      // Si tuvieras más paquetes npm para resolver, agregarías más entradas a este objeto
+      "@lukeed/uuid": "@lukeed/uuid",
+    },
+  },
 }));
