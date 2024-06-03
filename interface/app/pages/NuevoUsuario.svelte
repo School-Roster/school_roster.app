@@ -1,15 +1,11 @@
 <script>
-  const Menus = {
-    principal: "principal",
-    NuevoUsuario: "nuevousuario",
-  };
+  let nombre = "";
+  let apellido = "";
   let correo = "";
-  let contreseña = "";
-  let selectecMenu = Menus.principal;
-  import NuevoUsuario from "./NuevoUsuario.svelte";
+  let contraseña = "contraseña";
 </script>
 
-<main style="margin-top: 150px;">
+<main style="margin-top: 200px;">
   <div class="login-container">
     <div
       style="width: 20%; display:flex; flex-direction:column; position: absolute;"
@@ -35,70 +31,77 @@
                 margin-top: 0px;
                 font-size: 35px;"
       >
-        Iniciar sesion
+        Registro
       </p>
       <div style="margin-top: 20px;">
         <div class="input-container">
-          <img src="/at.svg" alt="" />
           <input
             type="text"
-            placeholder="Ingresa tu correo"
+            placeholder="Nombres(s)"
             style="
               font-size: 20px;
               text-indent: 30px;
             "
-            bind:value={correo}
+            bind:value={nombre}
           />
         </div>
 
         <div class="input-container">
-          <img src="/lock.svg" alt="" />
           <input
-            type="password"
-            placeholder="Contraseña"
+            type="text"
+            placeholder="Apellidos"
             style="
             font-size: 20px;
             text-indent: 30px;
           "
-            bind:value={contreseña}
+            bind:value={apellido}
           />
+          <div class="input-container">
+            <input
+              type="text"
+              placeholder="Correo"
+              style="
+            font-size: 20px;
+            text-indent: 30px;
+          "
+              bind:value={correo}
+            />
+          </div>
+          <div class="input-container">
+            <input
+              type="password"
+              placeholder="Contraseña"
+              style="
+            font-size: 20px;
+            text-indent: 30px;
+          "
+              bind:value={contraseña}
+            />
+            <button type="button">Registrar</button>
+          </div>
+          <a
+            href=""
+            style="
+          color:var(--headline);
+          font-size: 18px;
+          display: flex;
+          margin-top: 12px;
+        "
+          >
+            Inicia sesion
+          </a>
         </div>
-        <button type="button">Iniciar sesion</button>
       </div>
-      <a
-        href="./"
-        on:click={() => {
-          selectecMenu = Menus.NuevoUsuario;
-        }}
-        style="
-    color:var(--headline);
-    font-size: 18px;
-    display: flex;
-    margin-top: 12px;
-    color:aliceblue;
-  "
-      >
-        ¿No tienes cuenta? Regístrate
-      </a>
     </div>
   </div>
 </main>
-<div style="width: 100%;">
-  {#if selectecMenu === Menus.principal}
-    <p></p>
-  {:else if selectecMenu === Menus.NuevoUsuario}
-    <NuevoUsuario />
-  {:else}
-    <p></p>
-  {/if}
-</div>
 
 <style>
   .login-container {
     display: flex;
     flex-direction: row;
-    width: 40%;
-    height: 700px;
+    width: 35%;
+    height: 550px;
     margin: 8% auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;

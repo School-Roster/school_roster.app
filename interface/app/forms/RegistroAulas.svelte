@@ -1,7 +1,6 @@
 <script>
   import SearchBar from "../components/SearchBar.svelte";
   import NuEdEl from "../components/NuEdEl.svelte";
-  import TableForm from "../components/TableForm.svelte";
 </script>
 
 <main style="margin-top: 140px;">
@@ -25,11 +24,21 @@
     </div>
 
     <div style="margin-left: 10px;" class="card">
+      <div
+        style="display:flex; gap:25px; margin-left:20px;  "
+        class="parametros"
+      >
+        <p>id</p>
+        <p>Grado</p>
+        <p>Grupo</p>
+        <p>Carrera</p>
+        <p>Turno</p>
+        <p>#Alumnos</p>
+      </div>
       <div>
-        <TableForm />
+        <NuEdEl />
       </div>
     </div>
-    <NuEdEl />
   </div>
 </main>
 
@@ -58,20 +67,5 @@
     border: 1px solid;
     border-radius: 20px;
     margin-left: 1px;
-  }
-  .icon-text {
-    display: flex;
-    align-items: center; /* Alinea el SVG y el texto verticalmente */
-    margin-top: 40px;
-  }
-
-  .icon-text img {
-    width: 35px;
-  }
-
-  .icon-text p {
-    margin: 0;
-    margin-left: 10px; /* Espacio entre el SVG y el texto */
-    font-size: 16px; /* Ajusta el tamaño del texto según tus necesidades */
   }
 </style>

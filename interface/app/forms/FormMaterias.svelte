@@ -1,35 +1,17 @@
 <script>
+  import SafeBtn from "../components/SafeBtn.svelte";
+
   let nombre = "";
   let abreviatura = "";
   let Tipo = "";
-  let color = "";
-  let config = {
-    readOnly: false,
-    countStars: 5,
-    range: { min: 0, max: 5, step: 0.001 },
-    score: 3.785,
-    showScore: true,
-    scoreFormat: function () {
-      return `(${this.score.toFixed(0)}/${this.countStars})`;
-    },
-    starConfig: {
-      size: 30,
-      fillColor: "#F9ED4F",
-      strokeColor: "#000000",
-      unfilledColor: "#FFFFFF",
-      strokeUnfilledColor: "#000000F",
-    },
-  };
-
-  const changeSliderInput = () => console.table(config);
 </script>
 
 <main>
-  <div class="prueba">
-    <div style="width: 30%; display:flex; flex-direction:column">
+  <div style="margin-top: 150px;" class="prueba">
+    <div>
       <div style="display: flex; flex-direction:row">
         <img src="/logicirculo.png" alt="logo" />
-        <h1>Materias</h1>
+        <h1 style="margin-top: 15px;">Materias</h1>
       </div>
       <div
         style="display: block; height:1px; width:100%; background-color:black"
@@ -45,38 +27,30 @@
 
     <div class="card">
       <div style="display: flex; flex-direction:column; margin:auto">
-        <input
-          type="text"
-          placeholder="Nombre"
-          style="font-size: 16px; text-indent: 30px;"
-          bind:value={nombre}
-        />
-
-        <input
-          type="text"
-          placeholder="Abreviatura"
-          style="font-size: 16px; text-indent: 30px;"
-          bind:value={abreviatura}
-        />
-        <input
-          type="text"
-          placeholder="Tipo"
-          style="font-size: 16px; text-indent: 30px;"
-          bind:value={Tipo}
-        />
-
-        <div class="color-group">
-          <label class="label-input" for="fill-color">Selecciona color</label>
+        <div class="placeholder" style="margin-top: 50px;">
           <input
-            type="color"
-            name="fill-color"
-            bind:value={config.starConfig.fillColor}
-            step="1"
-            min="0"
+            type="text"
+            placeholder="Nombre"
+            style="font-size: 16px; text-indent: 30px;"
+            bind:value={nombre}
           />
-          <div>
-            <button type="button">Guardar</button>
-          </div>
+
+          <input
+            type="text"
+            placeholder="Abreviatura"
+            style="font-size: 16px; text-indent: 30px;"
+            bind:value={abreviatura}
+          />
+          <input
+            type="text"
+            placeholder="Tipo"
+            style="font-size: 16px; text-indent: 30px;"
+            bind:value={Tipo}
+          />
+        </div>
+
+        <div style="margin-top: 250px; margin-left:270px">
+          <SafeBtn />
         </div>
       </div>
     </div>
@@ -118,27 +92,14 @@
 
   input[type="text"] {
     border-radius: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     background-color: #edf4f8;
-    border-color: #edf4f8;
     height: 3rem;
-    width: 35rem;
+    width: 350px;
     justify-content: center;
     align-items: center;
-    border: none;
-    font-weight: bold;
-  }
+    border-color: #094067;
 
-  button {
-    background-color: #ef4565;
-    border-color: #ef4565;
-    height: 3rem;
-    width: 18rem;
-    border-radius: 50px;
-    color: #ffffff;
-    font-size: 1rem;
-    justify-content: left;
-    font-weight: bold;
-    border: none;
+    margin-left: 25px;
   }
 </style>

@@ -1,13 +1,9 @@
 <script>
-  let grado = "";
-  let grupo = "";
-  let carrera = "";
-  let turno = "";
-  let cantidadAlumnos = "";
   let value;
 </script>
 
 <main>
+  z
   <div class="prueba">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
