@@ -19,9 +19,13 @@
       <p class="titulo">Registro de Materias</p>
 
       <div
-        style="display: flex; width:100%; justify-content:flex-start; height:100% "
+        style="display: flex; width:100%; justify-content:flex-start; height:100%; margin-top:100px "
       >
-        <img style="width:45px; align-self:end" src="/antes.svg" alt="antes" />
+        <img
+          style="width:45px; align-self:end margin-top:2px"
+          src="/antes.svg"
+          alt="antes"
+        />
       </div>
     </div>
 
@@ -48,10 +52,9 @@
             bind:value={Tipo}
           />
         </div>
-
-        <div style="margin-top: 250px; margin-left:270px">
-          <SafeBtn />
-        </div>
+      </div>
+      <div style="margin-top: 250px; margin-left:270px">
+        <SafeBtn />
       </div>
     </div>
   </div>
@@ -62,6 +65,7 @@
     display: flex;
     flex-direction: row;
     width: 50%;
+    height: 700px;
     margin: 100px auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;
@@ -81,7 +85,7 @@
 
   .card {
     background-color: #ffffff;
-    height: 600px;
+    height: 100%;
     width: 70%;
     display: flex;
     flex-direction: column;
