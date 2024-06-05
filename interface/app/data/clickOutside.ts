@@ -1,16 +1,19 @@
 /** Dispatch event on click outside of node */
-export function click_outside(node: any) {
-  const handleClick = (event: any) => {
-    if (node && !node.contains(event.target) && !event.defaultPrevented) {
-      node.dispatchEvent(new CustomEvent("click_outside", node));
+export function clickOutside(node: HTMLElement) {
+  
+  const handleClick = (event: MouseEvent) => {
+    if (node && !node.contains(event.target as Node) && !event.defaultPrevented) {
+      node.dispatchEvent(
+        new CustomEvent('click_outside', { detail: node })
+      );
     }
   };
 
-  document.addEventListener("click", handleClick, true);
-
+  document.addEventListener('click', handleClick, true);
+  
   return {
     destroy() {
-      document.removeEventListener("click", handleClick, true);
-    },
+      document.removeEventListener('click', handleClick, true);
+    }
   };
 }
