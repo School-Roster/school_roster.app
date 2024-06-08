@@ -4,7 +4,7 @@
   import TableForm from "../components/TableForm.svelte";
 </script>
 
-<main style="margin-top: 140px;">
+<main style="margin-top:180px;">
   <div class="prueba">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
@@ -29,7 +29,9 @@
         <TableForm />
       </div>
     </div>
-    <NuEdEl />
+    <div style="margin-left:10px">
+      <NuEdEl />
+    </div>
   </div>
 </main>
 
@@ -37,7 +39,7 @@
   .prueba {
     display: flex;
     flex-direction: row;
-    width: 60%;
+    width: 75%;
     margin: 100px auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;
@@ -51,7 +53,7 @@
   .card {
     background-color: #ffffff;
     height: 600px;
-    width: 50%;
+    width: 900px;
     display: flex;
     flex-direction: column;
     border-color: #000000;

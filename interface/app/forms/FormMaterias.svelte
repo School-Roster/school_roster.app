@@ -1,5 +1,6 @@
 <script>
   import SafeBtn from "../components/SafeBtn.svelte";
+  import ColorPicker from "../components/ColorPicker.svelte";
 
   let nombre = "";
   let abreviatura = "";
@@ -30,30 +31,41 @@
     </div>
 
     <div class="card">
-      <div style="display: flex; flex-direction:column; margin:auto">
-        <div class="placeholder" style="margin-top: 50px;">
-          <input
-            type="text"
-            placeholder="Nombre"
-            style="font-size: 16px; text-indent: 30px;"
-            bind:value={nombre}
-          />
+      <div class="placeholder" style="margin-top: 50px;">
+        <input
+          type="text"
+          placeholder="Nombre"
+          style="font-size: 16px; text-indent: 30px;"
+          bind:value={nombre}
+        />
 
-          <input
-            type="text"
-            placeholder="Abreviatura"
-            style="font-size: 16px; text-indent: 30px;"
-            bind:value={abreviatura}
-          />
-          <input
-            type="text"
-            placeholder="Tipo"
-            style="font-size: 16px; text-indent: 30px;"
-            bind:value={Tipo}
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Abreviatura"
+          style="font-size: 16px; text-indent: 30px;"
+          bind:value={abreviatura}
+        />
+        <input
+          type="text"
+          placeholder="Tipo"
+          style="font-size: 16px; text-indent: 30px;"
+          bind:value={Tipo}
+        />
       </div>
-      <div style="margin-top: 250px; margin-left:270px">
+      <div
+        style="margin-top: 10px;    display: flex;
+    align-items: center;
+    max-width: 8500px;
+    margin: 20px;
+    padding: 10px;
+    background-color: #edf4f8;
+    border-color:#094067;
+    border-radius: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);"
+      >
+        <ColorPicker />
+      </div>
+      <div style="margin-top: 200px; margin-left:270px">
         <SafeBtn />
       </div>
     </div>

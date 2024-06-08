@@ -14,9 +14,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^1
         version: 1.5.3
-      flowbite-svelte:
-        specifier: ^0.46.1
-        version: 0.46.1(svelte@4.2.12)
+      flowbite-svelte-icons:
+        specifier: ^1.6.1
+        version: 1.6.1(svelte@4.2.12)(tailwind-merge@2.3.0)(tailwindcss@3.4.1)
       postcss-cli:
         specifier: ^11.0.0
         version: 11.0.0(jiti@1.21.0)(postcss@8.4.38)
@@ -33,6 +33,12 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
+      flowbite:
+        specifier: ^2.3.0
+        version: 2.3.0
+      flowbite-svelte:
+        specifier: ^0.46.1
+        version: 0.46.1(svelte@4.2.12)
       postcss:
         specifier: ^8.4.38
         version: 8.4.38
@@ -619,6 +625,13 @@ packages:
   fill-range@7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
     engines: {node: '>=8'}
+
+  flowbite-svelte-icons@1.6.1:
+    resolution: {integrity: sha512-Kw/7BzA6fqlFq7tBNudwX0KVU4cbyyXcMcgHTraMwGBtvBQan0RKMbvWwqm4JZNvLGAvRv1BM2EF7rzo/oam1Q==}
+    peerDependencies:
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0
+      tailwind-merge: ^2.0.0
+      tailwindcss: ^3.3.2
 
   flowbite-svelte@0.46.1:
     resolution: {integrity: sha512-GMQP4Fxn4mYu12XTNRbOHMYMklbP29sKFZUZYekryxhWak2zbSlI1ozhBtnrD2WDbFBPqZ64IcyButOkYpz+WQ==}
@@ -1721,6 +1734,12 @@ snapshots:
   fill-range@7.0.1:
     dependencies:
       to-regex-range: 5.0.1
+
+  flowbite-svelte-icons@1.6.1(svelte@4.2.12)(tailwind-merge@2.3.0)(tailwindcss@3.4.1):
+    dependencies:
+      svelte: 4.2.12
+      tailwind-merge: 2.3.0
+      tailwindcss: 3.4.1
 
   flowbite-svelte@0.46.1(svelte@4.2.12):
     dependencies:

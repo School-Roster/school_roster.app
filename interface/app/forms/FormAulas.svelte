@@ -1,17 +1,18 @@
 <script>
+  import SafeBtn from "../components/SafeBtn.svelte";
+
   let NumeroSalon = "";
   let Edificio = "";
   let Tipo = "";
   let Capacidad = "";
-  let value;
 </script>
 
 <main>
-  <div class="prueba">
-    <div style="width: 30%; display:flex; flex-direction:column">
+  <div style="margin-top: 150px;" class="prueba">
+    <div>
       <div style="display: flex; flex-direction:row">
-        <img src="/logicirculo.png" alt="" />
-        <h1>Aulas</h1>
+        <img src="/logicirculo.png" alt="logo" />
+        <h1 style="margin-top: 15px;">Aulas</h1>
       </div>
       <div
         style="display: block; height:1px; width:100%; background-color:black"
@@ -19,20 +20,25 @@
       <p class="titulo">Registro de Aulas</p>
 
       <div
-        style="display: flex; width:100%; justify-content:flex-start; height:100% "
+        style="display: flex; width:100%; justify-content:flex-start; height:100%; margin-top:100px "
       >
-        <img style="width:45px; align-self:end" src="/antes.svg" alt="" />
+        <img
+          style="width:45px; align-self:end margin-top:2px"
+          src="/antes.svg"
+          alt="antes"
+        />
       </div>
     </div>
 
     <div class="card">
-      <div style="display: flex; flex-direction:column; margin:auto">
+      <div class="placeholder" style="margin-top: 50px;">
         <input
           type="text"
           placeholder="Numero de salon"
           style="font-size: 16px; text-indent: 30px;"
           bind:value={NumeroSalon}
         />
+
         <input
           type="text"
           placeholder="Edificio"
@@ -51,25 +57,28 @@
           style="font-size: 16px; text-indent: 30px;"
           bind:value={Capacidad}
         />
-        <button type="button">Guardar</button>
+      </div>
+
+      <div style="margin-top: 250px; margin-left:270px">
+        <SafeBtn />
       </div>
     </div>
   </div>
 </main>
-¿
 
 <style>
   .prueba {
     display: flex;
     flex-direction: row;
     width: 50%;
+    height: 700px;
     margin: 100px auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;
     border-radius: 5rem;
   }
   h1 {
-    color: #094067;
+    color: var(--azulp);
     font-size: 28px;
   }
 
@@ -82,7 +91,7 @@
 
   .card {
     background-color: #ffffff;
-    height: 600px;
+    height: 100%;
     width: 70%;
     display: flex;
     flex-direction: column;
@@ -93,27 +102,14 @@
 
   input[type="text"] {
     border-radius: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     background-color: #edf4f8;
-    border-color: #edf4f8;
     height: 3rem;
-    width: 35rem;
+    width: 350px;
     justify-content: center;
     align-items: center;
-    border: none;
-    font-weight: bold;
-  }
+    border-color: #094067;
 
-  button {
-    background-color: #ef4565;
-    border-color: #ef4565;
-    height: 3rem;
-    width: 18rem;
-    border-radius: 50px;
-    color: #ffffff;
-    font-size: 1rem;
-    justify-content: left;
-    font-weight: bold;
-    border: none;
+    margin-left: 25px;
   }
 </style>

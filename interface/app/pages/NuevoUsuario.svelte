@@ -1,170 +1,183 @@
-<script>
-  let nombre = "";
-  let apellido = "";
-  let correo = "";
-  let contraseña = "contraseña";
+<script lang="ts">
+  import NuevoUsuario from "./NuevoUsuario.svelte";
+
+  let selectedMenu = "Login";
+
+  const changeMenu = (menu: string) => {
+    selectedMenu = menu;
+  };
+
+  let Nombres = "";
+  let ApellidoP = "";
+  let ApellidoM = "";
+  let Correo = "";
+  let Contraseña = "";
 </script>
 
-<main style="margin-top: 200px;">
+<main style="margin-top: 5vh;">
   <div class="login-container">
-    <div
-      style="width: 20%; display:flex; flex-direction:column; position: absolute;"
-    >
-      <div style="display: flex; flex-direction:row">
+    {#if selectedMenu === "Login"}
+      <div style="margin-right: 450px;" class="login-image">
         <img src="/logicirculo.png" alt="" />
       </div>
-    </div>
 
-    <div
-      style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;"
-    >
-      <div class="svg">
-        <img src="/user.svg" style="width:199px; height:200px;" alt="" />
-      </div>
-      <p
-        style="color: #edf4f8;
-                width: 100%;
-                font-family: 'Inria Sans', sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 0px;
-                font-size: 35px;"
-      >
-        Registro
-      </p>
-      <div style="margin-top: 20px;">
+      <div class="login-form">
+        <p class="title">Registro</p>
         <div class="input-container">
+          <img src="/user.svg" alt="User Icon" />
           <input
             type="text"
-            placeholder="Nombres(s)"
-            style="
-              font-size: 20px;
-              text-indent: 30px;
-            "
-            bind:value={nombre}
+            placeholder="Nombre(s)"
+            style="font-size: 16px;"
+            bind:value={Nombres}
           />
         </div>
 
         <div class="input-container">
+          <img src="/user.svg" alt="User Icon" />
           <input
             type="text"
-            placeholder="Apellidos"
-            style="
-            font-size: 20px;
-            text-indent: 30px;
-          "
-            bind:value={apellido}
+            placeholder="Apellido paterno"
+            style="font-size: 16px;"
+            bind:value={ApellidoP}
           />
-          <div class="input-container">
-            <input
-              type="text"
-              placeholder="Correo"
-              style="
-            font-size: 20px;
-            text-indent: 30px;
-          "
-              bind:value={correo}
-            />
-          </div>
-          <div class="input-container">
-            <input
-              type="password"
-              placeholder="Contraseña"
-              style="
-            font-size: 20px;
-            text-indent: 30px;
-          "
-              bind:value={contraseña}
-            />
-            <button type="button">Registrar</button>
-          </div>
-          <a
-            href=""
-            style="
-          color:var(--headline);
-          font-size: 18px;
-          display: flex;
-          margin-top: 12px;
-        "
-          >
-            Inicia sesion
-          </a>
         </div>
+
+        <div class="input-container">
+          <img src="/user.svg" alt="User Icon" />
+          <input
+            type="text"
+            placeholder="Apellido materno"
+            style="font-size: 16px;"
+            bind:value={ApellidoM}
+          />
+        </div>
+
+        <div class="input-container">
+          <img src="/at.svg" alt="Email Icon" />
+          <input
+            type="text"
+            placeholder="Correo electrónico"
+            style="font-size: 16px;"
+            bind:value={Correo}
+          />
+        </div>
+
+        <div class="input-container">
+          <img src="/lock.svg" alt="Lock Icon" />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            style="font-size: 16px;"
+            bind:value={Contraseña}
+          />
+        </div>
+
+        <button type="button">Registrar usuario</button>
+
+        <a
+          href="#"
+          class="registro"
+          on:click={() => changeMenu("NuevoUsuario")}
+        >
+          ¿Ya tienes cuenta? Inicia sesión
+        </a>
       </div>
-    </div>
+    {/if}
+
+    {#if selectedMenu === "NuevoUsuario"}
+      <NuevoUsuario on:closeLogin={() => changeMenu("NuevoUsuario")} />
+    {/if}
   </div>
 </main>
 
 <style>
   .login-container {
     display: flex;
-    flex-direction: row;
-    width: 35%;
-    height: 550px;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    max-width: 600px;
     margin: 8% auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    padding: 50px;
-    border-radius: 5rem;
+    padding: 5vh;
+    border-radius: 5vh;
     background-image: url("bb.svg");
+    margin-top: 190px;
+  }
+
+  .login-image img {
+    max-width: 100px;
+    margin-bottom: 20px;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .title {
+    color: #edf4f8;
+    font-family: "Inria Sans", sans-serif;
+    margin: 10px 0;
+    font-size: 2.5vh;
   }
 
   .input-container {
-    border-radius: 10px;
-    margin-bottom: 30px;
-    border: none;
-    height: 3.75rem;
-    width: 27rem;
     display: flex;
     align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 25px;
+    border: 1px solid #094067;
     background-color: #edf4f8;
   }
 
   .input-container img {
-    width: 40px;
-    height: 40px;
-    margin-left: 20px;
+    width: 30px;
+    margin-left: 10px;
   }
 
   input[type="text"],
   input[type="password"] {
-    width: 85%;
-    height: 90%;
+    width: calc(100% - 40px);
+    height: 40px;
     border: none;
     background-color: #edf4f8;
     font-family: "Inria Sans", sans-serif;
     color: var(--text);
     font-weight: bold;
-  }
-
-  input[type="text"]:focus,
-  input[type="password"]:focus {
-    outline: none;
-  }
-
-  input[type="text"]::placeholder,
-  input[type="password"]::placeholder {
-    color: var(--text);
-    font-weight: normal;
+    font-size: 16px;
+    padding-left: 10px;
+    border-radius: 25px;
   }
 
   button {
     background-color: var(--red);
     border-color: var(--red);
-    height: 3rem;
-    width: 27rem;
-    border-radius: 20px;
+    height: 40px;
+    width: 100%;
+    border-radius: 25px;
     color: #ffffff;
-    font-size: 1rem;
-    justify-content: left;
+    font-size: 16px;
     font-weight: bold;
     border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
   }
-  .svg {
-    display: flex;
-    margin-top: 60px;
-    justify-content: center;
-    align-items: center;
-    width: 95%;
+
+  button:hover {
+    background-color: darkred;
+  }
+
+  .registro {
+    color: #edf4f8;
+    font-size: 16px;
+    margin-top: 10px;
+    text-decoration: none;
+    cursor: pointer;
   }
 </style>

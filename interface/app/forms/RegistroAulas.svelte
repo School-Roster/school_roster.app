@@ -1,14 +1,15 @@
 <script>
   import SearchBar from "../components/SearchBar.svelte";
   import NuEdEl from "../components/NuEdEl.svelte";
+  import TableForm from "../components/TableForm.svelte";
 </script>
 
-<main style="margin-top: 140px;">
+<main style="margin-top:180px;">
   <div class="prueba">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
         <img src="/logicirculo.png" alt="" />
-        <h1>Grupos</h1>
+        <h1>Aulas</h1>
       </div>
       <div
         style="display: block; height:1px; width:150%; background-color:black"
@@ -24,20 +25,12 @@
     </div>
 
     <div style="margin-left: 10px;" class="card">
-      <div
-        style="display:flex; gap:25px; margin-left:20px;  "
-        class="parametros"
-      >
-        <p>id</p>
-        <p>Grado</p>
-        <p>Grupo</p>
-        <p>Carrera</p>
-        <p>Turno</p>
-        <p>#Alumnos</p>
-      </div>
       <div>
-        <NuEdEl />
+        <TableForm />
       </div>
+    </div>
+    <div style="margin-left:10px">
+      <NuEdEl />
     </div>
   </div>
 </main>
@@ -46,7 +39,7 @@
   .prueba {
     display: flex;
     flex-direction: row;
-    width: 60%;
+    width: 75%;
     margin: 100px auto;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 50px;
@@ -60,12 +53,27 @@
   .card {
     background-color: #ffffff;
     height: 600px;
-    width: 50%;
+    width: 900px;
     display: flex;
     flex-direction: column;
     border-color: #000000;
     border: 1px solid;
     border-radius: 20px;
     margin-left: 1px;
+  }
+  .icon-text {
+    display: flex;
+    align-items: center; /* Alinea el SVG y el texto verticalmente */
+    margin-top: 40px;
+  }
+
+  .icon-text img {
+    width: 35px;
+  }
+
+  .icon-text p {
+    margin: 0;
+    margin-left: 10px; /* Espacio entre el SVG y el texto */
+    font-size: 16px; /* Ajusta el tamaño del texto según tus necesidades */
   }
 </style>

@@ -10,11 +10,16 @@ body {
 
 /* Define colors */
 :root {
-  --background: #FFFFFE;
-  --text: #5F6C7B;
+  --background: #fffffe;
+  --text: #5f6c7b;
   --headline: #094067;
-  --blue: #3DA9FC;
-  --red: #EF4565;
-  --blue-light: #90B4CE;
-  --other-green: #C5FF95;
+  --blue: #3da9fc;
+  --red: #ef4565;
+  --blue-light: #90b4ce;
+  --other-green: #c5ff95;
+}
+
+.text-blue {
+  --tw-text-opacity: 1;
+  color: rgb(224 36 36 / var(--tw-text-opacity));
 }
