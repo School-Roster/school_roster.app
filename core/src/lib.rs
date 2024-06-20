@@ -1,2 +1,2 @@
-// pub mod class;
+pub mod class;
 pub mod db;

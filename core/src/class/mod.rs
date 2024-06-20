@@ -1,4 +1,4 @@
-pub mod aula;
-pub mod docente;
-pub mod grupo;
-pub mod materia;
+pub mod teacher;
+// pub mod aula;
+// pub mod grupo;
+// pub mod materia;

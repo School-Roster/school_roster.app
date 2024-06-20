@@ -129,13 +129,17 @@ fn teachers_table(conn: &Connection) -> Result<(), Error> {
         "
         CREATE TABLE IF NOT EXISTS teachers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shorten TEXT NOT NULL,
             name TEXT NOT NULL,
             first_last_name TEXT NOT NULL,
             second_last_name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            commissioned_hours INTEGER NOT NULL,
-            active_hours INTEGER NOT NULL,
-            general_stars INTEGER NOT NULL
+
+            email TEXT,
+            phone TEXT,
+            degree TEXT,
+            commissioned_hours INTEGER,
+            active_hours INTEGER,
+            general_stars INTEGER
         )
         ",
     )?;
