@@ -14,7 +14,7 @@
 </script>
 
 <main>
-  <div style="margin-top: 150px;" class="prueba">
+  <div style="margin-top: 150px;" class="container">
     <div>
       <div style="display: flex; flex-direction:row; align-items: center;">
         <img
@@ -90,7 +90,7 @@
 </main>
 
 <style>
-  .prueba {
+  .container {
     display: flex;
     flex-direction: row;
     width: 50%;

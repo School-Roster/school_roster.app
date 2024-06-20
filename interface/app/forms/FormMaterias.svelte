@@ -8,7 +8,7 @@
 </script>
 
 <main>
-  <div style="margin-top: 150px;" class="prueba">
+  <div style="margin-top: 150px;" class="container">
     <div>
       <div style="display: flex; flex-direction:row">
         <img src="/logicirculo.png" alt="logo" />
@@ -73,7 +73,7 @@
 </main>
 
 <style>
-  .prueba {
+  .container {
     display: flex;
     flex-direction: row;
     width: 50%;

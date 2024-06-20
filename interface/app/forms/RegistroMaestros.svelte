@@ -5,7 +5,7 @@
 </script>
 
 <main style="margin-top:180px;">
-  <div class="prueba">
+  <div class="container">
     <div style="width: 30%; display:flex; flex-direction:column">
       <div style="display: flex; flex-direction:row">
         <img src="/logicirculo.png" alt="" />
@@ -36,7 +36,7 @@
 </main>
 
 <style>
-  .prueba {
+  .container {
     display: flex;
     flex-direction: row;
     width: 75%;
@@ -60,20 +60,5 @@
     border: 1px solid;
     border-radius: 20px;
     margin-left: 1px;
-  }
-  .icon-text {
-    display: flex;
-    align-items: center; /* Alinea el SVG y el texto verticalmente */
-    margin-top: 40px;
-  }
-
-  .icon-text img {
-    width: 35px;
-  }
-
-  .icon-text p {
-    margin: 0;
-    margin-left: 10px; /* Espacio entre el SVG y el texto */
-    font-size: 16px; /* Ajusta el tamaño del texto según tus necesidades */
   }
 </style>
