@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
   import SafeBtn from "../components/SafeBtn.svelte";
   import ColorPicker from "../components/ColorPicker.svelte";
 
-  let nombre = "";
-  let abreviatura = "";
+  let name = "";
+  let shorten = "";
   let Tipo = "";
 </script>
 
@@ -36,14 +36,14 @@
           type="text"
           placeholder="Nombre"
           style="font-size: 16px; text-indent: 30px;"
-          bind:value={nombre}
+          bind:value={name}
         />
 
         <input
           type="text"
           placeholder="Abreviatura"
           style="font-size: 16px; text-indent: 30px;"
-          bind:value={abreviatura}
+          bind:value={shorten}
         />
         <input
           type="text"

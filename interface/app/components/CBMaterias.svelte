@@ -11,10 +11,10 @@
   import { ChevronDownOutline, UserRemoveSolid } from "flowbite-svelte-icons";
 </script>
 
-<Button
-  >Materias<ChevronDownOutline
-    class="w-6 h-6 ms-2 text-white dark:text-white"
-  /></Button
+<Button>
+  Materias
+  <ChevronDownOutline class="w-6 h-6 ms-2 text-white dark:text-white"/>
+</Button
 >
 <Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
   <div slot="header" class="p-3">

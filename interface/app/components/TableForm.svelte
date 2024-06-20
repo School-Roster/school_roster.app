@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {
     Table,
     TableBody,
@@ -46,23 +46,5 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .custom-table thead th {
-    background-color: #007bff;
-    color: white;
-    padding: 10px;
-  }
-
-  .custom-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-
-  .custom-table tbody tr:hover {
-    background-color: #e0e0e0;
-  }
-
-  .custom-table tbody td {
-    padding: 10px;
   }
 </style>

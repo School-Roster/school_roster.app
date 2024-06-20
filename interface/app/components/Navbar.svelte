@@ -103,8 +103,8 @@
   }
 
   .btn:hover {
-    background-color: var(--background);
-    color: var(--headline);
+    /* background-color: var(--background); */
+    color: var(--blue);
   }
 
   .btn img {

@@ -76,7 +76,7 @@
         <button type="button">Registrar usuario</button>
 
         <a
-          href="#"
+          href="/"
           class="registro"
           on:click={() => changeMenu("NuevoUsuario")}
         >

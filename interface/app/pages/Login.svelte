@@ -44,7 +44,7 @@
         <button type="button">Iniciar sesión</button>
 
         <a
-          href="#"
+          href="/"
           class="registro"
           on:click={() => changeMenu("NuevoUsuario")}
         >

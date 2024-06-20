@@ -1,16 +1,35 @@
-<script>
+<script lang="ts">
   import SafeBtn from "../components/SafeBtn.svelte";
   import ColorPicker from "../components/ColorPicker.svelte";
-  import ScrollBar from "../components/ScrollBar.svelte";
-  import SearchBar from "../components/SearchBar.svelte";
+  // import ScrollBar from "../components/ScrollBar.svelte";
+  // import SearchBar from "../components/SearchBar.svelte";
   import CbMaterias from "../components/CBMaterias.svelte";
   import Rating from "../components/Rating.svelte";
 
-  let Nombre = "";
-  let ApellidoP = "";
-  let ApellidoM = "";
-  let Correo = "";
-  let HorasComisionadas = "";
+  import { invoke } from "@tauri-apps/api/tauri";
+
+  let name = "";
+  let flastname = "";
+  let slastname = "";
+  let email = "";
+  let commissioned = "";
+
+  async function register_teacher() {
+    console.log("register_teacher");
+    commissioned = parseInt(commissioned);
+    await invoke("register_teacher", {
+      shorten: "",
+      name,
+      flastname,
+      slastname,
+      email,
+      phone: "",
+      degree: "",
+      commissioned,
+      active: 0,
+      stars: 4,
+    });
+  }
 </script>
 
 <main>
@@ -44,38 +63,38 @@
           type="text"
           placeholder="Nombre"
           style="font-size: 16px;"
-          bind:value={Nombre}
+          bind:value={name}
         />
 
         <input
           type="text"
           placeholder="Apellido Paterno"
           style="font-size: 16px;"
-          bind:value={ApellidoP}
+          bind:value={flastname}
         />
         <input
           type="text"
           placeholder="Apellido Materno"
           style="font-size: 16px;"
-          bind:value={ApellidoM}
+          bind:value={slastname}
         />
         <input
           type="text"
           placeholder="Correo Electronico"
           style="font-size: 16px;"
-          bind:value={Correo}
+          bind:value={email}
         />
         <input
           type="text"
           placeholder="Horas Comisionadas"
           style="font-size: 16px;"
-          bind:value={HorasComisionadas}
+          bind:value={commissioned}
         />
       </div>
       <div style="margin-left: 30px; margin-top:10px;">
         <CbMaterias />
       </div>
-      <div style="margin-top: 10px; margin-left: 20px; width: 100%;">
+      <div style="margin-top: 20px; margin-left: 20px; width: 100%;">
         <ColorPicker />
       </div>
       <div style="margin-left: 30px; margin-top:10px;">
@@ -83,7 +102,8 @@
       </div>
 
       <div style="margin-top: 20px; margin-left: 270px;">
-        <SafeBtn />
+        <!-- <SafeBtn /> -->
+        <button on:click="{register_teacher}">Registrar</button>
       </div>
     </div>
   </div>
@@ -137,4 +157,25 @@
     font-size: 16px;
     padding-left: 15px;
   }
+
+  button {
+    background-color: #094067;
+    border-color: #094067;
+    height: 3rem;
+    width: 100px;
+    border-radius: 50px;
+    color: #ffffff;
+    font-size: 1rem;
+    justify-content: left;
+    font-weight: bold;
+    border: none;
+  }
+
+  button:hover {
+    background-color: #ffffff;
+    color: #094067;
+    transition-timing-function: ease-in-out;
+    transition: background-color 0.5s;
+  }
+
 </style>

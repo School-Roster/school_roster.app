@@ -1,17 +1,20 @@
 /* Connect to SQLite database */
 
 use sqlite::{Connection, Error};
+use std::path::PathBuf;
+use dirs::data_dir;
 
 /*
 *** Connect to the database ***
 * Return: Connection or Error
 */
 pub fn connect() -> Result<Connection, Error> {
-    let conn = sqlite::open("ss.db")?;
-    create_table(&conn, "users")?;
-    create_table(&conn, "classrooms")?;
-    create_table(&conn, "groups")?;
-    create_table(&conn, "subjects")?;
+    let path = default_db_path().unwrap();
+    let conn = sqlite::open(&path)?;
+    // create_table(&conn, "users")?;
+    // create_table(&conn, "classrooms")?;
+    // create_table(&conn, "groups")?;
+    // create_table(&conn, "subjects")?;
     create_table(&conn, "teachers")?;
     Ok(conn)
 }
@@ -128,7 +131,7 @@ fn teachers_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
         CREATE TABLE IF NOT EXISTS teachers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             shorten TEXT NOT NULL,
             name TEXT NOT NULL,
             first_last_name TEXT NOT NULL,
@@ -146,3 +149,13 @@ fn teachers_table(conn: &Connection) -> Result<(), Error> {
 
     Ok(())
 }
+
+fn default_db_path() -> Result<PathBuf, std::io::Error> {
+    let mut path = data_dir().ok_or(std::io::Error::new(
+        std::io::ErrorKind::NotFound,
+        "Directory not found",
+    ))?;
+    path.push("school_schedule.db");
+    Ok(path)
+}
+
