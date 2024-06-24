@@ -8,7 +8,7 @@
 	
 	// Initial value
 	export let id: string = uuid();
-	export let value: string = '#5E7ABC';
+	export let value: string = '#5E7ABC'; // Default value
 
 	// Our color set
 	let values: string[][] = [

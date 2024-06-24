@@ -2,22 +2,34 @@
   import SafeBtn from "../components/SafeBtn.svelte";
   import ColorPicker from "../components/ColorPicker.svelte";
 
+  import { invoke } from "@tauri-apps/api";
+
   let name = "";
   let shorten = "";
-  let Tipo = "";
+  let color = "#5E7ABC";
+  let subject_type = "";
+
+  async function register_subject() {
+    console.log("register_subject");
+    await invoke("register_subject", {
+      name,
+      shorten,
+      color,
+      subject_type,
+    });
+  }
 </script>
 
 <main>
   <div style="margin-top: 150px;" class="container">
     <div>
       <div style="display: flex; flex-direction:row">
-        <img src="/logicirculo.png" alt="logo" />
-        <h1 style="margin-top: 15px;">Materias</h1>
+        <img src="/logicirculo.png" alt="logo" style="width: 60px;" />
+        <h1 style="margin-top: 15px; margin-left: 5px; margin-right: 10px; font-size: 18px;">Materias</h1>
       </div>
       <div
         style="display: block; height:1px; width:100%; background-color:black"
       ></div>
-      <p class="titulo">Registro de Materias</p>
 
       <div
         style="display: flex; width:100%; justify-content:flex-start; height:100%; margin-top:100px "
@@ -49,24 +61,25 @@
           type="text"
           placeholder="Tipo"
           style="font-size: 16px; text-indent: 30px;"
-          bind:value={Tipo}
+          bind:value={subject_type}
         />
       </div>
       <div
         style="margin-top: 10px;    display: flex;
-    align-items: center;
-    max-width: 8500px;
-    margin: 20px;
-    padding: 10px;
-    background-color: #edf4f8;
-    border-color:#094067;
-    border-radius: 25px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);"
+              align-items: center;
+              max-width: 8500px;
+              margin: 20px;
+              padding: 10px;
+              background-color: #edf4f8;
+              border-color:#094067;
+              border-radius: 25px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);"
       >
-        <ColorPicker />
+        <ColorPicker bind:value={color} />
       </div>
-      <div style="margin-top: 200px; margin-left:270px">
-        <SafeBtn />
+      <div style="margin-top: 30px; align-self: center;">
+        <!-- <SafeBtn /> -->
+        <button on:click="{register_subject}">Registrar</button>
       </div>
     </div>
   </div>
@@ -117,5 +130,24 @@
     border-color: #094067;
 
     margin-left: 25px;
+  }
+  button {
+    background-color: #094067;
+    border-color: #094067;
+    height: 3rem;
+    width: 100px;
+    border-radius: 50px;
+    color: #ffffff;
+    font-size: 1rem;
+    justify-content: left;
+    font-weight: bold;
+    border: none;
+  }
+
+  button:hover {
+    background-color: #ffffff;
+    color: #094067;
+    transition-timing-function: ease-in-out;
+    transition: background-color 0.5s;
   }
 </style>

@@ -14,7 +14,8 @@
     "@lukeed/uuid": "^2.0.1",
     "@tauri-apps/api": "^1",
     "flowbite-svelte-icons": "^1.6.1",
-    "postcss-cli": "^11.0.0"
+    "postcss-cli": "^11.0.0",
+    "svelte-dnd-action": "^0.9.49"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
