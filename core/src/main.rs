@@ -3,12 +3,9 @@
 
 use school_schedule::class::teacher;
 use school_schedule::class::subject;
+use school_schedule::class::group;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-// #[tauri::command]
-// fn greet(name: &str) -> String {
-//     format!("Hello, {}! You've been greeted from Rust!", name)
-// }
 
 #[tauri::command]
 fn list_teachers() -> Vec<teacher::Teacher> {
@@ -56,6 +53,23 @@ fn list_subjects() -> Vec<subject::Subject>
     subject::get_all()
 }
 
+#[tauri::command]
+fn register_group(grade: u8, group: String, spec: Option<String>, shift: String, students_count: i32)
+    -> String
+{
+    let check = group::register(grade, group, spec, shift, students_count);
+    match check {
+        true => String::from("Group registered successfully!"),
+        false => format!("Error registering group: {}", check),
+    }
+}
+
+#[tauri::command]
+fn list_groups() -> Vec<group::Group>
+{
+    group::get_groups()
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -63,6 +77,8 @@ fn main() {
             register_teacher,
             register_subject,
             list_subjects,
+            register_group,
+            list_groups,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

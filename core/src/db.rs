@@ -13,7 +13,7 @@ pub fn connect() -> Result<Connection, Error> {
     let conn = sqlite::open(&path)?;
     // create_table(&conn, "users")?;
     // create_table(&conn, "classrooms")?;
-    // create_table(&conn, "groups")?;
+    create_table(&conn, "groups")?;
     create_table(&conn, "subjects")?;
     create_table(&conn, "teachers")?;
     Ok(conn)
@@ -96,13 +96,13 @@ fn classrooms_table(conn: &Connection) -> Result<(), Error> {
 fn groups_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
-        CREATE TABLE groups (
+        CREATE TABLE IF NOT EXISTS groups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             grade INTEGER NOT NULL,
-            group TEXT NOT NULL,
+            group_name TEXT NOT NULL,
             specialty TEXT,
             shift TEXT NOT NULL,
-            students_quantity INTEGER NOT NULL,
+            students_count INTEGER NOT NULL
         )
         ",
     )?;
