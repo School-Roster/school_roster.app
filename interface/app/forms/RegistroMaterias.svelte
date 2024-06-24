@@ -1,7 +1,8 @@
 <script>
   import SearchBar from "../components/SearchBar.svelte";
   import NuEdEl from "../components/NuEdEl.svelte";
-  import TableForm from "../components/TableForm.svelte";
+  // import TableForm from "../components/TableForm.svelte";
+  import Subjects from "../../lib/Subjects.svelte";
 </script>
 
 <main style="margin-top:180px;">
@@ -26,7 +27,8 @@
 
     <div style="margin-left: 10px;" class="card">
       <div>
-        <TableForm />
+        <Subjects />
+        <!-- <TableForm /> -->
       </div>
     </div>
     <div style="margin-left:10px">

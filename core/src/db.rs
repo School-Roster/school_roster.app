@@ -14,7 +14,7 @@ pub fn connect() -> Result<Connection, Error> {
     // create_table(&conn, "users")?;
     // create_table(&conn, "classrooms")?;
     // create_table(&conn, "groups")?;
-    // create_table(&conn, "subjects")?;
+    create_table(&conn, "subjects")?;
     create_table(&conn, "teachers")?;
     Ok(conn)
 }
@@ -113,13 +113,12 @@ fn groups_table(conn: &Connection) -> Result<(), Error> {
 fn subjects_table(conn: &Connection) -> Result<(), Error> {
     conn.execute(
         "
-        CREATE TABLE subjects (
+        CREATE TABLE IF NOT EXISTS subjects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            abbreviation TEXT NOT NULL,
-            type TEXT NOT NULL,
+            shorten TEXT NOT NULL,
             color TEXT NOT NULL,
-            teacher_id INTEGER NOT NULL,
+            type TEXT
         )
         ",
     )?;
