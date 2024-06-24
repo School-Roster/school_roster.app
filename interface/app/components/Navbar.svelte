@@ -1,11 +1,6 @@
 <script lang="ts">
   import { MenuData } from "../data/MenuData";
-
-  let selectecMenu = "principal";
-
-  const changeMenu = (menu: string) => {
-    selectecMenu = menu;
-  };
+  import { onMount, afterUpdate } from "svelte";
 
   import RegistroGrupos from "../forms/RegistroGrupos.svelte";
   import RegistroMaterias from "../forms/RegistroMaterias.svelte";
@@ -18,44 +13,99 @@
   import Login from "../pages/Login.svelte";
   import FormGrupos from "../forms/FormGrupos.svelte";
   import NuevoUsuario from "../pages/NuevoUsuario.svelte";
+
+  let selectedMenu = "principal";
+  function changeMenu(menu: string) {
+    selectedMenu = menu;
+  }
+
+  let visibleItems: any[] = []; // Items that fit the screen
+  let hiddenItems: any[] = []; // Items that don't fit the screen
+
+  function updateItems() {
+    const navbar = document.querySelector(".navbar"); // Navbar container
+    const buttons = Array.from(navbar.querySelectorAll(".btn")); // Get all buttons within the navbar
+
+    const navbarWidth = navbar.clientWidth; // Get the navbar width
+    let accWidth = 0; // Accumulator for the items' width
+
+    visibleItems = [];
+    hiddenItems = [];
+
+    for (const button of buttons) {
+      const buttonWidth = button.clientWidth;
+      accWidth += buttonWidth;
+
+      if (accWidth <= navbarWidth) {
+        visibleItems.push(button.dataset); // Add to visible items
+      } else {
+        hiddenItems.push(button.dataset); // Add to hidden items
+      }
+    }
+  }
+
+  onMount(() => {
+    updateItems();
+    window.addEventListener("resize", updateItems); // Listen for resize events
+  });
+
+  afterUpdate(() => {
+    updateItems(); // Ensure items are updated after each DOM update
+  });
 </script>
 
 <div>
   <nav>
     <div class="navbar">
       {#each MenuData as item}
-        <button class="btn" on:click={() => changeMenu(item.menu)}>
+        <button class="btn" data-menu={item.menu} data-icon={item.icon} data-name={item.name} on:click={() => changeMenu(item.menu)}>
           <img src={item.icon} alt={item.name} />
           <span>{item.name}</span>
         </button>
       {/each}
+
+      {#if hiddenItems.length > 0}
+        <div class="dropdown">
+          <button class="btn">...</button>
+          <div class="dropdown-menu">
+            {#each hiddenItems as item}
+              <li>
+                <button on:click={() => changeMenu(item.menu)}>
+                  <img src={item.icon} alt={item.name} style="width: 1.5rem; height: 1.5rem;" />
+                  <!-- <span>{item.name}</span> -->
+                </button>
+              </li>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </div>
   </nav>
 
   <div style="width: 100%;">
-    {#if selectecMenu === "principal"}
+    {#if selectedMenu === "principal"}
       <p></p>
-    {:else if selectecMenu === "RegistroGrupos"}
+    {:else if selectedMenu === "RegistroGrupos"}
       <RegistroGrupos />
-    {:else if selectecMenu === "RegistroAulas"}
+    {:else if selectedMenu === "RegistroAulas"}
       <RegistroAulas />
-    {:else if selectecMenu === "RegistroMaterias"}
+    {:else if selectedMenu === "RegistroMaterias"}
       <RegistroMaterias />
-    {:else if selectecMenu === "RegistroMaestros"}
+    {:else if selectedMenu === "RegistroMaestros"}
       <RegistroMaestros />
-    {:else if selectecMenu === "Login"}
+    {:else if selectedMenu === "Login"}
       <Login />
-    {:else if selectecMenu === "FormMaterias"}
+    {:else if selectedMenu === "FormMaterias"}
       <FormMaterias />
-    {:else if selectecMenu === "FormAulas"}
+    {:else if selectedMenu === "FormAulas"}
       <FormAulas />
-    {:else if selectecMenu === "FormGrupos"}
+    {:else if selectedMenu === "FormGrupos"}
       <FormGrupos />
-    {:else if selectecMenu === "FormMaestros"}
+    {:else if selectedMenu === "FormMaestros"}
       <FormMaestros />
-    {:else if selectecMenu === "Nosotros"}
+    {:else if selectedMenu === "Nosotros"}
       <Nosotros />
-    {:else if selectecMenu === "NuevoUsuario"}
+    {:else if selectedMenu === "NuevoUsuario"}
       <NuevoUsuario />
     {:else}
       <p></p>
@@ -68,14 +118,13 @@
     background-color: var(--headline);
     color: var(--text);
     display: flex;
-    justify-content: center;
-    align-items: center;
     top: 0;
     left: 0;
     right: 0;
     position: absolute;
     padding: 0.5rem 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2
+    4px rgba(0, 0, 0, 0.1);
     z-index: 1000;
   }
 
@@ -83,7 +132,6 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-    align-items: center;
     width: 100%;
     max-width: 1200px;
   }
@@ -103,7 +151,6 @@
   }
 
   .btn:hover {
-    /* background-color: var(--background); */
     color: var(--blue);
   }
 
@@ -118,41 +165,28 @@
     margin-top: 0.5rem;
   }
 
-  @media (max-width: 768px) {
-    .btn {
-      padding: 0.25rem;
-    }
-
-    .btn img {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-
-    .btn span {
-      font-size: 0.625rem;
-    }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--headline);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
   }
 
-  @media (max-width: 40px) {
-    .navbar {
-      flex-direction: column;
-      align-items: stretch;
-    }
+  .dropdown:hover .dropdown-menu {
+    display: block;
+  }
 
-    .btn {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 0.5rem 1rem;
-      margin: 0.25rem 0;
+  @media (max-width: 768px) {
+    .dropdown-menu {
+      width: 90%;
     }
-
-    .btn img {
-      margin-right: 1rem;
-    }
-
-    .btn span {
-      font-size: 1rem;
-      margin-top: 0;
-    }
+  }
+  
+  .dropdown-menu > li > a {
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
   }
 </style>

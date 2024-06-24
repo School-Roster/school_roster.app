@@ -14,12 +14,18 @@
 
 <style>
   * {
-    overflow: hidden;
+    overflow-y: auto;
   }
   :global(body) {
     font-family: "Inria Sans";
   }
   .grid-container {
-    margin-top: 100px;
+    margin-top: 12rem;
+  }
+  /* Grid */
+  @media (min-width: 1366px) {
+    .grid-container {
+      margin-top: 6.5rem;
+    }
   }
 </style>
