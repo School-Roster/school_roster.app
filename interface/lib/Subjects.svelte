@@ -16,7 +16,7 @@
     name: string;
     shorten: string;
     color: string;
-    type: string;
+    stype: string;
   };
 
   let subject: Subject[] = [];
@@ -31,12 +31,12 @@
 </script>
 
 <div class="custom-table-container">
-  <Table class="custom-table" color="blue" hoverable={true}>
+  <Table class="custom-table" hoverable={true} striped={true}>
     <TableHead>
-      <TableHeadCell>Shorten</TableHeadCell>
-      <TableHeadCell>Name</TableHeadCell>
+      <TableHeadCell>Abreviacion</TableHeadCell>
+      <TableHeadCell>Nombre</TableHeadCell>
       <TableHeadCell>Color</TableHeadCell>
-      <TableHeadCell>Type</TableHeadCell>
+      <TableHeadCell>Tipo</TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
       {#each subject as item}
@@ -44,7 +44,9 @@
           <TableBodyCell>{item.shorten}</TableBodyCell>
           <TableBodyCell>{item.name}</TableBodyCell>
           <TableBodyCell>{item.color}</TableBodyCell>
-          <TableBodyCell>{item.type}</TableBodyCell>
+          <TableBodyCell>
+            { item.stype === "" || item.stype === undefined ? 'No especifica' : item.stype }
+          </TableBodyCell>
         </TableBodyRow>
       {/each}
     </TableBody>

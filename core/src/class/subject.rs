@@ -7,7 +7,7 @@ pub struct Subject
     pub name: String,
     pub shorten: String,
     pub color: String,
-    pub subject_type: String,
+    pub stype: String,
 }
 
 impl Subject
@@ -20,7 +20,7 @@ impl Subject
             id,
             name: nombre,
             shorten: abreviacion,
-            subject_type: tipo,
+            stype: tipo,
             color,
         }
     }
@@ -41,7 +41,7 @@ pub fn get_all() -> Vec<Subject>
             name: String::from(""),
             shorten: String::from(""),
             color: String::from(""),
-            subject_type: String::from(""),
+            stype: String::from(""),
         };
 
         for &(column, value) in pairs.iter() {
@@ -50,7 +50,7 @@ pub fn get_all() -> Vec<Subject>
                 "name" => subject.name = String::from(value.unwrap()),
                 "shorten" => subject.shorten = String::from(value.unwrap()),
                 "color" => subject.color = String::from(value.unwrap()),
-                "type" => subject.subject_type = String::from(value.unwrap_or("")),
+                "type" => subject.stype = String::from(value.unwrap_or("")),
                 _ => (),
             }
         }
@@ -62,20 +62,24 @@ pub fn get_all() -> Vec<Subject>
     subjects
 }
 
-pub fn register(name: &str, shorten: &str, color: &str)
+pub fn register(name: &str, shorten: &str, color: &str, _type: &str) -> String
 {
+    println!("{}", _type);
     let conn = match db::connect() {
         Ok(conn) => conn,
         Err(e) => panic!("Error connecting to the database: {}", e),
     };
 
     let query = format!(
-        "INSERT INTO subjects (name, shorten, color) VALUES ('{}', '{}', '{}')",
-        name, shorten, color
+        "INSERT INTO subjects (name, shorten, color, type) VALUES ('{}', '{}', '{}', '{}')",
+        name, shorten, color, _type
     );
 
     match conn.execute(&query) {
-        Ok(_) => println!("Subject registered successfully!"),
-        Err(e) => panic!("Error registering the subject: {}", e),
+        // Ok(_) => println!("Subject registered successfully!"),
+        Ok(_) => return String::from("Subject registered successfully!"),
+        Err(e) => {
+            return format!("Error registering the subject");
+        }
     }
 }

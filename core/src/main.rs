@@ -42,9 +42,10 @@ fn register_teacher(
 }
 
 #[tauri::command]
-fn register_subject(name: &str, shorten: &str, color: &str)
+fn register_subject(name: &str, shorten: &str, color: &str, stype: &str) -> String
 {
-    subject::register(name, shorten, color);
+    let res: String = subject::register(name, shorten, color, stype);
+    format!("{}", res)
 }
 
 #[tauri::command]
