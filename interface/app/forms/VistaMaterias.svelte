@@ -44,7 +44,7 @@
         <h1>Materias</h1>
       </div>
       <div class="header-info">
-        <span>Materias registradas: 1</span>
+        <span>Materias registradas: {subjects.length}</span>
       </div>
     </div>
 
