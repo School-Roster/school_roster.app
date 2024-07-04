@@ -22,6 +22,7 @@
   .grid-container {
     margin-top: 12rem;
   }
+
   /* Grid */
   @media (min-width: 1366px) {
     .grid-container {

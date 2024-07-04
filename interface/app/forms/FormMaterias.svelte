@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SafeBtn from "../components/SafeBtn.svelte";
+  // import SafeBtn from "../components/SafeBtn.svelte";
   import ColorPicker from "../components/ColorPicker.svelte";
 
   import { invoke } from "@tauri-apps/api";
@@ -9,13 +9,15 @@
   let color = "#5E7ABC";
   let subject_type = "";
 
+  let res = "";
+
   async function register_subject() {
     console.log("register_subject");
-    await invoke("register_subject", {
+    res = await invoke("register_subject", {
       name,
       shorten,
       color,
-      subject_type,
+      stype: subject_type,
     });
   }
 </script>
@@ -77,6 +79,7 @@
       >
         <ColorPicker bind:value={color} />
       </div>
+      <span>{res}</span>
       <div style="margin-top: 30px; align-self: center;">
         <!-- <SafeBtn /> -->
         <button on:click="{register_subject}">Registrar</button>
@@ -101,12 +104,12 @@
     font-size: 28px;
   }
 
-  p {
-    color: #5f6c7b;
-    font-weight: bold;
-    font-size: 20px;
-    margin-left: 50px;
-  }
+  /* p { */
+  /*   color: #5f6c7b; */
+  /*   font-weight: bold; */
+  /*   font-size: 20px; */
+  /*   margin-left: 50px; */
+  /* } */
 
   .card {
     background-color: #ffffff;

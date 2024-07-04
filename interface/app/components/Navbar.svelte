@@ -2,10 +2,10 @@
   import { MenuData } from "../data/MenuData";
   import { onMount, afterUpdate } from "svelte";
 
-  import RegistroGrupos from "../forms/RegistroGrupos.svelte";
-  import RegistroMaterias from "../forms/RegistroMaterias.svelte";
-  import RegistroAulas from "../forms/RegistroAulas.svelte";
-  import RegistroMaestros from "../forms/RegistroMaestros.svelte";
+  import VistaGrupos from "../forms/VistaGrupos.svelte";
+  import VistaMaterias from "../forms/VistaMaterias.svelte";
+  import VistaAulas from "../forms/VistaAulas.svelte";
+  import VistaMaestros from "../forms/VistaMaestros.svelte";
   import FormAulas from "../forms/FormAulas.svelte";
   import FormMaterias from "../forms/FormMaterias.svelte";
   import FormMaestros from "../forms/FormMaestros.svelte";
@@ -85,14 +85,14 @@
   <div style="width: 100%;">
     {#if selectedMenu === "principal"}
       <p></p>
-    {:else if selectedMenu === "RegistroGrupos"}
-      <RegistroGrupos />
-    {:else if selectedMenu === "RegistroAulas"}
-      <RegistroAulas />
-    {:else if selectedMenu === "RegistroMaterias"}
-      <RegistroMaterias />
-    {:else if selectedMenu === "RegistroMaestros"}
-      <RegistroMaestros />
+    {:else if selectedMenu === "VistaGrupos"}
+      <VistaGrupos />
+    {:else if selectedMenu === "VistaAulas"}
+      <VistaAulas />
+    {:else if selectedMenu === "VistaMaterias"}
+      <VistaMaterias />
+    {:else if selectedMenu === "VistaMaestros"}
+      <VistaMaestros />
     {:else if selectedMenu === "Login"}
       <Login />
     {:else if selectedMenu === "FormMaterias"}

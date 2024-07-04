@@ -1,0 +1,108 @@
+.page {
+  /* Margin from the navbar */
+  margin-top: 10%;
+}
+
+/* Media query for the page margin */
+/* TODO: When we fix the navbar this will be removed */
+@media (max-width: 1180px) {
+  .page {
+    margin-top: 20%;
+  }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-radius: 0.5rem;
+
+  /* Centering the container to the middle */
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.header-title {
+  display: flex;
+  flex-direction: row;
+  font-size: 1rem;
+  font-weight: 400;
+  align-items: center;
+  font-weight: 400;
+  font-size: 1.5rem;
+}
+.header-title svg {
+  stroke: currentColor;
+  fill: none; /* Or currentColor if you want to fill the SVG with the color */
+  color: var(--headline); /* The color you want to apply */
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.header-info {
+  /* send the text all the way to the right */
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+
+  font-size: 1rem;
+  font-weight: 200;
+}
+
+/* Block for the form */
+.divider {
+  display: block;
+  width: 100%;
+  height: 1.2px;
+  background-color: var(--blue-light);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  margin-top: 1rem;
+}
+
+.controls button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 18rem;
+
+  /* Button style */
+  background-color: var(--blue);
+  color: var(--background);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+.controls button:hover {
+  transition: 0.3s;
+  transform: scale(1.05);
+  background-color: var(--headline);
+}
+
+.controls button p {
+  margin-left: 0.5rem;
+}
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+}
