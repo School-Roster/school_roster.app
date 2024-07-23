@@ -11,6 +11,12 @@
   }
 }
 
+@media (max-width: 768px) {
+  .page {
+    margin-top: 30%;
+  }
+}
+
 .container {
   display: flex;
   flex-direction: column;
