@@ -19,6 +19,10 @@
       {#each columns as column}
         <TableHeadCell>{column}</TableHeadCell>
       {/each}
+      <TableHeadCell>
+        <!-- Edit and Delete buttons -->
+        <span class="sr-only">Acciones</span>
+      </TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
       {#each data as item}
@@ -28,6 +32,14 @@
               {item[key] === "" || item[key] === undefined ? 'No especifica' : item[key]}
             </TableBodyCell>
           {/each}
+          <TableBodyCell>
+            <button class="hover:text-[#3da9fc] hover:underline">
+              Editar
+            </button>
+            <button class="ml-4">
+              Eliminar
+            </button>
+          </TableBodyCell>
         </TableBodyRow>
       {/each}
     </TableBody>
