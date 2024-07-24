@@ -1,6 +1,5 @@
 <script lang="ts">
   import { MenuData } from "../data/MenuData";
-  import { onMount, afterUpdate } from "svelte";
 
   import VistaGrupos from "../forms/VistaGrupos.svelte";
   import VistaMaterias from "../forms/VistaMaterias.svelte";
@@ -18,40 +17,6 @@
   function changeMenu(menu: string) {
     selectedMenu = menu;
   }
-
-  let visibleItems: any[] = []; // Items that fit the screen
-  let hiddenItems: any[] = []; // Items that don't fit the screen
-
-  function updateItems() {
-    const navbar = document.querySelector(".navbar"); // Navbar container
-    const buttons = Array.from(navbar.querySelectorAll(".btn")); // Get all buttons within the navbar
-
-    const navbarWidth = navbar.clientWidth; // Get the navbar width
-    let accWidth = 0; // Accumulator for the items' width
-
-    visibleItems = [];
-    hiddenItems = [];
-
-    for (const button of buttons) {
-      const buttonWidth = button.clientWidth;
-      accWidth += buttonWidth;
-
-      if (accWidth <= navbarWidth) {
-        visibleItems.push(button.dataset); // Add to visible items
-      } else {
-        hiddenItems.push(button.dataset); // Add to hidden items
-      }
-    }
-  }
-
-  onMount(() => {
-    updateItems();
-    window.addEventListener("resize", updateItems); // Listen for resize events
-  });
-
-  afterUpdate(() => {
-    updateItems(); // Ensure items are updated after each DOM update
-  });
 </script>
 
 <div>
@@ -63,26 +28,10 @@
           <span>{item.name}</span>
         </button>
       {/each}
-
-      {#if hiddenItems.length > 0}
-        <div class="dropdown">
-          <button class="btn">...</button>
-          <div class="dropdown-menu">
-            {#each hiddenItems as item}
-              <li>
-                <button on:click={() => changeMenu(item.menu)}>
-                  <img src={item.icon} alt={item.name} style="width: 1.5rem; height: 1.5rem;" />
-                  <!-- <span>{item.name}</span> -->
-                </button>
-              </li>
-            {/each}
-          </div>
-        </div>
-      {/if}
     </div>
   </nav>
 
-  <div style="width: 100%;">
+  <div class="new-page">
     {#if selectedMenu === "principal"}
       <p></p>
     {:else if selectedMenu === "VistaGrupos"}
@@ -164,29 +113,11 @@
     font-size: 0.725rem;
     margin-top: 0.5rem;
   }
-
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: var(--headline);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-  }
-
-  .dropdown:hover .dropdown-menu {
-    display: block;
-  }
-
-  @media (max-width: 768px) {
-    .dropdown-menu {
-      width: 90%;
-    }
-  }
   
-  .dropdown-menu > li > a {
-    white-space: normal;
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
+  .new-page {
+    position: absolute;
+    width: 100%;
+    /* height: 100%; */
+    background-color: var(--background);
   }
 </style>
