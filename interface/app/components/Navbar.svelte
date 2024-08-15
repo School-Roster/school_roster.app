@@ -1,192 +1,171 @@
 <script lang="ts">
   import { MenuData } from "../data/MenuData";
-  import { onMount, afterUpdate } from "svelte";
-
-  import VistaGrupos from "../forms/VistaGrupos.svelte";
-  import VistaMaterias from "../forms/VistaMaterias.svelte";
-  import VistaAulas from "../forms/VistaAulas.svelte";
-  import VistaMaestros from "../forms/VistaMaestros.svelte";
-  import FormAulas from "../forms/FormAulas.svelte";
-  import FormMaterias from "../forms/FormMaterias.svelte";
-  import FormMaestros from "../forms/FormMaestros.svelte";
-  import Nosotros from "../pages/Nosotros.svelte";
-  import Login from "../pages/Login.svelte";
-  import FormGrupos from "../forms/FormGrupos.svelte";
-  import NuevoUsuario from "../pages/NuevoUsuario.svelte";
 
   let selectedMenu = "principal";
   function changeMenu(menu: string) {
     selectedMenu = menu;
+    console.log(selectedMenu);
   }
-
-  let visibleItems: any[] = []; // Items that fit the screen
-  let hiddenItems: any[] = []; // Items that don't fit the screen
-
-  function updateItems() {
-    const navbar = document.querySelector(".navbar"); // Navbar container
-    const buttons = Array.from(navbar.querySelectorAll(".btn")); // Get all buttons within the navbar
-
-    const navbarWidth = navbar.clientWidth; // Get the navbar width
-    let accWidth = 0; // Accumulator for the items' width
-
-    visibleItems = [];
-    hiddenItems = [];
-
-    for (const button of buttons) {
-      const buttonWidth = button.clientWidth;
-      accWidth += buttonWidth;
-
-      if (accWidth <= navbarWidth) {
-        visibleItems.push(button.dataset); // Add to visible items
-      } else {
-        hiddenItems.push(button.dataset); // Add to hidden items
-      }
-    }
-  }
-
-  onMount(() => {
-    updateItems();
-    window.addEventListener("resize", updateItems); // Listen for resize events
-  });
-
-  afterUpdate(() => {
-    updateItems(); // Ensure items are updated after each DOM update
-  });
 </script>
 
-<div>
-  <nav>
-    <div class="navbar">
-      {#each MenuData as item}
-        <button class="btn" data-menu={item.menu} data-icon={item.icon} data-name={item.name} on:click={() => changeMenu(item.menu)}>
+<nav class="antialiased">
+  <div class="sidebar">
+
+    <div class="logo">
+      <img src="/logicirculo.svg" alt="Logo" />
+      <h1>School Schedule</h1>
+    </div>
+
+    {#each MenuData as item}
+      <!-- Conditional rendering -->
+      {#if item.it === 2 || item.it === 4} <div class="lg:mt-4"></div> {/if}
+      {#if item.it === 1} <span class="menu"> Menu </span> {/if}
+      {#if item.it === 3} <span class="menu"> Utilidad </span> {/if}
+      <div class="menu-item">
+        <button
+          class="btn"
+          data-menu={item.menu}
+          data-icon={item.icon}
+          data-name={item.name}
+          on:click={() => changeMenu(item.menu)}
+        >
           <img src={item.icon} alt={item.name} />
           <span>{item.name}</span>
         </button>
-      {/each}
-
-      {#if hiddenItems.length > 0}
-        <div class="dropdown">
-          <button class="btn">...</button>
-          <div class="dropdown-menu">
-            {#each hiddenItems as item}
-              <li>
-                <button on:click={() => changeMenu(item.menu)}>
-                  <img src={item.icon} alt={item.name} style="width: 1.5rem; height: 1.5rem;" />
-                  <!-- <span>{item.name}</span> -->
-                </button>
-              </li>
+        
+        {#if item.submenu.length > 0}
+          <ul class="submenu"> 
+            {#each item.submenu as subitem}
+              <li>{subitem}</li>
             {/each}
-          </div>
-        </div>
-      {/if}
-    </div>
-  </nav>
+          </ul>
+        {/if}
+      </div>
+    {/each}
 
-  <div style="width: 100%;">
-    {#if selectedMenu === "principal"}
-      <p></p>
-    {:else if selectedMenu === "VistaGrupos"}
-      <VistaGrupos />
-    {:else if selectedMenu === "VistaAulas"}
-      <VistaAulas />
-    {:else if selectedMenu === "VistaMaterias"}
-      <VistaMaterias />
-    {:else if selectedMenu === "VistaMaestros"}
-      <VistaMaestros />
-    {:else if selectedMenu === "Login"}
-      <Login />
-    {:else if selectedMenu === "FormMaterias"}
-      <FormMaterias />
-    {:else if selectedMenu === "FormAulas"}
-      <FormAulas />
-    {:else if selectedMenu === "FormGrupos"}
-      <FormGrupos />
-    {:else if selectedMenu === "FormMaestros"}
-      <FormMaestros />
-    {:else if selectedMenu === "Nosotros"}
-      <Nosotros />
-    {:else if selectedMenu === "NuevoUsuario"}
-      <NuevoUsuario />
-    {:else}
-      <p></p>
-    {/if}
   </div>
-</div>
+</nav>
 
 <style>
   nav {
-    background-color: var(--headline);
-    color: var(--text);
+    background-color: var(--blue-dark);
+    color: var(--white);
     display: flex;
-    top: 0;
-    left: 0;
-    right: 0;
-    position: absolute;
-    padding: 0.5rem 1rem;
-    box-shadow: 0 2
-    4px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+
+    width: 240px;
+    height: 100vh;
+
+    border-radius: 0 6px 6px 0;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+    position: relative;
+    flex-direction: column;
+    flex-shrink: 0;
+
+    /* overflow-y: auto; */
+    /* overflow-x: hidden; */
   }
 
-  .navbar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+  .sidebar {
+    font-family: "Inria Serif";
     width: 100%;
-    max-width: 1200px;
+    height: 100%;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    transition-duration: 0.2s;
+  }
+
+  .sidebar .logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    padding-top: 1rem;
+    padding-left: 0.5rem;
+    border-radius: 10px;
+  }
+
+  .sidebar .logo h1 {
+    font-family: "Inria Serif";
+    font-size: 18px;
+    margin-left: 6px;
+  }
+
+  .sidebar .logo img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .sidebar .btn img {
+    width: 20px;
+    height: 20px;
+    margin-right: 1rem;
+    filter: invert(1);
+  }
+
+  .sidebar .btn span {
+    font-size: 12px;
+  }
+
+  .sidebar .menu {
+    font-size: 14px;
+    margin-top: 0.75rem;
+    padding-left: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--gray);
   }
 
   .btn {
-    background-color: var(--headline);
-    border: none;
-    font-weight: bold;
-    color: var(--background);
-    cursor: pointer;
-    padding: 0.5rem;
-    display: inline-flex;
-    flex-direction: column;
+    display: flex;
     align-items: center;
-    margin: 0.5rem;
-    transition: background-color 0.3s;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition-duration: 0.2s;
   }
 
   .btn:hover {
-    color: var(--blue);
+    background-color: var(--blue-light);
   }
 
-  .btn img {
-    width: 2rem;
-    height: 2rem;
+  .btn:active {
+    background-color: var(--blue-light);
   }
 
-  .btn span {
-    font-family: "Inria Sans", sans-serif;
-    font-size: 0.725rem;
-    margin-top: 0.5rem;
+  .menu-item {
+    position: relative;
   }
 
-  .dropdown-menu {
+  /* Submenu */
+  .submenu {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
     display: none;
     position: absolute;
-    background-color: var(--headline);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    top: 0; /* Aligns the submenu at the top of the button */
+    left: 100%; /* Places the submenu to the right of the button */
+    background-color: var(--blue-light);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    width: 180px;
   }
 
-  .dropdown:hover .dropdown-menu {
+  .submenu li {
+    padding: 10px 15px;
+    color: var(--white);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .submenu li:hover {
+    background-color: var(--blue-dark);
+  }
+
+  /* Show submenu on hover */
+  .menu-item:hover .submenu {
     display: block;
-  }
-
-  @media (max-width: 768px) {
-    .dropdown-menu {
-      width: 90%;
-    }
-  }
-  
-  .dropdown-menu > li > a {
-    white-space: normal;
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
   }
 </style>
