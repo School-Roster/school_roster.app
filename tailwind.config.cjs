@@ -22,6 +22,10 @@ const config = {
           900: '#A5371B'
         }
       }
+    },
+    fontFamily: {
+      sans: ['Inria Sans', 'sans-serif'],
+      serif: ['Inria Serif', 'serif'],
     }
   }
 };
