@@ -51,12 +51,14 @@
     <div class="divider"></div>
 
     <div class="controls">
-      <div class="search">
-      </div>
       <button>
         <img src="/nuevo.svg" alt="Nuevo" />
         <p>Agregar nueva materia</p>
       </button>
+      <div class="search">
+        <input type="text" placeholder="Buscar materia" />
+        <img src="/search.svg" alt="Buscar" />
+      </div>
     </div>
 
     <div class="table-container">

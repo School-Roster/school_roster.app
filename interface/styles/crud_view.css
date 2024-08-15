@@ -78,9 +78,62 @@
 
 .controls {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
   /* align-items: center; */
   margin-top: 1rem;
+}
+
+.search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 18rem;
+  height: 3rem;
+  max-height: 3rem;
+
+  /* Search bar style */
+  background-color: var(--background);
+  color: var(--text);
+  border: 1px solid var(--blue-light);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+
+  transition: border 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.search input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: var(--background);
+  color: var(--text);
+}
+
+.search input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.search:focus-within {
+  border: 1px solid var(--blue);
+  transform: scale(1.02);
+}
+
+.search input:focus {
+  outline: none;
+  border: none;
+}
+
+.search input::placeholder {
+  color: var(--text);
+}
+
+.search svg {
+  color: var(--blue-light);
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .controls button {
@@ -88,6 +141,8 @@
   flex-direction: row;
   align-items: center;
   width: 18rem;
+  height: 3rem;
+  max-height: 3rem;
 
   /* Button style */
   background-color: var(--blue);
@@ -100,7 +155,6 @@
 .controls button:hover {
   transition: 0.3s;
   transform: scale(1.05);
-  background-color: var(--headline);
 }
 
 .controls button p {
