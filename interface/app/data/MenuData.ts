@@ -1,8 +1,34 @@
 export const MenuData = [
   /* TODO: Estos 3 tienen el hover submenú */
-  { it: 1, name: "Archivo", icon: "/bar_icons/file.svg", menu: "principal", submenu: ["Nuevo", "Abrir", "Guardar", "Guardar como", "Cerrar"] },
-  { it: 0, name: "Vista previa", icon: "/bar_icons/eye.svg", menu: "principal", submenu: ["Vista previa maestro", "Vista previa grupo", "Vista previa materia", "Vista previa aula"] },
-  { it: 0, name: "Imprimir", icon: "/bar_icons/print.svg", menu: "principal", submenu: ["Imprimir maestro", "Imprimir grupo", "Imprimir materia", "Imprimir aula", "Imprimir horario"] },
+  {
+    it: 1, name: "Archivo", icon: "/bar_icons/file.svg", menu: "principal",
+    submenu: [
+      { name: "Nuevo", icon: "/bar_icons/new.svg", menu: "principal"},
+      { name: "Abrir", icon: "/bar_icons/open.svg", menu: "principal"},
+      { name: "Guardar", icon: "/bar_icons/save.svg", menu: "principal"},
+      { name: "Guardar como", icon: "/bar_icons/saveas.svg", menu: "principal"},
+      { name: "Cerrar todo", icon: "/bar_icons/close.svg", menu: "principal"},
+    ],
+  },
+  {
+    it: 0, name: "Vista previa", icon: "/bar_icons/eye.svg", menu: "principal",
+    submenu: [
+      { name: "Vista previa maestro", icon: "/bar_icons/preview.svg", menu: "principal"},
+      { name: "Vista previa grupo", icon: "/bar_icons/preview.svg", menu: "principal"},
+      { name: "Vista previa materia", icon: "/bar_icons/preview.svg", menu: "principal"},
+      { name: "Vista previa aula", icon: "/bar_icons/preview.svg", menu: "principal"},
+    ],
+  },
+  {
+    it: 0, name: "Imprimir", icon: "/bar_icons/print.svg", menu: "principal",
+    submenu: [
+      { name: "Horario maestros", icon: "/bar_icons/pdf.svg", menu: "principal"},
+      { name: "Horario grupos", icon: "/bar_icons/pdf.svg", menu: "principal"},
+      { name: "Horario materias", icon: "/bar_icons/pdf.svg", menu: "principal"},
+      { name: "Horario aulas", icon: "/bar_icons/pdf.svg", menu: "principal"},
+      { name: "Descargar todo", icon: "/bar_icons/pdf.svg", menu: "principal"},
+    ],
+  },
 
   { it: 2, name: "Grupos", icon: "/bar_icons/group.svg", menu: "VistaGrupos", submenu: [] },
   { it: 0, name: "Materias", icon: "/bar_icons/books.svg", menu: "VistaMaterias", submenu: [] },

@@ -147,7 +147,7 @@
     border: none;
     background-color: #edf4f8;
     font-family: "Inria Sans", sans-serif;
-    color: var(--text);
+    color: var(--fg-color);
     font-weight: bold;
     font-size: 16px;
     padding-left: 10px;

@@ -129,7 +129,7 @@
     border: none;
     background-color: #edf4f8;
     font-family: "Inria Sans", sans-serif;
-    color: var(--text);
+    color: var(--fg-color);
     font-weight: bold;
     font-size: 1.5vh;
     margin-left: 1vh;
