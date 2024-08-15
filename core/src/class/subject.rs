@@ -31,7 +31,7 @@ pub fn get_all() -> Vec<Subject>
     let query = "SELECT * FROM subjects";
     let conn = match db::connect() {
         Ok(conn) => conn,
-        Err(e) => panic!("Error connecting to the database: {}", e),
+        Err(_e) => panic!("Error connecting to the database: {}", _e),
     };
 
     let mut subjects: Vec<Subject> = Vec::new();
