@@ -4,29 +4,33 @@
   import SubjectList from "../components/SubjectList.svelte";
 </script>
 
-<main>
+<main class="antialiased bg-[#fffffe]">
+  <!-- Sidebar -->
   <Navbar />
-  <div class="grid-container">
+  <!-- Main content -->
+  <div class="main-container">
     <Grid />
     <SubjectList />
   </div>
 </main>
 
 <style>
-  * {
-    overflow-y: auto;
-  }
   :global(body) {
     font-family: "Inria Sans";
   }
-  .grid-container {
-    margin-top: 12rem;
+
+  main {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  /* Grid */
-  @media (min-width: 1366px) {
-    .grid-container {
-      margin-top: 6.5rem;
-    }
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    flex-grow: 1;
+    overflow: auto;
   }
+
 </style>

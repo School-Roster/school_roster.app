@@ -17,6 +17,10 @@ body {
   --red: #ef4565;
   --blue-light: #90b4ce;
   --other-green: #c5ff95;
+
+  --white: #fffffe;
+  --gray: #5F6C7B;
+  --blue-dark: #094067;
 }
 
 .text-blue {
