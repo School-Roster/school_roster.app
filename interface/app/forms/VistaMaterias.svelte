@@ -27,8 +27,7 @@
   const columnKeys = ["shorten", "name", "color", "stype"];
 </script>
 
-<main class="page">
-  <div class="container">
+<main class="page antialiased">
     <div class="header">
       <div class="header-title">
         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-books" viewBox="0 0 24 24" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -64,6 +63,4 @@
     <div class="table-container">
       <TableComponent data={subjects} columns={columns} columnKeys={columnKeys} />
     </div>
-
-  </div>
 </main>

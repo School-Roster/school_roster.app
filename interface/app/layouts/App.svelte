@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import Navbar from "../components/Navbar.svelte";
   import Grid from "./Grid.svelte";
   import SubjectList from "../components/SubjectList.svelte";
