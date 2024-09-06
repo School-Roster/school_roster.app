@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "$styles/global.scss";
   let selectedTheme = localStorage.getItem("theme") || "system";
 
   // Función para cambiar el tema (light, dark, system)
@@ -41,7 +42,7 @@
   }
 </script>
 
-<select on:change={changeTheme} bind:value={selectedTheme}>
+<select class="toggle-section" on:change={changeTheme} bind:value={selectedTheme}>
   <option value="light">Tema claro</option>
   <option value="dark">Tema oscuro</option>
   <option value="system">Sistema</option>

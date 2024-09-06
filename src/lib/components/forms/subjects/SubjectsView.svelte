@@ -53,6 +53,11 @@
   <div class="divider"></div>
   <div class="controls">
     <div class="controls-left">
+      <!-- <div class="new-button" on:click={handleNew}> -->
+      <!--   <img src="/icons/plus.svg" alt="Agregar materia" /> -->
+      <!--   Agregar nueva materia -->
+      <!-- </div> -->
+      <!-- TODO: Ver porque no sale el texto en el boton -->
       <button class="new-button" on:click={handleNew}>
         <img src="/icons/plus.svg" alt="Agregar materia" />
         Agregar nueva materia

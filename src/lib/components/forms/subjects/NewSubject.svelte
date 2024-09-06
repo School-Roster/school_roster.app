@@ -38,9 +38,6 @@
 
 <section class="form-container">
   <span class="title">Nueva Materia</span>
-  <button>
-    Cancelar
-  </button>
   {#if item}
     <div class="form">
       <label for="name">Nombre</label>

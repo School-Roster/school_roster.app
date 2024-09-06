@@ -5,7 +5,7 @@
 @import 'mixins';
 
 body {
-  font-family: $primary-font;
+  /* font-family: $primary-font; */
   font-weight: normal;
   @include theme(background-color, bg-color);
   @include theme(color, fg-color);
@@ -20,8 +20,12 @@ body.dark {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: $secondary-font;
+  /* font-family: $secondary-font; */
   font-weight: bold;
+}
+
+button, input, select {
+  font-size: 12px;
 }
 
 /* ----------------------------------------

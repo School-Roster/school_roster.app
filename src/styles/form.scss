@@ -1,6 +1,7 @@
 @import "variables";
 
 .form-container {
+  font-family: $primary-font;
   width: 95%;
   margin: 0 auto;
   margin-top: 20px;
@@ -49,6 +50,8 @@
         border-radius: 5px;
         background-color: $primary-color;
         color: $white;
+        font-size: 16px;
+        visibility: visible;
         font-weight: bold;
         cursor: pointer;
         transition: background-color 0.3s;
@@ -117,5 +120,11 @@
         }
       }
     }
+  }
+}
+
+.form {
+  input, button {
+    font-size: 16px;
   }
 }
