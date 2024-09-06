@@ -1,36 +1,20 @@
-@import 'variables';
-@import 'mixins';
+@import "variables";
+@import "mixins";
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); /* 5 days + 1 column for hours */
-  gap: 1px;
-  @include theme(background-color, bg-color);
-  @include theme(color, fg-color);
-
-  .header {
-    @include theme(background-color, bg-color);
-    font-weight: bold;
-  }
-
-  div {
-    @include theme(background-color, bg-color);
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: center;
-    min-height: 50px;
-
-    body.dark & {
-      background-color: map-get($dark-theme, nav-bg-color);
-      color: map-get($dark-theme, fg-color);
-    }
-  }
-
-  body.dark & {
-    background-color: map-get($dark-theme, bg-color);
-    color: map-get($dark-theme, fg-color);
-  }
+/* ----------------------------------------
+ * Contenido del grid
+---------------------------------------- */
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  flex-grow: 1;
+  overflow: auto;
 }
+
+/* ----------------------------------------
+ * Grid para los horarios
+---------------------------------------- */
 
 // Contentenedor para las materias.
 .subjects-container {
@@ -53,8 +37,10 @@
     padding: 10px;
     border: 1px solid #ccc;
     text-align: center;
-    min-width: 100px;
-    cursor: pointer;
+    min-width: 40px;
+    cursor: grab !important;
+    -webkit-user-drag: element;
+    user-select: none;
 
     &:hover {
       background-color: #f6c177;
@@ -63,6 +49,15 @@
     body.dark & {
       background-color: map-get($dark-theme, nav-bg-color);
       color: map-get($dark-theme, fg-color);
+    }
+
+    &.dragging {
+      opacity: 0.3;
+      box-shadow: none;
+    }
+
+    &:active {
+      cursor: grabbing !important;
     }
   }
 }
@@ -95,4 +90,194 @@
       color: map-get($dark-theme, fg-color);
     }
   }
+}
+
+/* ----------------------------------------
+ * Grid para los horarios
+---------------------------------------- */
+.schedule-grid {
+  border: 1px solid $white-overlay;
+  border-radius: 8px;
+  overflow: hidden;
+  background: $white-overlay;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  body.dark & {
+    background: $black;
+    border: 1px solid $white-overlay;
+  }
+
+  .header-row {
+    display: grid;
+    grid-template-columns: auto repeat(5, 1fr);
+    background-color: $white-background;
+    border-bottom: 1px solid $black;
+
+    body.dark & {
+      background-color: $black;
+      border-bottom: 1px solid $white-hard;
+    }
+
+    .corner-cell {
+      padding: 0.5rem;
+      font-weight: 600;
+      text-align: center;
+      border-right: 1px solid $black;
+      background-color: $white-overlay;
+
+      body.dark & {
+        background-color: map-get($dark-theme, bg-color);
+        color: map-get($dark-theme, fg-color);
+      }
+    }
+
+    .day-column {
+      border-right: 1px solid $black;
+
+      body.dark & {
+        border-right: 1px solid $white-hard;
+      }
+
+      &:last-child {
+        border-right: none;
+      }
+
+      .day-header {
+        padding: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        border-bottom: 1px solid $black;
+        background-color: $white-overlay;
+
+        body.dark & {
+          border-bottom: 1px solid $white-hard;
+          background-color: map-get($dark-theme, bg-color);
+        }
+      }
+
+      .modules-header {
+        display: flex;
+
+        .module-label {
+          flex: 1;
+          padding: 0.5rem;
+          text-align: center;
+          font-size: 0.875rem;
+          color: $black;
+          border-right: 1px solid $black;
+
+          body.dark & {
+            color: map-get($dark-theme, fg-color);
+            border-right: 1px solid $white-hard;
+          }
+
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+    }
+  }
+
+  .grid-content {
+    .group-row {
+      display: grid;
+      height: 40px;
+      grid-template-columns: auto repeat(5, 1fr);
+      border-bottom: 1px solid $black;
+
+      body.dark & {
+        border-bottom: 1px solid $white-hard;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .group-cell {
+        min-width: 42px;
+        padding: 0.75rem;
+        font-weight: 500;
+        text-align: center;
+        border-right: 1px solid $black;
+        background-color: $white-overlay;
+
+        body.dark & {
+          border-right: 1px solid $white-hard;
+          background-color: map-get($dark-theme, bg-color);
+        }
+      }
+
+      .day-modules {
+        display: flex;
+        border-right: 1px solid $black;
+
+        &:last-child {
+          border-right: none;
+        }
+
+        body.dark & {
+          border-right: 1px solid $white-hard;
+        }
+
+        .module-cell {
+          flex: 1;
+          max-height: 92%;
+          border-right: 1px solid #ddd;
+          background-color: $white-hard;
+          cursor: pointer;
+          transition: background 0.2s ease;
+
+          body.dark & {
+            border-right: 1px solid $black-hard;
+            background-color: $black;
+          }
+
+          &:last-child {
+            border-right: none;
+          }
+
+          &:hover {
+            background-color: $white-overlay;
+            body.dark & {
+              background-color: $blue;
+            }
+          }
+
+          /* Drag & drop */
+          &.drag-over {
+            background-color: $blue !important;
+            border: 2px dashed $other-color !important;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+            transform: scale(1.05);
+            transition: all 0.15s ease;
+          }
+
+          .subject-pill {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+            font-size: 0.675rem;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+}
+
+.subject-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 10px;
+  font-weight: bold;
+  transition: none;
+  cursor: grabbing;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }

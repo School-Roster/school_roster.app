@@ -1,36 +1,44 @@
-@import 'variables';
-@import 'mixins';
+@import "variables";
+@import "mixins";
+
+$table-light-bg: #fff;
+$table-even-bg: #0000000b;
 
 /* --------------------
  * Estilo para las tablas de la aplicación (forms)
  * -------------------- */
 .table-container {
   display: flex;
+  justify-content: center;
   margin: 0 auto;
   margin-top: 20px;
   width: 100%;
-  height: 100vh;
+  overflow-x: auto;
 
   table {
     width: 100%;
-    height: 240px;
-    margin: 0 auto; // Centrar la tabla
+    min-width: 600px;
+    margin: 0 auto;
     border-collapse: separate;
-    border-spacing: 0 2px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
+    border-spacing: 0 1px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    transition: all 0.3s ease-in-out;
   }
 
-  // Estilo para las acciones de la tabla
-  table tbody>tr>td:last-child {
+  table tbody > tr > td:last-child {
     width: 120px;
     border-left: 1px solid $primary-color;
+    min-width: 70px;
+    position: sticky;
+    right: 0; // Mantiene los botones siempre a la derecha con posicion 'sticky'
+    background-color: $table-light-bg; // Agrega fondo para que no se vean los demas componentes
+    z-index: 1;
   }
 
-  // Estilo para las celdas de la tabla
-  table tbody>tr>td {
-    padding: 0 10px;
+  table tbody > tr > td {
+    padding: 0.275rem 0.925rem;
     text-align: center;
 
     body.dark & {
@@ -40,55 +48,108 @@
   }
 
   // Estilo para las filas de la tabla
-  table tbody>tr {
-    background-color: #fff;
-    transition: background-color 0.3s;
+  table tbody > tr {
+    background-color: $table-light-bg;
+    transition: background-color 0.3s ease-in-out;
 
-    &:hover {
+    .table-color {
+      background-color: $black;
+      margin: 0 auto;
+      border-radius: 4px;
+      padding: 0.25rem;
+      vertical-align: middle;
+      text-align: center;
+      line-height: 1.5rem;
+    }
+
+    &:hover,
+    &:focus {
       background-color: $gold;
+    }
+
+    body.dark & {
+      background-color: map-get($dark-theme, nav-bg-color);
     }
   }
 
-  // Estilo para las cabeceras de la tabla
-  table thead>tr>th {
+  // Estilo para las filas pares
+  tbody tr:nth-child(even) {
+    background-color: $table-even-bg;
+  }
+
+  table thead > tr > th {
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid $primary-color;
   }
 
-  // Estilo para los botones de la tabla
-  .btn {
-    padding: 4px 5px;
-    margin-left: 5px;
+  /* Checkbox */
+  input[type="checkbox"] {
+    appearance: none; // Remove default styling
+    width: 16px;
+    height: 16px;
+    border: 2px solid $primary-color;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition:
+      background-color 0.2s ease-in-out,
+      border-color 0.2s ease-in-out;
 
-    // Si el ancho de la pantalla es menor a 768px
-    @include media-breakpoint-down(sm) {
-      margin-left: 0;
-      margin-top: 3px;
+    &:checked {
+      background-color: $primary-color;
+      border-color: $primary-color;
+
+      &::after {
+        content: "✔"; // Checkmark symbol
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: white;
+      }
     }
 
-    border: 1px solid $secondary-color;
-    background-color: $secondary-color;
-    color: $white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    border: none;
-
     &:hover {
-      background-color: $primary-color;
-      border: none;
+      border-color: darken($primary-color, 10%);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
     }
   }
 
-    // Estilo para los mostrar colores dentro de la tabla
-    .table-color {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 20px auto 0 auto;
-      width: 40%;
-      border-radius: 4px;
+  .btn {
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.25rem;
+    font-size: 0.7rem;
+    background-color: $primary-color;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    border-radius: 5px;
+    border: none;
+
+    &:hover,
+    &:focus {
+      background-color: lighten($primary-color, 10%);
+      outline: none;
     }
+
+    &.btn-danger {
+      background-color: $secondary-color;
+      &:hover,
+      &:focus {
+        background-color: darken($secondary-color, 10%);
+      }
+    }
+
+    img {
+      width: 14px;
+      height: 14px;
+      filter: $filter-white;
+    }
+  }
 }

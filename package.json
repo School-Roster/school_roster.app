@@ -5,16 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "pnpm run download-model && vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "download-model": "node scripts/download-model.js"
   },
   "license": "MIT",
   "dependencies": {
     "@tauri-apps/api": "^1",
-    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1"
+    "follow-redirects": "^1.15.9",
+    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",

@@ -1,7 +1,21 @@
-# Tauri + SvelteKit + TypeScript
+<p align="center">
+  <p align="center">
+   <img width="200" height="150" src="static/icons/logo_transparent.png" alt="Logo">
+  </p>
+	<h1 align="center"><b>School rooster</b></h1>
+	<p align="center">
+		Organizador escolar.
+    <br />
+    <br />
+    <b>Descargar para </b>
+		<a href="">Windows</a> ·
+		<a href="">Linux</a> ·
+    macOS (<a href="">Apple Silicon</a> |
+    <a href="">Intel</a>)
+  </p>
+</p>
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+> [!WARNING]
+> Proyecto en progreso...
 
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+School Roster es una aplicacion de codigo abierto multiplataforma escrita en rust.

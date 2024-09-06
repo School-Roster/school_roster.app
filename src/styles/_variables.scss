@@ -1,35 +1,54 @@
-/* Variables definidas para el proyecto */
-
 /* ----------------------------------------
  * Paleta de colores
  * -> TODO: Insertar documentación para la paleta de colores
 ---------------------------------------- */
-$primary-color: #004d98; // Color principal (Azul)
-$secondary-color: #a50044; // Color secundario (Rojo)
-$other-color: #f6c177; // Color terciario (Dorado)
+$primary-color: #5e81ac; // Deep Blue (Principal)
+$secondary-color: #bf616a; // Nord Red (Secundario)
+$other-color: #8fbcbb; // Bright Blue (Mas brillante)
 
-$white: #faf4ed;
-$black: #191724;
-$blue: $primary-color;
-$red: $secondary-color;
-$gold: $other-color;
+$white-hard: #eceff4; // Nord Snow Storm (Blanco más suave)
+$white-background: #e5e9f0; // Nord Snow Storm (Fondo claro)
+$white-overlay: #d8dee9; // Nord Snow Storm (Overlay claro)
+$black: #2e3440; // Nord Polar Night (Negro profundo)
+$black-hard: #3b4252; // Slightly lighter than deep black but retains a strong tone.
+$black-overlay: rgba(
+  46,
+  52,
+  64,
+  0.75
+); // Deep black with 75% opacity for overlay effects.
+$blue: $primary-color; // Deep Blue (ahora es el color principal)
+$red: $secondary-color; // Bright Blue (ahora es el color secundario)
+$gold: $other-color; // Bright Blue (TODO: Bright Blue ahora es el color terciario no es dorado, cambiar nombres en el proyecto)
 
-$filter-primary: invert(17%) sepia(97%) saturate(1878%) hue-rotate(196deg) brightness(97%) contrast(101%);
-$filter-secondary: invert(13%) sepia(87%) saturate(7416%) hue-rotate(329deg) brightness(65%) contrast(101%);
+$filter-primary: invert(34%) sepia(49%) saturate(749%) hue-rotate(169deg)
+  brightness(91%) contrast(91%);
+$filter-secondary: invert(54%) sepia(98%) saturate(749%) hue-rotate(180deg)
+  brightness(91%) contrast(91%);
+$filter-other: brightness(0) saturate(100%) invert(72%) sepia(4%)
+  saturate(2134%) hue-rotate(130deg) brightness(103%) contrast(81%);
+$filter-white: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg)
+  brightness(100%) contrast(100%);
+$filter-black: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%)
+  contrast(100%);
 
 /* Definir colores por tema */
-// Tema claro
+// Tema claro (School Light)
 $light-theme: (
-  bg-color: #faf4ed, // Color de fondo
-  fg-color: #575279, // Color de primer plano
-  nav-bg-color: #fffaf3,
+  bg-color: $white-background,
+  // Fondo claro (Soft White)
+  fg-color: $black,
+  // Color de texto (Dark Gray)
+  nav-bg-color: $white-hard,
 );
 
-// Tema oscuro
+// Tema oscuro (School Dark)
 $dark-theme: (
-  bg-color: #191724, // Color de fondo
-  fg-color: #e0def4, // Color de primer plano
-  nav-bg-color: #1f1d2e,
+  bg-color: #1a202c,
+  // Fondo oscuro (Dark Blue-Gray)
+  fg-color: #e2e8f0,
+  // Color de texto (Light Gray)
+  nav-bg-color: #2d3748,
 );
 
 $theme: $light-theme;
@@ -37,5 +56,5 @@ $theme: $light-theme;
 /* ----------------------------------------
  * Fuentes
 ---------------------------------------- */
-$primary-font: 'Inria Sans', sans-serif;
-$secondary-font: 'Inria Serif', serif;
+$primary-font: "Inria Sans", sans-serif;
+$secondary-font: "Inria Serif", serif;
