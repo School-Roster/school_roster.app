@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'mixins';
+@import "variables";
+@import "mixins";
 
 nav {
   @include theme(background-color, nav-bg-color);
@@ -22,13 +22,15 @@ nav {
   font-family: $secondary-font;
   font-size: 1.5rem;
   height: 100%;
-  padding: 1.25rem;
+  padding: 0.2rem 0.5rem;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease, padding 0.3s ease;
+  transition:
+    width 0.3s ease,
+    padding 0.3s ease;
 
   &.collapsed {
-    width: 68px;
+    width: 60px;
     padding: 1rem 0.5rem;
 
     .logo h1 {
@@ -66,8 +68,8 @@ nav {
     }
 
     img {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 48px;
     }
   }
 
@@ -84,15 +86,16 @@ nav {
     transition: padding 0.3s ease;
 
     img {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       margin-right: 1rem;
-      filter: invert(43%) sepia(7%) saturate(968%) hue-rotate(172deg) brightness(94%) contrast(89%);
+      filter: invert(43%) sepia(7%) saturate(968%) hue-rotate(172deg)
+        brightness(94%) contrast(89%);
     }
 
     span {
-      font-size: 1rem;
-      font-weight: 500;
+      font-size: 0.75rem;
+      font-weight: 400;
     }
 
     &:hover {
@@ -129,9 +132,12 @@ nav {
     font-size: 1rem;
     margin-top: 0.75rem;
     padding-left: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.05rem;
     @include theme(color, fg-color);
     font-weight: 700;
+    body.dark & {
+      color: map-get($dark-theme, fg-color);
+    }
   }
 
   .menu-item {
@@ -174,7 +180,8 @@ nav {
         img {
           width: 16px;
           height: 16px;
-          filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg) brightness(101%) contrast(94%);
+          filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg)
+            brightness(101%) contrast(94%);
           margin-right: 0.3rem;
         }
 
@@ -220,6 +227,17 @@ nav {
       opacity: 0;
       transition: opacity 0.3s ease;
     }
+    .submenu-item {
+      background: none;
+      border: none;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      text-align: left;
+      color: white;
+    }
   }
 
   .arrow-container {
@@ -229,9 +247,9 @@ nav {
     height: 100%;
     position: absolute;
     right: 0;
-    margin-right: 0.5rem;
-    width: 20px;
-    height: 20px;
+    margin-right: 0.175rem;
+    width: 12px;
+    height: 12px;
   }
 
   .materias-window {
@@ -265,7 +283,7 @@ nav {
   img {
     width: 20px;
     height: 20px;
-    filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg) brightness(101%) contrast(94%);
+    filter: $filter-white;
   }
 
   body.dark & {

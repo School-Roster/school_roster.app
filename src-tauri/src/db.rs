@@ -1,17 +1,20 @@
-/* 
+/*
     Conecta la base de datos con la aplicacion.
     sqlx es un crate que nos permite interactuar con la base de datos de forma asincrona.
     la base de datos sera en sqlite.
 */
 
 use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
+use std::fs;
+use std::path::PathBuf;
 
 use tauri::App;
 
-const DB_NAME: &str = "school_roster.sqlite";
+pub const DB_NAME: &str = "school_roster.sqlite";
 
 // Pool de la base de datos para interactuar con ella en la aplicacion.
 pub type DbPool = Pool<Sqlite>;
+
 pub struct AppState {
     pub db: DbPool,
 }
@@ -20,45 +23,67 @@ pub struct AppState {
 *** Funcion para conectar a la base de datos ***
     Retorna un pool es usado para interactuar con la base de datos.
 */
-pub async fn connect(app: &App) -> DbPool {
+pub async fn connect(app: &App) -> Result<DbPool, Box<dyn std::error::Error>> {
     println!("Connecting to database...");
-    // Obtiene la ruta de la aplicacion.
-    let mut path = app
-        .path_resolver()
-        .app_data_dir()
-        .expect("Failed to get data directory");
 
-    // Crea el directorio de datos si no existe.
-    match std::fs::create_dir_all(&path) {
-        Ok(_) => println!("Data directory created"),
-        Err(e) => println!("Failed to create data directory: {}", e),
+    let db_path = setup_db_path(app)?;
+
+    create_database_file(&db_path)?;
+
+    let pool = SqlitePoolOptions::new()
+        .connect(&format!("sqlite:{}", db_path.to_string_lossy()))
+        .await?;
+
+    // Checar si se necesita correr migraciones
+    match handle_migrations(&pool).await {
+        Ok(_) => {
+            println!("Database migrations completed successfully!");
+            Ok(pool)
+        }
+        Err(e) => {
+            if e.to_string().contains("VersionMissing") {
+                println!("Attemting to reset migrations...");
+                sqlx::query("DROP TABLE IF EXISTS _sqlx_migrations")
+                    .execute(&pool)
+                    .await?;
+
+                // Intentar de nuevo
+                handle_migrations(&pool).await?; // TODO: Esto puede ser peligroso, hacer muchas pruebas para comprobar
+                Ok(pool)
+            } else {
+                Err(e.into())
+            }
+        }
     }
+}
 
+fn setup_db_path(app: &App) -> Result<PathBuf, std::io::Error> {
+    // Obtiene la ruta de la aplicacion.
+    let mut path = app.path_resolver().app_data_dir().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::NotFound, "Failed to get data directory")
+    })?;
+
+    fs::create_dir_all(&path)?;
     path.push(DB_NAME);
+    Ok(path)
+}
 
-    let result = std::fs::OpenOptions::new()
+fn create_database_file(path: &PathBuf) -> Result<(), std::io::Error> {
+    match fs::OpenOptions::new()
         .create_new(true)
         .write(true)
-        // .read(true)
-        .open(&path);
-
-    match result {
-        Ok(_) => println!("Database created"),
+        .open(path)
+    {
+        Ok(_) => println!("Database file created successfully"),
         Err(e) => match e.kind() {
-            std::io::ErrorKind::AlreadyExists => println!("Database already exists"),
-            _ => panic!("Failed to create database: {}", e),
+            std::io::ErrorKind::AlreadyExists => println!("Datbase already exists"),
+            _ => return Err(e),
         },
     }
 
-    let pool = SqlitePoolOptions::new()
-        .connect(&format!("sqlite:{}", path.to_string_lossy()))
-        .await
-        .unwrap();
+    Ok(())
+}
 
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await
-        .expect("Failed to run migrations");
-
-    pool
+async fn handle_migrations(pool: &DbPool) -> Result<(), sqlx::migrate::MigrateError> {
+    sqlx::migrate!("./migrations").run(pool).await
 }
