@@ -33,6 +33,9 @@ importers:
       svelte:
         specifier: ^4.2.7
         version: 4.2.19
+      svelte-awesome-color-picker:
+        specifier: ^3.1.4
+        version: 3.1.4(svelte@4.2.19)
       svelte-check:
         specifier: ^3.6.0
         version: 3.8.6(postcss@8.4.44)(sass@1.77.8)(svelte@4.2.19)
@@ -442,6 +445,9 @@ packages:
   code-red@1.0.4:
     resolution: {integrity: sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==}
 
+  colord@2.9.3:
+    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
+
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
@@ -664,6 +670,16 @@ packages:
   strip-indent@3.0.0:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
+
+  svelte-awesome-color-picker@3.1.4:
+    resolution: {integrity: sha512-tiFakxvSpCwodOSFW6CflnLVSldSlDY77rDipHfW7hvB+4gTP3y6uO+Dm9O9e7P5N7K+CNyNjjdjbZOHYkMyNQ==}
+    peerDependencies:
+      svelte: ^3.55.1 || ^4.0.0 || ^5.0.0
+
+  svelte-awesome-slider@1.1.2:
+    resolution: {integrity: sha512-HFIWwq6rtX6aXyc6ns2R0P6pDLYIr6nRjTPyAddAiTAgZqsohAoEfOEwKKqMmZ6Q+CH48zzcFdyo6lFkBJvyQw==}
+    peerDependencies:
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0
 
   svelte-check@3.8.6:
     resolution: {integrity: sha512-ij0u4Lw/sOTREP13BdWZjiXD/BlHE6/e2e34XzmVmsp5IN4kVa3PWP65NM32JAgwjZlwBg/+JtiNV1MM8khu0Q==}
@@ -1075,6 +1091,8 @@ snapshots:
       estree-walker: 3.0.3
       periscopic: 3.1.0
 
+  colord@2.9.3: {}
+
   concat-map@0.0.1: {}
 
   cookie@0.6.0: {}
@@ -1306,6 +1324,16 @@ snapshots:
   strip-indent@3.0.0:
     dependencies:
       min-indent: 1.0.1
+
+  svelte-awesome-color-picker@3.1.4(svelte@4.2.19):
+    dependencies:
+      colord: 2.9.3
+      svelte: 4.2.19
+      svelte-awesome-slider: 1.1.2(svelte@4.2.19)
+
+  svelte-awesome-slider@1.1.2(svelte@4.2.19):
+    dependencies:
+      svelte: 4.2.19
 
   svelte-check@3.8.6(postcss@8.4.44)(sass@1.77.8)(svelte@4.2.19):
     dependencies:

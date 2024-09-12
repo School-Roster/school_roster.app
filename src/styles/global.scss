@@ -5,7 +5,7 @@
 @import 'mixins';
 
 body {
-  /* font-family: $primary-font; */
+  font-family: $primary-font;
   font-weight: normal;
   @include theme(background-color, bg-color);
   @include theme(color, fg-color);
@@ -20,8 +20,12 @@ body.dark {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  /* font-family: $secondary-font; */
+  font-family: $secondary-font;
   font-weight: bold;
+  color: $primary-color;
+  body.dark & {
+    color: $other-color;
+  }
 }
 
 button, input, select {
@@ -35,17 +39,6 @@ main {
   display: flex;
   height: 100vh;
   overflow: hidden;
-}
-
-/* ----------------------------------------
- * Contenido del grid
----------------------------------------- */
-.content {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  flex-grow: 1;
-  overflow: auto;
 }
 
 /* ----------------------------------------
@@ -80,6 +73,3 @@ main {
   font-weight: bold;
   font-style: normal;
 }
-/* ----------------------------------------
- * Iconos
----------------------------------------- */

@@ -33,7 +33,18 @@
           {/each}
           <td>
             {#each actions as action (action.name)}
-              <button class="btn" on:click={() => action.action(item)}>{action.name}</button>
+              <button
+                class={action.name === "Eliminar" ? "btn btn-danger" : "btn"}
+                on:click={() => action.action(item)}
+              >
+                {#if action.name === "Eliminar"}
+                  <img src="/icons/trash.svg" alt="Eliminar" />
+                {:else if action.name === "Editar"}
+                  <img src="/icons/edit.svg" alt="Editar" />
+                {:else}
+                  {action.name}
+                {/if}
+              </button>
             {/each}
           </td>
         </tr>

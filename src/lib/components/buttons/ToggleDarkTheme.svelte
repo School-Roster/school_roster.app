@@ -20,7 +20,7 @@
   };
 
   // Función para aplicar el tema del sistema
-  const applySystemTheme = () => {
+  export const applySystemTheme = () => {
     const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     // matches regresa true si el tema del sistema es dark

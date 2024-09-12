@@ -1,11 +1,11 @@
 <script lang="ts">
-  import "$styles/form.scss";
   import { invoke } from "@tauri-apps/api";
   import { emit } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import TableComponent from "$lib/components/tables/TableComponent.svelte";
   import NewSubject from "./NewSubject.svelte";
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
+  import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
 
   // Carga las materias desde la base de datos en rust
   onMount(loadSubjects);
@@ -24,6 +24,7 @@
   const handleEdit = (item: SubjectItem) => {
     editShown = !editShown;
     editItem = item;
+    if (newShown) newShown = false;
   };
 
   const actions = [
@@ -42,6 +43,7 @@
   let newShown = false;
   const handleNew = () => {
     newShown = !newShown;
+    if (editShown) editShown = false;
   };
 </script>
 
@@ -53,24 +55,21 @@
   <div class="divider"></div>
   <div class="controls">
     <div class="controls-left">
-      <!-- <div class="new-button" on:click={handleNew}> -->
-      <!--   <img src="/icons/plus.svg" alt="Agregar materia" /> -->
-      <!--   Agregar nueva materia -->
-      <!-- </div> -->
-      <!-- TODO: Ver porque no sale el texto en el boton -->
       <button class="new-button" on:click={handleNew}>
         <img src="/icons/plus.svg" alt="Agregar materia" />
         Agregar nueva materia
       </button>
+
+      <button class={newShown || editShown ? "cancel-button show" : "cancel-button"} 
+              on:click={() => { newShown = false; editShown = false; }}>
+        Cancelar
+      </button>
     </div>
     <div class="controls-right">
-      <!-- <input class="search" type="text" placeholder="Buscar materia" /> -->
-      <div class="search">
-        <input type="text" placeholder="Buscar materia" />
-        <img src="/icons/search.svg" alt="Buscar" />
-      </div>
+      <SearchAnimation />
     </div>
   </div>
+  <!-- Muestra el formulario de nueva materia si se presiona el botón -->
   {#if newShown}
     <NewSubject item={null} />
   {/if}

@@ -12,13 +12,43 @@ simplemente llama a la vista deseada.
   import TeachersView from '$lib/components/forms/teachers/TeachersView.svelte';
 
   let view: any;
-
-  if (data.page === 'subjects') {
-    view = SubjectsView;
-  } else if (data.page === 'teachers') {
-    view = TeachersView;
+  switch (data.page) {
+    case 'subjects':
+      view = SubjectsView;
+      break;
+    case 'teachers':
+      view = TeachersView;
+      break;
   }
 
+  /**
+    * Carga el tema de la aplicación
+  **/
+  import { onMount } from "svelte";
+
+  const applySystemTheme = () => {
+    const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    if (darkModeMediaQuery.matches) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  };
+
+  const applyTheme = () => {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      document.body.classList.add("dark");
+    } else if (theme === "light") {
+      document.body.classList.remove("dark");
+    } else {
+      applySystemTheme();
+    }
+  }
+
+  onMount(() => {
+    applyTheme();
+  });
 </script>
 
 <svelte:component this={view} />

@@ -1,12 +1,21 @@
 <script lang="ts">
+  import "$styles/form/editor.scss";
+
   import { invoke } from "@tauri-apps/api";
   import { loadSubjects } from "$lib/modules/entities/subjectsStore";
   import { emit } from "@tauri-apps/api/event";
   import { type SubjectItem } from "$lib/modules/entities/subjectsStore";
+  import ColorPicker from "$lib/components/buttons/ColorPicker.svelte";
 
   let name = "";
   let shorten = "";
-  let color = "";
+
+  /*
+    TODO: Tendremos en cuenta los colores registrados en la base de datos
+      para que no se repitan y darle al usuario una recomendación de color
+  */
+  let color = "#ff00aa";
+
   let spec = "Obligatoria";
 
   // Para editar una materia agregamos el item como propiedad
@@ -25,48 +34,89 @@
 
   // Manda la nueva materia a la base de datos en rust
   async function addSubject() {
-    if (!name || !shorten) {
+    if (!name) {
       alert("Por favor, rellene todos los campos");
       return;
     }
+    if (!shorten) {
+      shorten = name.substring(0, 3).toUpperCase();
+    }
+
     await invoke("create_subject", { name, shorten, color, spec });
     await loadSubjects(); // Recarga las materias
     await emit("subjects_updated"); // Emite un evento para actualizar la vista de materias
   }
 
+  // TODO: Cambiar estilo de <option> para que se vea mejor
+  // TODO: En el select de tipo tenemos que agregar opcion para registrar nuevo tipo
+
 </script>
 
-<section class="form-container">
-  <span class="title">Nueva Materia</span>
+<section class="form-editor">
   {#if item}
-    <div class="form">
+  <h1>Editar Materia</h1>
+  <div class="form-group">
+
+    <div class="form-field">
       <label for="name">Nombre</label>
-      <input type="text" id="name" bind:value={item.name} />
+      <input
+        type="text"
+        placeholder="Escribe nombre de materia"
+        id="name" 
+        bind:value={item.name} />
+    </div>
+
+    <div class="form-field">
       <label for="shorten">Abreviatura</label>
       <input type="text" id="shorten" bind:value={item.shorten} />
-      <label for="color">Color</label>
-      <input type="color" id="color" bind:value={item.color} />
-      <label for="spec">Tipo</label>
-      <select id="spec" bind:value={item.spec}>
-        <option value="Obligatoria">Obligatoria</option>
-        <option value="Optativa">Optativa</option>
-      </select>
-      <button on:click={editSubject}>Editar materia</button>
     </div>
+
+    <label for="color">Color</label>
+    <input type="color" id="color" bind:value={item.color} />
+    <label for="spec">Tipo</label>
+    <select id="spec" bind:value={item.spec}>
+      <option value="Obligatoria">Obligatoria</option>
+      <option value="Optativa">Optativa</option>
+    </select>
+    <button on:click={editSubject}>Editar materia</button>
+  </div>
+
   {:else}
-    <div class="form">
-      <label for="name">Nombre</label>
-      <input type="text" id="name" bind:value={name} />
-      <label for="shorten">Abreviatura</label>
-      <input type="text" id="shorten" bind:value={shorten} />
-      <label for="color">Color</label>
-      <input type="color" id="color" bind:value={color} />
-      <label for="spec">Tipo</label>
-      <select id="spec" bind:value={spec}>
-        <option value="Obligatoria">Obligatoria</option>
-        <option value="Optativa">Optativa</option>
-      </select>
-      <button on:click={addSubject}>Agregar</button>
+  <h1>Nueva Materia</h1>
+    <div class="form-group">
+
+      <div class="form-field">
+        <label for="name"><img src="/icons/books.svg" alt="Materia" /></label>
+        <input
+          type="text"
+          placeholder="Escribe nombre de materia"
+          id="name"
+          bind:value={name} />
+      </div>
+
+      <div class="form-field">
+        <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
+        <input
+          type="text"
+          placeholder="Abreviatura"
+          id="shorten"
+          bind:value={shorten} />
+      </div>
+
+      <div class="form-field">
+        <ColorPicker bind:value={color} />
+      </div>
+
+      <div class="form-field">
+        <label for="spec">Tipo</label>
+        <select id="spec" bind:value={spec}>
+          <option class="opt" value="Obligatoria">Obligatoria</option>
+          <option class="opt" value="Optativa">Optativa</option>
+        </select>
+      </div>
+
+      <button class="form-button" on:click={addSubject}>Agregar</button>
     </div>
   {/if}
+
 </section>

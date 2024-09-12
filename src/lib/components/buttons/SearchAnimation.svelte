@@ -1,5 +1,6 @@
 <script lang="ts">
   let ph = "Buscar...";
+  import "$styles/buttons/search.scss";
 </script>
 
 <div class="search">

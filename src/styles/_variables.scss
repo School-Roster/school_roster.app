@@ -8,7 +8,7 @@ $primary-color: #004d98; // Color principal (Azul)
 $secondary-color: #a50044; // Color secundario (Rojo)
 $other-color: #f6c177; // Color terciario (Dorado)
 
-$white: #faf4ed;
+$white: #E8EBF3;
 $black: #191724;
 $blue: $primary-color;
 $red: $secondary-color;
@@ -16,6 +16,7 @@ $gold: $other-color;
 
 $filter-primary: invert(17%) sepia(97%) saturate(1878%) hue-rotate(196deg) brightness(97%) contrast(101%);
 $filter-secondary: invert(13%) sepia(87%) saturate(7416%) hue-rotate(329deg) brightness(65%) contrast(101%);
+$filter-white: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
 
 /* Definir colores por tema */
 // Tema claro

@@ -1,0 +1,119 @@
+@import "../global";
+
+/* Estilos para el contenedor del formulario (parte de arriba) */
+.form-container {
+  font-family: $primary-font;
+  width: 95%;
+  margin: 0 auto;
+  margin-top: 20px;
+
+  .title { // Estilo para el título del formulario
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin-top: 1.5rem;
+    margin-left: 1rem;
+    font-size: 1.5rem;
+    color: $primary-color;
+    font-weight: bold;
+    margin-bottom: 1rem;
+
+    img {
+      width: 40px;
+      height: 40px;
+      margin-right: 0.5rem;
+      filter: $filter-primary;
+    }
+
+    // Cuando el tema es oscuro el titulo sera blanco para mejor contraste
+    body.dark & {
+      color: map-get($dark-theme, fg-color);
+      img {
+        filter: $filter-white;
+      }
+    }
+  }
+
+  .divider {
+    display: block;
+    height: 1px;
+    background-color: $primary-color;
+  }
+
+  // Controles (agregar, cancelar, buscar)
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+
+    // Botones de la izquierda
+    .controls-left {
+      display: flex;
+      align-items: center;
+
+      // Clase para los botones
+      .controls-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 42px;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        color: $white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.3s, transform 0.5s ease-in-out;
+      }
+
+      // Estilo para el botón de nuevo
+      .new-button {
+        @extend .controls-btn;
+        background-color: $primary-color;
+        visibility: visible;
+
+        &:hover {
+          background-color: lighten($primary-color, 10%);
+        }
+
+        img {
+          width: 20px;
+          height: 20px;
+          margin-right: 0.5rem;
+          filter: $filter-white;
+        }
+      }
+
+      // Estilo para el botón de cancelar
+      .cancel-button {
+        @extend .controls-btn;
+        background-color: $red;
+        opacity: 0;
+        transform: translateY(-10px); // Animación para ocultar el botón
+        margin-left: 1rem;
+        pointer-events: none;
+        transition: opacity 0.5s, transform 0.5s ease-in-out;
+
+        // Estilo para el botón de cancelar cuando se muestra
+        &.show {
+          opacity: 1;
+          pointer-events: all;
+          transform: translateY(0);
+        }
+
+        &:hover {
+          background-color: darken($red, 6%);
+          transition: background-color 0.3s ease-in-out;
+        }
+      }
+    }
+
+    .controls-right {
+      display: flex;
+      align-items: center;
+
+      /* NOTA: Estilos para el buscador movidos a buttons.scss */
+    }
+  }
+}
