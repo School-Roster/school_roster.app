@@ -23,7 +23,11 @@
           {#each columns as column (column.key)}
             {#if column.key === "color"}
               <td class="table-color"
-                style="background-color: {item[column.key]}; color: {getContrastColor(item[column.key])}"
+                style="
+                  width: 10px;
+                  background-color: {item[column.key]};
+                  color: {getContrastColor(item[column.key])};
+                "
               >
                 {item[column.key]}
               </td>

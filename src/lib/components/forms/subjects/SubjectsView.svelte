@@ -7,6 +7,8 @@
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
 
+  let search = "";
+
   // Carga las materias desde la base de datos en rust
   onMount(loadSubjects);
 
@@ -22,7 +24,7 @@
   let editShown = false;
   let editItem: SubjectItem | null = null;
   const handleEdit = (item: SubjectItem) => {
-    editShown = !editShown;
+    editShown = true;
     editItem = item;
     if (newShown) newShown = false;
   };
@@ -55,18 +57,20 @@
   <div class="divider"></div>
   <div class="controls">
     <div class="controls-left">
+      <!-- Botón para agregar una nueva materia -->
       <button class="new-button" on:click={handleNew}>
         <img src="/icons/plus.svg" alt="Agregar materia" />
         Agregar nueva materia
       </button>
 
+      <!-- Botón para cancelar la edición o creación de una materia -->
       <button class={newShown || editShown ? "cancel-button show" : "cancel-button"} 
               on:click={() => { newShown = false; editShown = false; }}>
         Cancelar
       </button>
     </div>
     <div class="controls-right">
-      <SearchAnimation />
+      <SearchAnimation bind:search />
     </div>
   </div>
   <!-- Muestra el formulario de nueva materia si se presiona el botón -->
@@ -76,5 +80,15 @@
   {#if editShown}
     <NewSubject item={editItem} />
   {/if}
-  <TableComponent data={$subjects} {columns} {actions} />
+  <!-- Muestra la tabla de materias -->
+  {#if $subjects.length === 0 && !newShown && !editShown}
+    <div class="empty">No hay materias registradas</div>
+  {:else}
+    {#if search}
+      <div class="search-results">Mostrando resultados de búsqueda para "{search}"</div>
+      <TableComponent data={$subjects.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))} {columns} {actions} />
+    {:else}
+      <TableComponent data={$subjects} {columns} {actions} />
+    {/if}
+  {/if}
 </section>

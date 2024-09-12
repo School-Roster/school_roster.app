@@ -1,10 +1,11 @@
 <script lang="ts">
   let ph = "Buscar...";
+  export let search = "";
   import "$styles/buttons/search.scss";
 </script>
 
 <div class="search">
-  <input type="text" placeholder={ph} />
+  <input type="text" placeholder={ph} bind:value={search} />
   <div class="symbol">
     <svg class="lens">
       <use xlink:href="#lens" />

@@ -14,7 +14,7 @@
     TODO: Tendremos en cuenta los colores registrados en la base de datos
       para que no se repitan y darle al usuario una recomendación de color
   */
-  let color = "#ff00aa";
+  let color = "#a50044";
 
   let spec = "Obligatoria";
 
@@ -45,6 +45,12 @@
     await invoke("create_subject", { name, shorten, color, spec });
     await loadSubjects(); // Recarga las materias
     await emit("subjects_updated"); // Emite un evento para actualizar la vista de materias
+
+    // Limpiamos los campos
+    name = "";
+    shorten = "";
+    color = "#a50044";
+    spec = "Obligatoria";
   }
 
   // TODO: Cambiar estilo de <option> para que se vea mejor
@@ -56,31 +62,38 @@
   {#if item}
   <h1>Editar Materia</h1>
   <div class="form-group">
-
     <div class="form-field">
-      <label for="name">Nombre</label>
+      <label for="name"><img src="/icons/books.svg" alt="Materia" /></label>
       <input
         type="text"
         placeholder="Escribe nombre de materia"
-        id="name" 
+        id="name"
         bind:value={item.name} />
     </div>
-
+    
     <div class="form-field">
-      <label for="shorten">Abreviatura</label>
-      <input type="text" id="shorten" bind:value={item.shorten} />
+      <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
+      <input
+        type="text"
+        placeholder="Abreviatura"
+        id="shorten"
+        bind:value={item.shorten} />
     </div>
-
-    <label for="color">Color</label>
-    <input type="color" id="color" bind:value={item.color} />
-    <label for="spec">Tipo</label>
-    <select id="spec" bind:value={item.spec}>
-      <option value="Obligatoria">Obligatoria</option>
-      <option value="Optativa">Optativa</option>
-    </select>
-    <button on:click={editSubject}>Editar materia</button>
+    
+    <div class="form-field">
+      <ColorPicker bind:value={item.color} />
+    </div>
+    
+    <div class="form-field">
+      <label for="spec">Tipo</label>
+      <select id="spec" bind:value={item.spec}>
+        <option class="opt" value="Obligatoria">Obligatoria</option>
+        <option class="opt" value="Optativa">Optativa</option>
+      </select>
+    </div>
+    
+    <button class="form-button" on:click={editSubject}>Editar</button>
   </div>
-
   {:else}
   <h1>Nueva Materia</h1>
     <div class="form-group">
@@ -89,16 +102,17 @@
         <label for="name"><img src="/icons/books.svg" alt="Materia" /></label>
         <input
           type="text"
-          placeholder="Escribe nombre de materia"
+          placeholder="*Escribe nombre de materia"
           id="name"
-          bind:value={name} />
+          bind:value={name}
+          required />
       </div>
 
       <div class="form-field">
         <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
         <input
           type="text"
-          placeholder="Abreviatura"
+          placeholder="Abreviatura (opcional)"
           id="shorten"
           bind:value={shorten} />
       </div>
