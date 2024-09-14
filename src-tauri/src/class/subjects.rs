@@ -3,6 +3,8 @@ use crate::db::AppState;
 use sqlx::prelude::FromRow;
 use serde::{Deserialize, Serialize};
 
+/// Estructura de una materia
+/// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Subject {
     pub id: i16,
@@ -12,7 +14,14 @@ pub struct Subject {
     pub spec: String,
 }
 
-/* Funcion para crear una nueva materia */
+/// Funcion para crear una materia
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `name` - Nombre de la materia
+/// * `shorten` - Abreviatura de la materia
+/// * `color` - Color de la materia
+/// * `spec` - Especificacion de la materia
+/// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn create_subject(
@@ -37,7 +46,11 @@ pub async fn create_subject(
     Ok(())
 }
 
-/* Funcion para obtener todas las materias */
+/// Funcion para obtener todas las materias
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// Retorna un vector con todas las materias
+/// Se llama desde la interfaz de usuario para obtener todas las materias
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn get_subjects(pool: tauri::State<'_, AppState>) -> Result<Vec<Subject>, String> {
@@ -50,7 +63,12 @@ pub async fn get_subjects(pool: tauri::State<'_, AppState>) -> Result<Vec<Subjec
     Ok(subjects)
 }
 
-/* Funcion para eliminar una materia */
+/// Funcion para eliminar una materia
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `id` - ID de la materia
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para eliminar una materia
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn delete_subject(pool: tauri::State<'_, AppState>, id: i16) -> Result<(), String> {
@@ -63,7 +81,16 @@ pub async fn delete_subject(pool: tauri::State<'_, AppState>, id: i16) -> Result
     Ok(())
 }
 
-/* Funcion para actualizar una materia */
+/// Funcion para actualizar una materia
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `id` - ID de la materia
+/// * `name` - Nombre de la materia
+/// * `shorten` - Abreviatura de la materia
+/// * `color` - Color de la materia
+/// * `spec` - Especificacion de la materia
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para actualizar una materia
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn update_subject(
