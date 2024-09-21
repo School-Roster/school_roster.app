@@ -14,7 +14,7 @@
     TODO: Tendremos en cuenta los colores registrados en la base de datos
       para que no se repitan y darle al usuario una recomendación de color
   */
-  let color = "#a50044";
+  let color = "#ff00aa";
 
   let spec = "Obligatoria";
 

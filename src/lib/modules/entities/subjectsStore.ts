@@ -8,6 +8,7 @@ import { invoke } from "@tauri-apps/api";
   * @property {string} shorten - Nombre corto
   * @property {string} color - Color de la materia
   * @property {string} spec - Especialidad a la que pertenece
+  * @property {TeacherItem} assigned_teacher - Profesor asign
   */
 export interface SubjectItem {
   id: number;

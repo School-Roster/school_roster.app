@@ -18,7 +18,7 @@ export const itemData = [
   {
     it: 0, name: "Vista previa", icon: "/icons/eye.svg", menu: "todo",
     submenu: [
-      { name: "Vista previa maestro", icon: "/icons/preview.svg", menu: "todo"},
+      { name: "Vista previa profesor", icon: "/icons/preview.svg", menu: "todo"},
       { name: "Vista previa grupo", icon: "/icons/preview.svg", menu: "todo"},
       { name: "Vista previa materia", icon: "/icons/preview.svg", menu: "todo"},
       { name: "Vista previa aula", icon: "/icons/preview.svg", menu: "todo"},
@@ -27,7 +27,7 @@ export const itemData = [
   {
     it: 0, name: "Imprimir", icon: "/icons/print.svg", menu: "todo",
     submenu: [
-      { name: "Horario maestros", icon: "/icons/pdf.svg", menu: "todo"},
+      { name: "Horario profesores", icon: "/icons/pdf.svg", menu: "todo"},
       { name: "Horario grupos", icon: "/icons/pdf.svg", menu: "todo"},
       { name: "Horario materias", icon: "/icons/pdf.svg", menu: "todo"},
       { name: "Horario aulas", icon: "/icons/pdf.svg", menu: "todo"},
@@ -37,7 +37,7 @@ export const itemData = [
 
   { it: 2, name: "Grupos", icon: "/icons/group.svg", menu: "groups", submenu: [] },
   { it: 0, name: "Materias", icon: "/icons/books.svg", menu: "subjects", submenu: [] },
-  { it: 0, name: "Maestros", icon: "/icons/teacher.svg", menu: "teachers", submenu: [] },
+  { it: 0, name: "Profesores", icon: "/icons/teacher.svg", menu: "teachers", submenu: [] },
   { it: 0, name: "Aulas", icon: "/icons/door.svg", menu: "classroom", submenu: [] },
 
   { it: 3, name: "Inteligencia artificial", icon: "/icons/robot.svg", menu: "todo", submenu: [] },

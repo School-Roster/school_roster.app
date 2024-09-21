@@ -6,6 +6,12 @@
   width: 95%;
   margin: 0 auto;
   margin-top: 20px;
+  overflow: auto;
+
+  body.dark & {
+    background-color: map-get($dark-theme, bg-color);
+    color: map-get($dark-theme, fg-color);
+  }
 
   .title { // Estilo para el título del formulario
     display: flex;

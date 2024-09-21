@@ -73,7 +73,7 @@
       <div class="details">
         <span>Nombre de la materia: {selectedSubject.name}</span>
         <span>Tipo: {selectedSubject.spec}</span>
-        <span>Maestro asignado:</span>
+        <span>Profesor asignado:</span>
       </div>
     </div>
   {/if}

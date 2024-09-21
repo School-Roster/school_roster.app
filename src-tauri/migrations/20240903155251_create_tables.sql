@@ -22,10 +22,10 @@ CREATE TABLE IF NOT EXISTS teachers (
 );
 
 -- Teachers Subjects
-CREATE TABLE IF NOT EXISTS teachers_subjects (
-    id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS teacher_subjects (
     teacher_id INTEGER NOT NULL,
     subject_id INTEGER NOT NULL,
+    PRIMARY KEY (teacher_id, subject_id),
     FOREIGN KEY (teacher_id) REFERENCES teachers(id),
     FOREIGN KEY (subject_id) REFERENCES subjects(id)
 );
