@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import TableComponent from "$lib/components/tables/TableComponent.svelte";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
+  import FilterAnimation from "$lib/components/buttons/FilterButton.svelte";
 
   import { teachers, loadTeachers, type TeacherItem } from "$lib/modules/entities/teachersStore";
   import NewTeacher from "./NewTeacher.svelte";
@@ -73,6 +74,9 @@
       </button>
     </div>
     <div class="controls-right">
+      <!-- Botón para filtrar la tabla por opciones -->
+      <FilterAnimation {columns} />
+      <!-- Filtro de búsqueda -->
       <SearchAnimation bind:search />
     </div>
   </div>
@@ -85,7 +89,7 @@
   <!-- {/if} -->
   <!-- Muestra la tabla de profesores -->
   {#if $teachers.length === 0 && !newShown && !editShown}
-    <div class="empty">No hay profesores registrados</div>
+    <div class="empty">Agregar un nuevo profesor para comenzar</div>
   {:else}
     {#if search}
       <div class="search-results">Mostrando resultados de búsqueda para "{search}"</div>
