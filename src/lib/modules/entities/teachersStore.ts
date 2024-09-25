@@ -37,6 +37,6 @@ export const teachers = writable<TeacherItem[]>([]);
  * Carga a los profesores de la base de datos
  */
 export async function loadTeachers() {
-  const response = await invoke("get_teachers");
+  const response = await invoke("get_all_teachers");
   teachers.set(response as TeacherItem[]);
 }

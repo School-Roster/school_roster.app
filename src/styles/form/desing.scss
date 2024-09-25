@@ -6,7 +6,8 @@
   width: 95%;
   margin: 0 auto;
   margin-top: 20px;
-  overflow: auto;
+  max-height: 100vh;
+  overflow-y: auto;
 
   body.dark & {
     background-color: map-get($dark-theme, bg-color);

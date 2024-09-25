@@ -2,8 +2,7 @@
   import "$styles/form/editor.scss";
 
   import { invoke } from "@tauri-apps/api";
-  // import { writable } from "svelte/store";
-  import { emit } from "@tauri-apps/api/event";
+  import { emit, listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
 
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
@@ -24,6 +23,9 @@
 
   onMount(() => {
     loadSubjects();
+    listen("subjects_updated", async () => {
+      await loadSubjects();
+    });
   });
 
   // Para editar un profesor agregamos el item como propiedad
@@ -38,7 +40,7 @@
 
     await invoke("add_teacher", {
       name, father_lastname, mother_lastname, email, phone,
-      degree, hcom: comissioned_hours, hact: active_hours, performance
+      degree, comissioned_hours, active_hours, performance
     });
     await loadTeachers(); // Recarga las materias
     await emit("teachers_updated"); // Emite un evento para actualizar la vista de materias

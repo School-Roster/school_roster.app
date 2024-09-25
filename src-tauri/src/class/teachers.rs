@@ -41,7 +41,7 @@ pub struct Teacher {
 /// * `performance` - Desempeño del profesor (opcional puede ser nulo)
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn add_teacher(
     pool: tauri::State<'_, AppState>,
     name: String,

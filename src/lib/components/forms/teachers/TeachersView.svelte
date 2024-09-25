@@ -11,21 +11,21 @@
   let search = "";
 
   // Carga las materias desde la base de datos en rust
-  // onMount(loadTeachers);
+  onMount(loadTeachers);
 
   // Columnas de la tabla (key es el nombre de la propiedad en la interfaz)
   const columns = [
     { name: "ID", key: "id" },
     { name: "Nombre", key: "name" },
-    { name: "Apellido paterno", key: "flastname" },
-    { name: "Apellido materno", key: "mlastname" },
+    { name: "Apellido paterno", key: "father_lastname" },
+    { name: "Apellido materno", key: "mother_lastname" },
     { name: "Correo", key: "email" },
     { name: "Teléfono", key: "phone" },
     { name: "Titulo", key: "degree" },
-    { name: "Horas (comosion)", key: "hcom" },
-    { name: "Horas (activas)", key: "hact" },
+    { name: "Horas (comosion)", key: "commissioned_hours" },
+    { name: "Horas (activas)", key: "active_hours" },
     { name: "Rendimiento", key: "performance" },
-    { name: "Materias", key: "mat" },
+    { name: "Materias", key: "mat" }, // TODO
   ];
 
   let editShown = false;
@@ -83,7 +83,7 @@
   <!-- {#if editShown} -->
   <!--   <NewTeacher item={editItem} /> -->
   <!-- {/if} -->
-  <!-- Muestra la tabla de materias -->
+  <!-- Muestra la tabla de profesores -->
   {#if $teachers.length === 0 && !newShown && !editShown}
     <div class="empty">No hay profesores registrados</div>
   {:else}

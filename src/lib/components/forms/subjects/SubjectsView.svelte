@@ -6,6 +6,7 @@
   import NewSubject from "./NewSubject.svelte";
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
+  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   let search = "";
 
@@ -29,18 +30,29 @@
     if (newShown) newShown = false;
   };
 
+  let showModal = false;
+  let subjectToDelete: SubjectItem | null = null;
+
   const actions = [
     { name: "Editar", action: (item: SubjectItem) => {
       handleEdit(item);
     }},
     { name: "Eliminar", action: (item: SubjectItem) => {
-      // TODO: Implementar confirmación desde el componente en vez de un alert (como si fuera un tooltip)
-      let confirm = window.confirm("¿Estás seguro de que quieres eliminar esta materia?");
-      if (!confirm) return;
-      invoke("delete_subject", { id: item.id }).then(loadSubjects);
-      emit("subjects_updated");
+      subjectToDelete = item;
+      showModal = true;
     }},
   ];
+
+  const handleDelete = async () => {
+    if (!subjectToDelete) return;
+    invoke("delete_subject", { id: subjectToDelete.id })
+      .then(() => {
+        loadSubjects();
+        emit("subjects_updated");
+      });
+    showModal = false;
+  };
+  const handleCancel = () => { showModal = false; };
 
   let newShown = false;
   const handleNew = () => {
@@ -90,5 +102,12 @@
     {:else}
       <TableComponent data={$subjects} {columns} {actions} />
     {/if}
+
+    <!-- Modal de confirmación para eliminar una materia -->
+    <ConfirmModal
+      isOpen={showModal}
+      onConfirm={handleDelete}
+      onCancel={handleCancel}
+    />
   {/if}
 </section>
