@@ -39,7 +39,14 @@
       return;
     }
 
-    console.log(selectedSubjects.map((s) => s.id));
+    if (comissioned_hours < 0 || performance < 0) {
+      alert("Por favor, rellene los campos con valores positivos");
+      return;
+    }
+
+    if (selectedSubjects.length > 0) {
+      emit("subjects_with_teachers_updated");
+    }
 
     // Registrar nuevo profesor
     await invoke("add_teacher", {

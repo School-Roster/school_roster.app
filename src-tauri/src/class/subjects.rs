@@ -2,6 +2,7 @@ use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use crate::db::AppState;
 use sqlx::prelude::FromRow;
 use serde::{Deserialize, Serialize};
+use crate::class::teachers::Teacher;
 
 /// Estructura de una materia
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
@@ -12,6 +13,7 @@ pub struct Subject {
     pub shorten: String,
     pub color: String,
     pub spec: String,
+    pub teachers: Option<Vec<Teacher>>,
 }
 
 /// Funcion para crear una materia
@@ -112,4 +114,25 @@ pub async fn update_subject(
         .map_err(|e| format!("Failed to update subject: {}", e))?;
 
     Ok(())
+}
+
+/// Funcion para obtener materias que tengan profesores asignados
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// Retorna un vector con todas las materias que tengan profesores asignados
+/// Se llama desde la interfaz de usuario para obtener todas las materias que tengan profesores asignados
+#[allow(dead_code, unused)]
+#[tauri::command]
+pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<Subject>, String> {
+    let subjects: Vec<Subject> = sqlx::query_as::<_, Subject>("
+        SELECT DISTINCT subjects.id, subjects.name, subjects.shorten, subjects.color, subjects.spec
+        FROM subjects
+        JOIN teacher_subjects ON subjects.id = teacher_subjects.subject_id
+    ")
+        .fetch(&pool.db)
+        .try_collect()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(subjects)
 }

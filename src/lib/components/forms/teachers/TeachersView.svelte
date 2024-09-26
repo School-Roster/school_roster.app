@@ -57,6 +57,7 @@
       if (!confirm) return;
       invoke("delete_teacher", { teacher_id: item.id });
       emit("teachers_updated");
+      emit("subjects_with_teachers_updated");
     }},
   ];
 </script>

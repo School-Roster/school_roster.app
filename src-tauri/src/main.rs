@@ -5,7 +5,8 @@ use crate::class::subjects::{
     get_subjects,
     create_subject,
     delete_subject,
-    update_subject
+    update_subject,
+    get_subjects_with_teachers
 };
 use crate::class::teachers::{
     add_teacher,
@@ -27,6 +28,7 @@ async fn main() {
             delete_subject,
             update_subject,
             get_subjects,
+            get_subjects_with_teachers,
             // Teachers
             add_teacher,
             get_all_teachers,

@@ -77,11 +77,8 @@ pub async fn add_teacher(
         .await
         .map_err(|e| format!("Failed to create teacher: {}", e))?;
 
-    println!("Subjects: {:?}", subjects);
     if let Some(subjects) = subjects {
         // Agregar las materias al profesor
-        println!("Adding subjects to teacher");
-        println!("Subjects: {:?}", subjects);
         for subject_id in subjects {
             let exists: Option<i16> = sqlx::query_scalar("
                 SELECT 1 FROM teacher_subjects
@@ -142,7 +139,6 @@ pub async fn get_all_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<(T
         teachers_with_subjects.push((teacher, subjects));
     }
 
-    println!("Teachers: {:?}", teachers_with_subjects);
     Ok(teachers_with_subjects)
 }
 
@@ -163,8 +159,6 @@ pub async fn delete_teacher(
         .execute(&pool.db)
         .await
         .map_err(|e| format!("Failed to delete teacher: {}", e))?;
-
-    println!("Teacher deleted successfully");
 
     Ok(())
 }
