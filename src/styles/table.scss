@@ -20,7 +20,7 @@ $table-even-bg: #0000000b;
     min-width: 600px;
     margin: 0 auto;
     border-collapse: separate;
-    border-spacing: 0 2px;
+    border-spacing: 0 1px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
@@ -42,6 +42,7 @@ $table-even-bg: #0000000b;
     }
   }
 
+  // Estilo para las filas de la tabla
   table tbody>tr {
     background-color: $table-light-bg;
     transition: background-color 0.3s ease-in-out;
@@ -66,6 +67,7 @@ $table-even-bg: #0000000b;
     }
   }
 
+  // Estilo para las filas pares
   tbody tr:nth-child(even) {
     background-color: $table-even-bg;
   }

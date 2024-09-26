@@ -10,7 +10,7 @@ use crate::class::subjects::{
 use crate::class::teachers::{
     add_teacher,
     get_all_teachers,
-    attach_subject,
+    delete_teacher
 };
 use crate::db::{AppState, connect};
 use tauri::Manager as _; // Necesario para poder usar manage()
@@ -30,7 +30,7 @@ async fn main() {
             // Teachers
             add_teacher,
             get_all_teachers,
-            attach_subject,
+            delete_teacher
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())

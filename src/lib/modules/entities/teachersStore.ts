@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { invoke } from "@tauri-apps/api";
-import type { SubjectItem } from "./subjectsStore";
+import { subjects, type SubjectItem } from "./subjectsStore";
 
 /**
   * Interfaz para los datos de las materias
@@ -28,6 +28,7 @@ export interface TeacherItem {
   performance: number;
 }
 
+
 /**
  * Lista todos los profesores registrados
  */
@@ -37,6 +38,23 @@ export const teachers = writable<TeacherItem[]>([]);
  * Carga a los profesores de la base de datos
  */
 export async function loadTeachers() {
-  const response = await invoke("get_all_teachers");
-  teachers.set(response as TeacherItem[]);
+  const response = await invoke<[TeacherItem, number[]][]>('get_all_teachers'); // Tuple para obtener los profesores y las materias asignadas
+
+  let subjectList: SubjectItem[] = [];
+  // Necesitamos la lista de materias para poder asignarlas a los profesores sin hacer otra petición
+  subjects.subscribe((value: SubjectItem[]) => {
+    subjectList = value;
+  })();
+
+  const teachersArray = response.map(([teacher, subjectId]) => ({
+    ...teacher,
+    assigned_subjects: subjectId.map(id => {
+      // Aprovechamos la lista de materias para obtener el nombre de la materia sin necesidad de hacer otra petición
+      const subject = subjectList.find(subject => subject.id === id);
+      return subject ? subject.name : '';
+    })
+  }));
+
+  teachers.set(teachersArray as TeacherItem[]);
+  console.log(teachersArray);
 }

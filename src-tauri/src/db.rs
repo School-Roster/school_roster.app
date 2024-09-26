@@ -31,7 +31,10 @@ pub async fn connect(app: &App) -> DbPool {
     // Crea el directorio de datos si no existe.
     match std::fs::create_dir_all(&path) {
         Ok(_) => println!("Data directory created"),
-        Err(e) => println!("Failed to create data directory: {}", e),
+        Err(e) => match e.kind() {
+            std::io::ErrorKind::AlreadyExists => (),
+            _ => panic!("Failed to create data directory: {}", e),
+        },
     }
 
     path.push(DB_NAME);

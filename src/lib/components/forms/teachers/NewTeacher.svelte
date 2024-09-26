@@ -23,6 +23,7 @@
 
   onMount(() => {
     loadSubjects();
+    // Carga las materias cuando se actualizan
     listen("subjects_updated", async () => {
       await loadSubjects();
     });
@@ -38,9 +39,20 @@
       return;
     }
 
+    console.log(selectedSubjects.map((s) => s.id));
+
+    // Registrar nuevo profesor
     await invoke("add_teacher", {
-      name, father_lastname, mother_lastname, email, phone,
-      degree, comissioned_hours, active_hours, performance
+      name,
+      father_lastname,
+      mother_lastname: mother_lastname || null,
+      email: email || null,
+      phone: phone || null,
+      degree: degree || null,
+      comissioned_hours: comissioned_hours || null,
+      active_hours: active_hours || null,
+      performance: performance || null,
+      subjects: selectedSubjects.length > 0 ? selectedSubjects.map((s) => s.id) : null, // Pasamos solo los ids de las materias seleccionadas
     });
     await loadTeachers(); // Recarga las materias
     await emit("teachers_updated"); // Emite un evento para actualizar la vista de materias

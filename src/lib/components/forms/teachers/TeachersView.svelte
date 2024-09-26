@@ -1,6 +1,6 @@
 <script lang="ts">
-  // import { invoke } from "@tauri-apps/api";
-  // import { emit } from "@tauri-apps/api/event";
+  import { invoke } from "@tauri-apps/api";
+  import { emit, listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import TableComponent from "$lib/components/tables/TableComponent.svelte";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
@@ -8,11 +8,19 @@
 
   import { teachers, loadTeachers, type TeacherItem } from "$lib/modules/entities/teachersStore";
   import NewTeacher from "./NewTeacher.svelte";
+  import { loadSubjects } from "$lib/modules/entities/subjectsStore";
 
   let search = "";
 
   // Carga las materias desde la base de datos en rust
-  onMount(loadTeachers);
+  onMount(() => {
+    loadTeachers();
+    loadSubjects();
+
+    listen("teachers_updated", async () => {
+      await loadTeachers();
+    });
+  });
 
   // Columnas de la tabla (key es el nombre de la propiedad en la interfaz)
   const columns = [
@@ -23,10 +31,10 @@
     { name: "Correo", key: "email" },
     { name: "Teléfono", key: "phone" },
     { name: "Titulo", key: "degree" },
-    { name: "Horas (comosion)", key: "commissioned_hours" },
+    { name: "Horas (comosion)", key: "comissioned_hours" },
     { name: "Horas (activas)", key: "active_hours" },
     { name: "Rendimiento", key: "performance" },
-    { name: "Materias", key: "mat" }, // TODO
+    { name: "Materias", key: "assigned_subjects" },
   ];
 
   let editShown = false;
@@ -43,12 +51,12 @@
       editItem = item;
       if (newShown) newShown = false;
     }},
-    { name: "Eliminar", action: (_item: TeacherItem) => {
+    { name: "Eliminar", action: (item: TeacherItem) => {
       // TODO: Implementar confirmación desde el componente en vez de un alert (como si fuera un tooltip)
       let confirm = window.confirm("¿Estás seguro de que quieres eliminar a este profesor?");
       if (!confirm) return;
-      // invoke("delete_subject", { id: item.id }).then(loadSubjects);
-      // emit("subjects_updated");
+      invoke("delete_teacher", { teacher_id: item.id });
+      emit("teachers_updated");
     }},
   ];
 </script>
