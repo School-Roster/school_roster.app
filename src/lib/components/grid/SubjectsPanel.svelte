@@ -49,7 +49,8 @@
     on:finalize={handleFinalize}
     class="items"
   >
-    {#each $subjectsWithTeachers as item (item.id)}
+    <!-- Muestra solo los items que tengan profesor asignado -->
+    {#each $subjectsWithTeachers.filter((item) => item.assigned_teacher) as item (item.id + '-' + item.assigned_teacher?.id)}
       <div
         class="subject"
         role="button"
@@ -73,8 +74,9 @@
       <div class="details">
         <span>Nombre de la materia: {selectedSubject.name}</span>
         <span>Tipo: {selectedSubject.spec}</span>
-        <!-- TODO -->
-        <!-- <span>Profesor asignado: {selectedSubject.teacher}</span> -->
+        {#if selectedSubject.assigned_teacher}
+          <span>Profesor asignado: {selectedSubject.assigned_teacher.name} {selectedSubject.assigned_teacher.father_lastname}</span>
+        {/if}
       </div>
     </div>
   {/if}

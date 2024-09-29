@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { invoke } from "@tauri-apps/api";
-import { TeacherItem } from "./teachersStore";
+import { type SimpleTeacherItem } from "./teachersStore";
 
 /**
   * Interfaz para los datos de las materias
@@ -9,7 +9,7 @@ import { TeacherItem } from "./teachersStore";
   * @property {string} shorten - Nombre corto
   * @property {string} color - Color de la materia
   * @property {string} spec - Especialidad a la que pertenece
-  * @property {TeacherItem} assigned_teacher - Profesor asign
+  * @property {SimpleTeacherItem} assigned_teacher - Profesor asign
   */
 export interface SubjectItem {
   id: number;
@@ -17,7 +17,7 @@ export interface SubjectItem {
   shorten: string;
   color: string;
   spec: string;
-  assigned_teacher: TeacherItem | null;
+  assigned_teacher: SimpleTeacherItem | null;
 }
 
 /**
@@ -44,5 +44,6 @@ export async function loadSubjects() {
  */
 export async function loadSubjectsWithTeachers() {
   const response = await invoke("get_subjects_with_teachers");
+  console.log("Response from rust: ", response);
   subjectsWithTeachers.set(response as SubjectItem[]);
 }

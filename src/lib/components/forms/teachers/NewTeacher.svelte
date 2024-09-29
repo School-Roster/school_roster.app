@@ -6,14 +6,14 @@
   import { onMount } from "svelte";
 
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
-  import { loadTeachers } from "$lib/modules/entities/teachersStore";
+  import { loadTeachers, type TeacherItem } from "$lib/modules/entities/teachersStore";
 
-  let name = "";
-  let father_lastname = "";
-  let mother_lastname = "";
-  let email = "";
-  let phone = "";
-  let degree = "";
+  let name: string;
+  let father_lastname: string;
+  let mother_lastname: string;
+  let email: string;
+  let phone: string;
+  let degree: string;
   let comissioned_hours: number;
   let active_hours: number; // Horas activas es automatico con la suma total de las horas de las materias, no se puede editar
   let performance: number;
@@ -21,16 +21,48 @@
   let selectedSubjects: SubjectItem[] = [];
   let showSubjects = false;
 
+  // Para editar un profesor agregamos el item como propiedad
+  export let item: any | null = null;
+
+  function initForm(item: any | null) {
+    console.log("Item", item);
+    if (item) {
+      name = item.name;
+      father_lastname = item.father_lastname;
+      mother_lastname = item.mother_lastname || "";
+      email = item.email || "";
+      phone = item.phone || "";
+      degree = item.degree || "";
+      comissioned_hours = item.commissioned_hours;
+      active_hours = item.active_hours;
+      performance = item.performance;
+      // Map assigned_subjects names to the SubjectItem objects
+      selectedSubjects = item.assigned_subjects.map((subjectName: string) => {
+          const subject = $subjects.find(s => s.name === subjectName);
+          return subject ? subject : { id: -1, name: subjectName }; // Return a default if not found
+      });
+    } else {
+      name = "";
+      father_lastname = "";
+      mother_lastname = "";
+      email = "";
+      phone = "";
+      degree = "";
+      comissioned_hours = 0;
+      active_hours = 0;
+      performance = 0;
+      selectedSubjects = [];
+    }
+  }
+
   onMount(() => {
     loadSubjects();
-    // Carga las materias cuando se actualizan
+    initForm(item);
+    // Carga las materias si se actualizan
     listen("subjects_updated", async () => {
       await loadSubjects();
     });
   });
-
-  // Para editar un profesor agregamos el item como propiedad
-  // export const item: TeacherItem | null = null;
 
   // Manda la nueva materia a la base de datos en rust
   async function addTeacher() {

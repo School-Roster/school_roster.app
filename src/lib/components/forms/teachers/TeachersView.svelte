@@ -38,15 +38,15 @@
   ];
 
   let editShown = false;
-  let editItem: TeacherItem | null = null;
+  let editItem: any | null = null;
   let newShown = false;
-  const handleNew = () => {
+  const handleChange = () => {
     newShown = !newShown;
     if (editShown) editShown = false;
   };
 
   const actions = [
-    { name: "Editar", action: (item: TeacherItem) => {
+    { name: "Editar", action: (item: any) => {
       editShown = true;
       editItem = item;
       if (newShown) newShown = false;
@@ -71,7 +71,7 @@
   <div class="controls">
     <div class="controls-left">
       <!-- Botón para agregar una nueva materia -->
-      <button class="new-button" on:click={handleNew}>
+      <button class="new-button" on:click={handleChange}>
         <img src="/icons/plus.svg" alt="Agregar materia" />
         Agregar nuevo profesor
       </button>
@@ -93,9 +93,9 @@
   {#if newShown}
     <NewTeacher />
   {/if}
-  <!-- {#if editShown} -->
-  <!--   <NewTeacher item={editItem} /> -->
-  <!-- {/if} -->
+  {#if editShown}
+    <NewTeacher item={editItem} />
+  {/if}
   <!-- Muestra la tabla de profesores -->
   {#if $teachers.length === 0 && !newShown && !editShown}
     <div class="empty">Agregar un nuevo profesor para comenzar</div>

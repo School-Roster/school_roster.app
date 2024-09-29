@@ -1,8 +1,9 @@
 use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use crate::db::AppState;
 use sqlx::prelude::FromRow;
+use sqlx::Row;
 use serde::{Deserialize, Serialize};
-use crate::class::teachers::Teacher;
+use crate::class::teachers::SimpleTeacher;
 
 /// Estructura de una materia
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
@@ -13,7 +14,18 @@ pub struct Subject {
     pub shorten: String,
     pub color: String,
     pub spec: String,
-    pub teachers: Option<Vec<Teacher>>,
+}
+
+/// Estructura de una materia con profesor asignado
+/// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SubjectWithTeacher {
+    pub id: i16,
+    pub name: String,
+    pub shorten: String,
+    pub color: String,
+    pub spec: String,
+    pub assigned_teacher: Option<SimpleTeacher>,
 }
 
 /// Funcion para crear una materia
@@ -123,16 +135,50 @@ pub async fn update_subject(
 /// Se llama desde la interfaz de usuario para obtener todas las materias que tengan profesores asignados
 #[allow(dead_code, unused)]
 #[tauri::command]
-pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<Subject>, String> {
-    let subjects: Vec<Subject> = sqlx::query_as::<_, Subject>("
-        SELECT DISTINCT subjects.id, subjects.name, subjects.shorten, subjects.color, subjects.spec
+pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<SubjectWithTeacher>, String> {
+    let rows = sqlx::query("
+        SELECT
+            subjects.id as subject_id,
+            subjects.name as subject_name,
+            subjects.shorten as subject_shorten,
+            subjects.color as subject_color,
+            subjects.spec as subject_spec,
+            teachers.id as teacher_id,
+            teachers.name as teacher_name,
+            teachers.father_lastname as teacher_father_lastname
         FROM subjects
-        JOIN teacher_subjects ON subjects.id = teacher_subjects.subject_id
+        LEFT JOIN teacher_subjects ON subjects.id = teacher_subjects.subject_id
+        LEFT JOIN teachers ON teacher_subjects.teacher_id = teachers.id
     ")
-        .fetch(&pool.db)
-        .try_collect()
+        .fetch_all(&pool.db)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| format!("Failed to fetch subjects with teachers: {}", e))?;
 
-    Ok(subjects)
+    // Manualmente mapeamos los resultados a un vector de materias
+    let mut subjects_with_teachers: Vec<SubjectWithTeacher> = Vec::new();
+
+    for row in rows {
+        let teacher_id: Option<i16> = row.try_get("teacher_id").unwrap_or(None);
+        let assigned_teacher: Option<SimpleTeacher> = match teacher_id {
+            Some(teacher_id) => Some(SimpleTeacher {
+                id: teacher_id,
+                name: row.try_get("teacher_name").unwrap(),
+                father_lastname: row.try_get("teacher_father_lastname").unwrap(),
+            }),
+            None => None,
+        };
+
+        let subject = SubjectWithTeacher {
+            id: row.try_get("subject_id").unwrap(),
+            name: row.try_get("subject_name").unwrap(),
+            shorten: row.try_get("subject_shorten").unwrap(),
+            color: row.try_get("subject_color").unwrap(),
+            spec: row.try_get("subject_spec").unwrap(),
+            assigned_teacher,
+        };
+
+        subjects_with_teachers.push(subject);
+    }
+
+    Ok(subjects_with_teachers)
 }

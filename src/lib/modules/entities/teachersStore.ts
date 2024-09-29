@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api";
 import { subjects, type SubjectItem } from "./subjectsStore";
 
 /**
-  * Interfaz para los datos de las materias
+  * Interfaz para los datos de los profesores
   * @property {number} id - Identificador único
   * @property {string} name - Nombre del profesor
   * @property {string} father_lastname - Apellido paterno
@@ -13,7 +13,6 @@ import { subjects, type SubjectItem } from "./subjectsStore";
   * @property {string} degree - Grado académico (opcional)
   * @property {number} commissioned_hours - Horas comisionadas (opcional)
   * @property {number} active_hours - Horas activas (opcional)
-  * @property {SubjectItem[]} assigned_subjects - Materias asignadas
   */
 export interface TeacherItem {
   id: number;
@@ -26,6 +25,18 @@ export interface TeacherItem {
   commissioned_hours: number;
   active_hours: number;
   performance: number;
+}
+
+/**
+  * Interfaz para los datos de los profesores (simple)
+  * @property {number} id - Identificador único
+  * @property {string} name - Nombre del profesor
+  * @property {string} father_lastname - Apellido paterno
+  */
+export interface SimpleTeacherItem {
+  id: number;
+  name: string;
+  father_lastname: string;
 }
 
 

@@ -22,13 +22,13 @@ nav {
   font-family: $secondary-font;
   font-size: 1.5rem;
   height: 100%;
-  padding: 1.25rem;
+  padding: 0.2rem 0.5rem;
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease, padding 0.3s ease;
 
   &.collapsed {
-    width: 68px;
+    width: 60px;
     padding: 1rem 0.5rem;
 
     .logo h1 {

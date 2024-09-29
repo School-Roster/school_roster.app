@@ -4,6 +4,14 @@ use sqlx::prelude::FromRow;
 use sqlx::Row;
 use serde::{Deserialize, Serialize};
 
+/// Estructura simple de un profesor, solo contiene el ID, el nombre y el primer apellido
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SimpleTeacher {
+    pub id: i16,
+    pub name: String,
+    pub father_lastname: String,
+}
+
 /// Estructura de un profesor
 /// Se utiliza para mapear los datos de un profesor de la base de datos a un objeto en Rust
 #[derive(Debug, Serialize, Deserialize, FromRow)]
