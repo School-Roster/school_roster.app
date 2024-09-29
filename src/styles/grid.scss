@@ -1,0 +1,112 @@
+@import 'variables';
+@import 'mixins';
+
+/* ----------------------------------------
+ * Contenido del grid
+---------------------------------------- */
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  flex-grow: 1;
+  overflow: auto;
+}
+
+/* ----------------------------------------
+ * Grid para los horarios
+---------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 5 days + 1 column for hours */
+  gap: 1px;
+  @include theme(background-color, bg-color);
+  @include theme(color, fg-color);
+
+  .header {
+    @include theme(background-color, bg-color);
+    font-weight: bold;
+  }
+
+  div {
+    @include theme(background-color, bg-color);
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+    min-height: 50px;
+
+    body.dark & {
+      background-color: map-get($dark-theme, nav-bg-color);
+      color: map-get($dark-theme, fg-color);
+    }
+  }
+
+  body.dark & {
+    background-color: map-get($dark-theme, bg-color);
+    color: map-get($dark-theme, fg-color);
+  }
+}
+
+// Contentenedor para las materias.
+.subjects-container {
+  display: flex;
+  flex-direction: column;
+
+  .items {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    justify-content: center;
+  }
+
+  .subject {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+    min-width: 100px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f6c177;
+    }
+
+    body.dark & {
+      background-color: map-get($dark-theme, nav-bg-color);
+      color: map-get($dark-theme, fg-color);
+    }
+  }
+}
+
+.subjects-details {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 10px;
+
+  .color {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    place-items: center;
+    width: 120px;
+    height: 100px;
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    min-width: 480px;
+
+    body.dark & {
+      background-color: map-get($dark-theme, nav-bg-color);
+      color: map-get($dark-theme, fg-color);
+    }
+  }
+}

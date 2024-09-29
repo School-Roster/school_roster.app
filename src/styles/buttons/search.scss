@@ -1,0 +1,128 @@
+@import '../variables';
+
+.search {
+  --width: 200px;    
+  --height: 42px;      
+
+  // Estilo para el contenedor del input
+  width: auto;
+  height: var(--height);
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  body.dark & {
+    background: map-get($dark-theme, bg-color);
+  }
+
+  // Estilo para el input
+  input[type="text"] {
+    position: relative;
+    width: var(--height);
+    height: var(--height);
+    color: $black;
+    border: 0;
+    box-sizing: border-box;
+    outline: none;
+    padding: 0 0 0 40px;
+    transition: width .6s ease;
+    z-index: 10;
+    opacity: 0;
+    cursor: pointer;
+
+    &:focus {
+      z-index: 0;
+      opacity: 1;
+      width: var(--width);
+      ~ .symbol {
+        &::before {
+          width: 0%;
+        }
+        &:after {
+          clip-path: inset(0% 0% 0% 100%);
+          transition: clip-path .04s linear .105s;
+        }
+        .cloud {
+          top: -30px;
+          left: -30px;
+          transform: translate(0, 0);
+          transition: all .6s ease;
+        }
+        .lens {
+          left: 15px;
+          transform: translate(0, 0);
+          fill: $black;
+          transition: top .5s ease .1s, left .5s ease .1s, fill .3s ease;
+        }
+      }
+    }
+  }
+  .symbol {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &:before {
+      content:"";
+      position: absolute;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      background: $black;
+      z-index: -1;
+      transition: width .6s ease;
+
+      body.dark & {
+        background: $other-color;
+      }
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+    &:after {
+      content:"";
+      position: absolute;
+      top: 21px;
+      left: 21px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: $black;
+      z-index: 1;
+      clip-path: inset(0% 0% 0% 0%);
+      transition: clip-path .04s linear .225s;
+
+      body.dark & {
+        background: $other-color;
+      }
+    }
+    .lens {
+      position: absolute;
+      fill: $white;
+      stroke: none;
+
+      body.dark & {
+        fill: $black;
+      }
+    }
+    .lens {
+      fill: $white;
+      width: 12px;
+      height: 12px;
+      z-index: 2;
+      transition: top .3s ease, left .3s ease, fill .2s ease .2s;
+
+      body.dark & {
+        fill: $black;
+      }
+    }
+  }
+}

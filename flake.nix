@@ -33,6 +33,7 @@
           libsoup
           webkitgtk
           librsvg
+          sqlx-cli
         ];
       in
       {

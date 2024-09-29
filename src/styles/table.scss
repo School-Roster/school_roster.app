@@ -1,0 +1,112 @@
+@import 'variables';
+@import 'mixins';
+
+$table-light-bg: #fff;
+$table-even-bg: #0000000b;
+
+/* --------------------
+ * Estilo para las tablas de la aplicación (forms)
+ * -------------------- */
+.table-container {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  margin-top: 20px;
+  width: 100%;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    min-width: 600px;
+    margin: 0 auto;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    transition: all 0.3s ease-in-out;
+  }
+
+  table tbody>tr>td:last-child {
+    width: 120px;
+    border-left: 1px solid $primary-color;
+  }
+
+  table tbody>tr>td {
+    padding: 0.275rem 0.925rem;
+    text-align: center;
+
+    body.dark & {
+      background-color: map-get($dark-theme, nav-bg-color);
+      color: map-get($dark-theme, fg-color);
+    }
+  }
+
+  // Estilo para las filas de la tabla
+  table tbody>tr {
+    background-color: $table-light-bg;
+    transition: background-color 0.3s ease-in-out;
+
+    .table-color {
+      background-color: $black;
+      margin: 0 auto;
+      border-radius: 4px;
+      padding: 0.25rem;
+      vertical-align: middle;
+      text-align: center;
+      line-height: 1.5rem;
+    }
+
+    &:hover,
+    &:focus {
+      background-color: $gold;
+    }
+
+    body.dark & {
+      background-color: map-get($dark-theme, nav-bg-color);
+    }
+  }
+
+  // Estilo para las filas pares
+  tbody tr:nth-child(even) {
+    background-color: $table-even-bg;
+  }
+
+  table thead>tr>th {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid $primary-color;
+  }
+
+  .btn {
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.25rem;
+    font-size: 0.7rem;
+    background-color: $primary-color;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    border-radius: 5px;
+    border: none;
+
+    &:hover,
+    &:focus {
+      background-color: lighten($primary-color, 10%);
+      outline: none;
+    }
+
+    &.btn-danger {
+      background-color: $secondary-color;
+      &:hover,
+      &:focus {
+        background-color: darken($secondary-color, 10%);
+      }
+    }
+
+    img {
+      width: 14px;
+      height: 14px;
+      filter: $filter-white;
+    }
+  }
+}

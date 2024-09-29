@@ -1,0 +1,4 @@
+// Mixin para el tema
+@mixin theme($property, $key) {
+  #{$property}: map-get($theme, $key);
+}
