@@ -5,8 +5,13 @@
   import TableComponent from "$lib/components/tables/TableComponent.svelte";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
   import FilterAnimation from "$lib/components/buttons/FilterButton.svelte";
+  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
-  import { teachers, loadTeachers, type TeacherItem } from "$lib/modules/entities/teachersStore";
+  import {
+    teachers,
+    loadTeachers,
+    type TeacherItem,
+  } from "$lib/modules/entities/teachersStore";
   import NewTeacher from "./NewTeacher.svelte";
   import { loadSubjects } from "$lib/modules/entities/subjectsStore";
 
@@ -39,27 +44,46 @@
 
   let editShown = false;
   let editItem: any | null = null;
+
   let newShown = false;
+
+  let showModal = false;
+  let teacherToDelete: TeacherItem | null = null;
   const handleChange = () => {
     newShown = !newShown;
     if (editShown) editShown = false;
   };
 
   const actions = [
-    { name: "Editar", action: (item: any) => {
-      editShown = true;
-      editItem = item;
-      if (newShown) newShown = false;
-    }},
-    { name: "Eliminar", action: (item: TeacherItem) => {
-      // TODO: Implementar confirmación desde el componente en vez de un alert (como si fuera un tooltip)
-      let confirm = window.confirm("¿Estás seguro de que quieres eliminar a este profesor?");
-      if (!confirm) return;
-      invoke("delete_teacher", { teacher_id: item.id });
+    {
+      name: "Editar",
+      action: (item: any) => {
+        editShown = true;
+        editItem = item;
+        if (newShown) newShown = false;
+      },
+    },
+    {
+      name: "Eliminar",
+      action: (item: TeacherItem) => {
+        teacherToDelete = item;
+        showModal = true;
+      },
+    },
+  ];
+
+  const handleDelete = async () => {
+    if (!teacherToDelete) return;
+    invoke("delete_teacher", { teacher_id: teacherToDelete.id }).then(() => {
+      loadTeachers();
       emit("teachers_updated");
       emit("subjects_with_teachers_updated");
-    }},
-  ];
+    });
+    showModal = false;
+  };
+  const handleCancel = () => {
+    showModal = false;
+  };
 </script>
 
 <section class="form-container">
@@ -77,8 +101,13 @@
       </button>
 
       <!-- Botón para cancelar la edición o creación de una materia -->
-      <button class={newShown || editShown ? "cancel-button show" : "cancel-button"} 
-              on:click={() => { newShown = false; editShown = false; }}>
+      <button
+        class={newShown || editShown ? "cancel-button show" : "cancel-button"}
+        on:click={() => {
+          newShown = false;
+          editShown = false;
+        }}
+      >
         Cancelar
       </button>
     </div>
@@ -99,12 +128,25 @@
   <!-- Muestra la tabla de profesores -->
   {#if $teachers.length === 0 && !newShown && !editShown}
     <div class="empty">Agregar un nuevo profesor para comenzar</div>
+  {:else if search}
+    <div class="search-results">
+      Mostrando resultados de búsqueda para "{search}"
+    </div>
+    <TableComponent
+      data={$teachers.filter((s) =>
+        s.name.toLowerCase().includes(search.toLowerCase()),
+      )}
+      {columns}
+      {actions}
+    />
   {:else}
-    {#if search}
-      <div class="search-results">Mostrando resultados de búsqueda para "{search}"</div>
-      <TableComponent data={$teachers.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))} {columns} {actions} />
-    {:else}
-      <TableComponent data={$teachers} {columns} {actions} />
-    {/if}
+    <TableComponent data={$teachers} {columns} {actions} />
   {/if}
+
+  <!-- Modal para eliminar profesor -->
+  <ConfirmModal
+    isOpen={showModal}
+    onConfirm={handleDelete}
+    onCancel={handleCancel}
+  />
 </section>
