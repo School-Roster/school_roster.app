@@ -8,8 +8,12 @@ simplemente llama a la vista deseada.
 	import type { PageData } from './$types';
 	export let data: PageData;
 
+  /* Formularios */
   import SubjectsView from '$lib/components/forms/subjects/SubjectsView.svelte';
   import TeachersView from '$lib/components/forms/teachers/TeachersView.svelte';
+
+  /* Utilidad */
+  import SettingsView from '$lib/components/utils/Settings.svelte';
 
   let view: any;
   switch (data.page) {
@@ -18,6 +22,9 @@ simplemente llama a la vista deseada.
       break;
     case 'teachers':
       view = TeachersView;
+      break;
+    case 'settings':
+      view = SettingsView;
       break;
   }
 

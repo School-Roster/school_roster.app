@@ -43,5 +43,5 @@ export const itemData = [
   { it: 3, name: "Inteligencia artificial", icon: "/icons/robot.svg", menu: "todo", submenu: [] },
   { it: 0, name: "Historial", icon: "/icons/clock.svg", menu: "todo", submenu: [] },
 
-  { it: 0, name: "Configuracion", icon: "/icons/school.svg", menu: "todo", submenu: [] },
+  { it: 0, name: "Configuracion", icon: "/icons/school.svg", menu: "settings", submenu: [] },
 ];
