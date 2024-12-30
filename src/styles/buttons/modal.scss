@@ -12,6 +12,9 @@
   align-items: center;
   font-family: $primary-font;
 
+  background-color: rgba($black, 0.5);
+  z-index: 1000;
+
   h1 {
     font-family: $primary-font;
     color: $primary-color;
@@ -53,7 +56,7 @@
   }
 
   .btn-cancel {
-    background-color: darken($white, 10%);
+    background-color: darken($white-overlay, 10%);
     color: $black;
     padding: 0.5rem 1rem;
     border: none;
@@ -62,7 +65,7 @@
     transition: background-color 0.3s;
     font-size: 1rem;
     &:hover {
-      background-color: darken(darken($white, 10%), 10%);
+      background-color: darken(darken($white-overlay, 10%), 10%);
     }
   }
 }
