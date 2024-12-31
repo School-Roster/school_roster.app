@@ -15,22 +15,29 @@ $blue: $primary-color;
 $red: $secondary-color;
 $gold: $other-color;
 
-$filter-primary: invert(17%) sepia(97%) saturate(1878%) hue-rotate(196deg) brightness(97%) contrast(101%);
-$filter-secondary: invert(13%) sepia(87%) saturate(7416%) hue-rotate(329deg) brightness(65%) contrast(101%);
-$filter-white: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+$filter-primary: invert(17%) sepia(97%) saturate(1878%) hue-rotate(196deg)
+  brightness(97%) contrast(101%);
+$filter-secondary: invert(13%) sepia(87%) saturate(7416%) hue-rotate(329deg)
+  brightness(65%) contrast(101%);
+$filter-white: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg)
+  brightness(100%) contrast(100%);
 
 /* Definir colores por tema */
 // Tema claro
 $light-theme: (
-  bg-color: #faf4ed, // Color de fondo
-  fg-color: #575279, // Color de primer plano
+  bg-color: #faf4ed,
+  // Color de fondo
+  fg-color: #575279,
+  // Color de primer plano
   nav-bg-color: #fffaf3,
 );
 
 // Tema oscuro
 $dark-theme: (
-  bg-color: #191724, // Color de fondo
-  fg-color: #e0def4, // Color de primer plano
+  bg-color: #191724,
+  // Color de fondo
+  fg-color: #e0def4,
+  // Color de primer plano
   nav-bg-color: #1f1d2e,
 );
 
@@ -39,5 +46,5 @@ $theme: $light-theme;
 /* ----------------------------------------
  * Fuentes
 ---------------------------------------- */
-$primary-font: 'Inria Sans', sans-serif;
-$secondary-font: 'Inria Serif', serif;
+$primary-font: "Inria Sans", sans-serif;
+$secondary-font: "Inria Serif", serif;

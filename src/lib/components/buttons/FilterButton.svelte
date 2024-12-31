@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-
+ 
   export let filter: string = "";
   export let columns: any[] = [];
 
