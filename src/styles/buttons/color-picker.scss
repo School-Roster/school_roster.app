@@ -66,8 +66,8 @@ input {
   margin-top: 10px;
   top: 40px;
   border-radius: .3rem;
-  background: $white;
-  border: 1px solid darken($white, 10%);
+  background: $white-overlay;
+  border: 1px solid darken($white-overlay, 10%);
 
   body.dark & {
     background: map-get($dark-theme, bg-color);

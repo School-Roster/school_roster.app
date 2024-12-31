@@ -106,7 +106,7 @@
     }
     .lens {
       position: absolute;
-      fill: $white;
+      fill: $white-overlay;
       stroke: none;
 
       body.dark & {
@@ -114,7 +114,7 @@
       }
     }
     .lens {
-      fill: $white;
+      fill: $white-overlay;
       width: 12px;
       height: 12px;
       z-index: 2;
