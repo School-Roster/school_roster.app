@@ -2,7 +2,6 @@
   import "$styles/nav.scss";
   import NavbarItem from "./NavbarItem.svelte";
   import { WebviewWindow } from "@tauri-apps/api/window";
-  import ToggleDarkTheme from "../buttons/ToggleDarkTheme.svelte";
 
   let isCollapsed = false;
   const collapseSidebar = () => {
@@ -35,12 +34,11 @@
   <!-- Navbar Items -->
   <NavbarItem {isCollapsed} {createWindow} />
 
-  <!-- Toggle Button -->
-  <ToggleDarkTheme />
   <button class="toggle-btn" on:click={collapseSidebar}>
     <img
       src={isCollapsed ? "/icons/caret-right.svg" : "/icons/caret-left.svg"}
       alt="Toggle Sidebar"
     />
   </button>
+
 </nav>
