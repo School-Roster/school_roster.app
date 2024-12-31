@@ -5,6 +5,7 @@
   import TableComponent from "$lib/components/tables/TableComponent.svelte";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
   import FilterAnimation from "$lib/components/buttons/FilterButton.svelte";
+  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   import {
     teachers,
@@ -15,6 +16,7 @@
   import { loadSubjects } from "$lib/modules/entities/subjectsStore";
 
   let search = "";
+  let filter: string = "Nombre";
 
   // Carga las materias desde la base de datos en rust
   onMount(() => {
@@ -43,7 +45,11 @@
 
   let editShown = false;
   let editItem: any | null = null;
+
   let newShown = false;
+
+  let showModal = false;
+  let teacherToDelete: TeacherItem | null = null;
   const handleChange = () => {
     newShown = !newShown;
     if (editShown) editShown = false;
@@ -61,17 +67,24 @@
     {
       name: "Eliminar",
       action: (item: TeacherItem) => {
-        // TODO: Implementar confirmación desde el componente en vez de un alert (como si fuera un tooltip)
-        let confirm = window.confirm(
-          "¿Estás seguro de que quieres eliminar a este profesor?"
-        );
-        if (!confirm) return;
-        invoke("delete_teacher", { teacher_id: item.id });
-        emit("teachers_updated");
-        emit("subjects_with_teachers_updated");
+        teacherToDelete = item;
+        showModal = true;
       },
     },
   ];
+
+  const handleDelete = async () => {
+    if (!teacherToDelete) return;
+    invoke("delete_teacher", { teacher_id: teacherToDelete.id }).then(() => {
+      loadTeachers();
+      emit("teachers_updated");
+      emit("subjects_with_teachers_updated");
+    });
+    showModal = false;
+  };
+  const handleCancel = () => {
+    showModal = false;
+  };
 </script>
 
 <section class="form-container">
@@ -101,7 +114,7 @@
     </div>
     <div class="controls-right">
       <!-- Botón para filtrar la tabla por opciones -->
-      <FilterAnimation {columns} />
+      <FilterAnimation {columns} bind:filter />
       <!-- Filtro de búsqueda -->
       <SearchAnimation bind:search />
     </div>
@@ -118,11 +131,36 @@
     <div class="empty">Agregar un nuevo profesor para comenzar</div>
   {:else if search}
     <div class="search-results">
-      Mostrando resultados de búsqueda para "{search}"
+      <span>Mostrando resultados de búsqueda "{search}" en "{filter}"</span>
     </div>
     <TableComponent
       data={$teachers.filter((s) =>
-        s.name.toLowerCase().includes(search.toLowerCase())
+        {
+          switch (filter) {
+            case "ID":
+              return s.id.toString().includes(search);
+            case "Nombre":
+              return s.name.toLowerCase().includes(search.toLowerCase());
+            case "Apellido paterno":
+              return s.father_lastname.toLowerCase().includes(search.toLowerCase());
+            case "Apellido materno":
+              return s.mother_lastname.toLowerCase().includes(search.toLowerCase());
+            case "Correo":
+              return s.email.toLowerCase().includes(search.toLowerCase());
+            case "Teléfono":
+              return s.phone.toLowerCase().includes(search.toLowerCase());
+            case "Titulo":
+              return s.degree.toLowerCase().includes(search.toLowerCase());
+            case "Horas (comosion)":
+              return s.commissioned_hours.toString().includes(search);
+            case "Horas (activas)":
+              return s.active_hours.toString().includes(search);
+            case "Rendimiento":
+              return s.performance.toString().includes(search);
+            default:
+              return s.name.toLowerCase().includes(search.toLowerCase());
+          }
+        },
       )}
       {columns}
       {actions}
@@ -130,4 +168,11 @@
   {:else}
     <TableComponent data={$teachers} {columns} {actions} />
   {/if}
+
+  <!-- Modal para eliminar profesor -->
+  <ConfirmModal
+    isOpen={showModal}
+    onConfirm={handleDelete}
+    onCancel={handleCancel}
+  />
 </section>
