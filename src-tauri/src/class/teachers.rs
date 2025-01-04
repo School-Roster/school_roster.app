@@ -117,6 +117,91 @@ pub async fn add_teacher(
     Ok(())
 }
 
+/// Funcion para editar un profesor
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `id` - ID del profesor
+/// * `name` - Nombre del profesor
+/// * `father_lastname` - Apellido paterno del profesor
+/// * `mother_lastname` - Apellido materno del profesor (opcional puede ser nulo)
+/// * `email` - Correo electronico del profesor (opcional puede ser nulo)
+/// * `phone` - Telefono del profesor (opcional puede ser nulo)
+/// * `degree` - Grado academico del profesor (opcional puede ser nulo)
+/// * `commisioned_hours` - Total de horas comisionadas del profesor (opcional puede ser nulo)
+/// * `active_hours` - Total de horas activas del profesor (opcional puede ser nulo)
+/// * `performance` - Desempeño del profesor (opcional puede ser nulo)
+/// * `subjects` - Materias que imparte el profesor (opcional puede ser nulo)
+/// Retorna un resultado vacio si la operacion fue exitosa
+#[allow(dead_code, unused)]
+#[tauri::command(rename_all = "snake_case")]
+pub async fn edit_teacher(
+    pool: tauri::State<'_, AppState>,
+    id: i16,
+    name: String,
+    father_lastname: String,
+    mother_lastname: Option<String>,
+    email: Option<String>,
+    phone: Option<String>,
+    degree: Option<String>,
+    commisioned_hours: Option<i16>,
+    active_hours: Option<i16>,
+    performance: Option<i16>,
+    subjects: Option<Vec<i16>>,
+) -> Result<(), String> {
+    // Actualizar los datos del profesor
+    sqlx::query("
+        UPDATE teachers
+        SET
+            name = ?1,
+            father_lastname = ?2,
+            mother_lastname = ?3,
+            email = ?4,
+            phone = ?5,
+            degree = ?6,
+            commisioned_hours = ?7,
+            active_hours = ?8,
+            performance = ?9
+        WHERE id = ?10
+    ")
+        .bind(name)
+        .bind(father_lastname)
+        .bind(mother_lastname)
+        .bind(email)
+        .bind(phone)
+        .bind(degree)
+        .bind(commisioned_hours)
+        .bind(active_hours)
+        .bind(performance)
+        .bind(id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Failed to update teacher: {}", e))?;
+
+    if let Some(subjects) = subjects {
+        // Eliminar las materias del profesor
+        sqlx::query("DELETE FROM teacher_subjects WHERE teacher_id = ?1")
+            .bind(id)
+            .execute(&pool.db)
+            .await
+            .map_err(|e| format!("Failed to delete teacher subjects: {}", e))?;
+
+        // Agregar las materias al profesor
+        for subject_id in subjects {
+            sqlx::query("
+                INSERT INTO teacher_subjects (teacher_id, subject_id)
+                VALUES (?1, ?2)
+            ")
+                .bind(id)
+                .bind(subject_id)
+                .execute(&pool.db)
+                .await
+                .map_err(|e| format!("Failed to attach subject to teacher: {}", e))?;
+        }
+    }
+
+    Ok(())
+}
+
 /// Funcion para obtener todos los profesores
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
