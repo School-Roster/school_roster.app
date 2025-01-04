@@ -50,6 +50,7 @@
 
   let showModal = false;
   let teacherToDelete: TeacherItem | null = null;
+
   const handleChange = () => {
     newShown = !newShown;
     if (editShown) editShown = false;
@@ -58,7 +59,7 @@
   const actions = [
     {
       name: "Editar",
-      action: (item: any) => {
+      action: (item: TeacherItem) => {
         editShown = true;
         editItem = item;
         if (newShown) newShown = false;
@@ -85,6 +86,7 @@
   const handleCancel = () => {
     showModal = false;
   };
+
 </script>
 
 <section class="form-container">

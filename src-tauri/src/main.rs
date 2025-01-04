@@ -13,6 +13,7 @@ use crate::class::subjects::{
 };
 use crate::class::teachers::{
     add_teacher,
+    edit_teacher,
     get_all_teachers,
     delete_teacher
 };
@@ -33,6 +34,7 @@ async fn main() {
             get_subjects_with_teachers,
             // Teachers
             add_teacher,
+            edit_teacher,
             get_all_teachers,
             delete_teacher
         ])
