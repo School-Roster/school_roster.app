@@ -1,3 +1,6 @@
+# Actualizar manualmente yaml
+pnpm-lock.yaml
+
 # Logs
 logs
 *.log
