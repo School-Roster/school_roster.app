@@ -8,6 +8,7 @@
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
   import { loadTeachers, type TeacherItem } from "$lib/modules/entities/teachersStore";
 
+  let id: number;
   let name: string;
   let father_lastname: string;
   let mother_lastname: string;
@@ -27,6 +28,7 @@
   function initForm(item: any | null) {
     console.log("Item", item);
     if (item) {
+      id = item.id;
       name = item.name;
       father_lastname = item.father_lastname;
       mother_lastname = item.mother_lastname || "";
@@ -109,6 +111,51 @@
     selectedSubjects = [];
   }
 
+  async function editTeacher() {
+    if (!name || !father_lastname) {
+      alert("Por favor, rellene todos los campos necesarios");
+      return;
+    }
+
+    if (comissioned_hours < 0 || performance < 0) {
+      alert("Por favor, rellene los campos numericos con valores positivos");
+      return;
+    }
+
+    if (selectedSubjects.length > 0) {
+      emit("subjects_with_teachers_updated");
+    }
+
+    // Registrar nuevo profesor
+    await invoke("edit_teacher", {
+      id,
+      name,
+      father_lastname,
+      mother_lastname: mother_lastname || null,
+      email: email || null,
+      phone: phone || null,
+      degree: degree || null,
+      comissioned_hours: comissioned_hours || null,
+      active_hours: active_hours || null,
+      performance: performance || null,
+      subjects: selectedSubjects.length > 0 ? selectedSubjects.map((s) => s.id) : null, // Pasamos solo los ids de las materias seleccionadas
+    });
+    await loadTeachers(); // Recarga las materias
+    await emit("teachers_updated"); // Emite un evento para actualizar la vista de materias
+
+    // Limpiamos los campos
+    name = "";
+    father_lastname = "";
+    mother_lastname = "";
+    email = "";
+    phone = "";
+    degree = "";
+    comissioned_hours = 0;
+    active_hours = 0;
+    performance = 0;
+    selectedSubjects = [];
+  }
+
   // Cambia el estado de la materia seleccionada
   function toggleSelection(subject: SubjectItem) {
     const index = selectedSubjects.findIndex((s) => s.id === subject.id);
@@ -127,7 +174,11 @@
 
 <!-- Formulario para agregar un nuevo profesor -->
 <section class="form-editor">
-  <h1>Registro de profesores</h1>
+  {#if item}
+    <h1>Editar profesor</h1>
+  {:else} 
+    <h1>Registro de profesores</h1>
+  {/if}
   <div class="form-group">
     <div class="form-field">
       <label for="name"><img src="/icons/teacher.svg" alt="Nombre" /></label>
@@ -233,6 +284,10 @@
       </div>
     {/if}
 
-    <button class="form-button" on:click={addTeacher}>Agregar</button>
+    {#if item}
+      <button class="form-button" on:click={editTeacher}>Editar profesor</button>
+    {:else}
+      <button class="form-button" on:click={addTeacher}>Agregar</button>
+    {/if}
   </div>
 </section>
