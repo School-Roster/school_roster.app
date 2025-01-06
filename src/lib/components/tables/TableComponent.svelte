@@ -32,7 +32,11 @@
                 {item[column.key]}
               </td>
             {:else}
-              <td>{item[column.key]}</td>
+            {#if !item[column.key]}
+                <td>N/A</td>
+              {:else}
+                <td>{item[column.key]}</td>
+              {/if}
             {/if}
           {/each}
           <td>
