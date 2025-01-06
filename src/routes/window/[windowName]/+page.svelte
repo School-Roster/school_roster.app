@@ -14,7 +14,8 @@ simplemente llama a la vista deseada.
 
   /* Utilidad */
   import SettingsView from '$lib/components/utils/Settings.svelte';
-
+  import NotFoundView from '$lib/components/utils/NotFound.svelte';
+ 
   let view: any;
   switch (data.page) {
     case 'subjects':
@@ -25,6 +26,9 @@ simplemente llama a la vista deseada.
       break;
     case 'settings':
       view = SettingsView;
+      break;
+    default:
+      view = NotFoundView;
       break;
   }
 
