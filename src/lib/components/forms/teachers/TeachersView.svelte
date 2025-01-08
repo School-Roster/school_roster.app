@@ -15,8 +15,10 @@
   import NewTeacher from "./NewTeacher.svelte";
   import { loadSubjects } from "$lib/modules/entities/subjectsStore";
 
+  import NoResults from "$lib/components/utils/NoResults.svelte";
+
   let search = "";
-  let filter: string = "Nombre";
+  let filter: string = "";
 
   // Carga las materias desde la base de datos en rust
   onMount(() => {
@@ -86,7 +88,6 @@
   const handleCancel = () => {
     showModal = false;
   };
-
 </script>
 
 <section class="form-container">
@@ -130,40 +131,47 @@
   {/if}
   <!-- Muestra la tabla de profesores -->
   {#if $teachers.length === 0 && !newShown && !editShown}
-    <div class="empty">Agregar un nuevo profesor para comenzar</div>
+    <NoResults />
   {:else if search}
     <div class="search-results">
-      <span>Mostrando resultados de búsqueda "{search}" en "{filter}"</span>
+      <span>Mostrando resultados de búsqueda "{search}""</span>
     </div>
     <TableComponent
-      data={$teachers.filter((s) =>
-        {
-          switch (filter) {
-            case "ID":
-              return s.id.toString().includes(search);
-            case "Nombre":
-              return s.name.toLowerCase().includes(search.toLowerCase());
-            case "Apellido paterno":
-              return s.father_lastname.toLowerCase().includes(search.toLowerCase());
-            case "Apellido materno":
-              return s.mother_lastname.toLowerCase().includes(search.toLowerCase());
-            case "Correo":
-              return s.email.toLowerCase().includes(search.toLowerCase());
-            case "Teléfono":
-              return s.phone.toLowerCase().includes(search.toLowerCase());
-            case "Titulo":
-              return s.degree.toLowerCase().includes(search.toLowerCase());
-            case "Horas (comosion)":
-              return s.commissioned_hours.toString().includes(search);
-            case "Horas (activas)":
-              return s.active_hours.toString().includes(search);
-            case "Rendimiento":
-              return s.performance.toString().includes(search);
-            default:
-              return s.name.toLowerCase().includes(search.toLowerCase());
-          }
-        },
-      )}
+      data={$teachers.filter((s) => {
+        switch (filter) {
+          case "ID":
+            return s.id.toString().includes(search);
+          case "Nombre":
+            return s.name.toLowerCase().includes(search.toLowerCase());
+          case "Apellido paterno":
+            return s.father_lastname
+              .toLowerCase()
+              .includes(search.toLowerCase());
+          case "Apellido materno":
+            return s.mother_lastname
+              .toLowerCase()
+              .includes(search.toLowerCase());
+          case "Correo":
+            return s.email.toLowerCase().includes(search.toLowerCase());
+          case "Teléfono":
+            return s.phone.toLowerCase().includes(search.toLowerCase());
+          case "Titulo":
+            return s.degree.toLowerCase().includes(search.toLowerCase());
+          case "Horas (comosion)":
+            return s.commissioned_hours.toString().includes(search);
+          case "Horas (activas)":
+            return s.active_hours.toString().includes(search);
+          case "Rendimiento":
+            return s.performance.toString().includes(search);
+          default:
+            return (
+              s.id.toString().includes(search) ||
+              s.name.toLowerCase().includes(search.toLowerCase()) ||
+              s.father_lastname.toLowerCase().includes(search.toLowerCase()) ||
+              s.mother_lastname.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+      })}
       {columns}
       {actions}
     />
