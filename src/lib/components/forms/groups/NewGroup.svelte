@@ -2,14 +2,16 @@
   import "$styles/form/editor.scss";
 
   import { invoke } from "@tauri-apps/api";
-  import { loadGroups, type GroupItem } from "$lib/modules/entities/groupStore";
+  import {
+    loadGroups,
+    type GroupItem,
+  } from "$lib/modules/entities/groupsStore";
   import { emit } from "@tauri-apps/api/event";
-
 
   let grade: number;
   let group: string;
   let career: string;
-  let students: string[];
+  let students: number;
 
   // Para editar se le pasa el item
   export let item: GroupItem | null = null;
@@ -25,7 +27,7 @@
       grade: item.grade,
       group: item.group,
       career: item.career,
-      students: item.students
+      students: item.students,
     });
     await loadGroups();
     await emit("groups_updated");
@@ -37,8 +39,12 @@
       return;
     }
 
-    // await invoke("create_subject", { name, shorten, color, spec });
-    await invoke("create_group", { grade, group, career, students });
+    await invoke("create_group", {
+      grade,
+      group,
+      career: career || null,
+      students: students || null,
+    });
     await loadGroups(); // Recarga las vistas
     await emit("groups_updated"); // Emite un evento para actualizar la vista de materias
 
@@ -46,7 +52,7 @@
     grade = 0;
     group = "";
     career = "";
-    students = [];
+    students = 0;
   }
 </script>
 
@@ -55,7 +61,7 @@
     <h1>Editar Grupo</h1>
     <div class="form-group">
       <div class="form-field">
-        <label for="name"><img src="/icons/group.svg" alt="Icon" /></label>
+        <label for="grade"><img src="/icons/group.svg" alt="Icon" /></label>
         <input
           type="text"
           placeholder="* Grado"
@@ -65,7 +71,7 @@
       </div>
 
       <div class="form-field">
-        <label for="name"><img src="/icons/group.svg" alt="Icon" /></label>
+        <label for="group"><img src="/icons/group.svg" alt="Icon" /></label>
         <input
           type="text"
           placeholder="* Grupo"
@@ -75,7 +81,7 @@
       </div>
 
       <div class="form-field">
-        <label for="name"><img src="/icons/books.svg" alt="Icon" /></label>
+        <label for="career"><img src="/icons/books.svg" alt="Icon" /></label>
         <input
           type="text"
           placeholder="Especialidad o carrera"
@@ -84,53 +90,42 @@
         />
       </div>
 
-      <div class="form-field">
-        <label for="spec">Tipo</label>
-        <select id="spec" bind:value={item.spec}>
-          <option class="opt" value="Obligatoria">Obligatoria</option>
-          <option class="opt" value="Optativa">Optativa</option>
-        </select>
-      </div>
-
-      <button class="form-button" on:click={editSubject}>Editar</button>
+      <button class="form-button" on:click={editGroup}>Editar</button>
     </div>
   {:else}
-    <h1>Nueva Materia</h1>
+    <h1>Generar nuevo grupo</h1>
     <div class="form-group">
       <div class="form-field">
-        <label for="name"><img src="/icons/books.svg" alt="Materia" /></label>
+        <label for="grade"><img src="/icons/group.svg" alt="Icon" /></label>
         <input
-          type="text"
-          placeholder="*Escribe nombre de materia"
-          id="name"
-          bind:value={name}
-          required
+          type="number"
+          placeholder="* Grado"
+          id="grade"
+          bind:value={grade}
         />
       </div>
 
       <div class="form-field">
-        <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
+        <label for="group"><img src="/icons/group.svg" alt="Icon" /></label>
         <input
           type="text"
-          placeholder="Abreviatura (opcional)"
-          id="shorten"
-          bind:value={shorten}
+          placeholder="* Grupo"
+          id="group"
+          bind:value={group}
         />
       </div>
 
       <div class="form-field">
-        <ColorPicker bind:value={color} />
+        <label for="career"><img src="/icons/books.svg" alt="Icon" /></label>
+        <input
+          type="number"
+          placeholder="Especialidad o carrera"
+          id="career"
+          bind:value={career}
+        />
       </div>
 
-      <div class="form-field">
-        <label for="spec">Tipo</label>
-        <select id="spec" bind:value={spec}>
-          <option class="opt" value="Obligatoria">Obligatoria</option>
-          <option class="opt" value="Optativa">Optativa</option>
-        </select>
-      </div>
-
-      <button class="form-button" on:click={addSubject}>Agregar</button>
+      <button class="form-button" on:click={addGroup}>Agregar</button>
     </div>
   {/if}
 </section>
