@@ -7,6 +7,7 @@
   import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
+  import NoResults from "$lib/components/utils/NoResults.svelte";
 
   let search = "";
 
@@ -94,7 +95,7 @@
   {/if}
   <!-- Muestra la tabla de materias -->
   {#if $subjects.length === 0 && !newShown && !editShown}
-    <div class="empty">No hay materias registradas</div>
+    <NoResults />
   {:else}
     {#if search}
       <div class="search-results">Mostrando resultados de búsqueda para "{search}"</div>
