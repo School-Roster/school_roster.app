@@ -8,6 +8,7 @@
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
 
+  import NewGroup from "./NewGroup.svelte";
   import {
     groups,
     loadGroups,
@@ -23,10 +24,10 @@
   // Columnas de la tabla (key es el nombre de la propiedad en la interfaz)
   const columns = [
     { name: "ID", key: "id" },
-    { name: "Nombre", key: "name" },
-    { name: "Abreviatura", key: "shorten" },
-    { name: "Color", key: "color" },
-    { name: "Tipo", key: "spec" },
+    { name: "Grado", key: "grade" },
+    { name: "Grupo", key: "group" },
+    { name: "Carrera", key: "career" },
+    { name: "Cantidad de estudiantes", key: "students" },
   ];
 
   let editShown = false;
