@@ -17,6 +17,12 @@ use crate::class::teachers::{
     get_all_teachers,
     delete_teacher
 };
+use crate::class::groups::{
+    get_groups,
+    create_group,
+    update_group,
+    delete_group,
+};
 use crate::db::{AppState, connect};
 
 mod db;
@@ -36,7 +42,12 @@ async fn main() {
             add_teacher,
             edit_teacher,
             get_all_teachers,
-            delete_teacher
+            delete_teacher,
+            // Groups
+            create_group,
+            update_group,
+            delete_group,
+            get_groups,
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())

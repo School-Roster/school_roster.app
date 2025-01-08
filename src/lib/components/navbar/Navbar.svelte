@@ -25,7 +25,7 @@
 
 <nav class="sidebar" class:collapsed={isCollapsed}>
   <div class="logo">
-    <img src="/icons/rooster.png" alt="Logo" />
+    <img src="/icons/logo_transparent.png" alt="Logo" />
     {#if !isCollapsed}
       <h1>School Roster</h1>
     {/if}

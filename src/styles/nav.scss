@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'mixins';
+@import "variables";
+@import "mixins";
 
 nav {
   @include theme(background-color, nav-bg-color);
@@ -25,7 +25,9 @@ nav {
   padding: 0.2rem 0.5rem;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease, padding 0.3s ease;
+  transition:
+    width 0.3s ease,
+    padding 0.3s ease;
 
   &.collapsed {
     width: 60px;
@@ -66,8 +68,8 @@ nav {
     }
 
     img {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 48px;
     }
   }
 
@@ -87,7 +89,8 @@ nav {
       width: 16px;
       height: 16px;
       margin-right: 1rem;
-      filter: invert(43%) sepia(7%) saturate(968%) hue-rotate(172deg) brightness(94%) contrast(89%);
+      filter: invert(43%) sepia(7%) saturate(968%) hue-rotate(172deg)
+        brightness(94%) contrast(89%);
     }
 
     span {
@@ -174,7 +177,8 @@ nav {
         img {
           width: 16px;
           height: 16px;
-          filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg) brightness(101%) contrast(94%);
+          filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg)
+            brightness(101%) contrast(94%);
           margin-right: 0.3rem;
         }
 
@@ -265,7 +269,8 @@ nav {
   img {
     width: 20px;
     height: 20px;
-    filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg) brightness(101%) contrast(94%);
+    filter: invert(17%) sepia(54%) saturate(1537%) hue-rotate(174deg)
+      brightness(101%) contrast(94%);
   }
 
   body.dark & {
