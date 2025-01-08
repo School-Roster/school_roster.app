@@ -15,14 +15,15 @@
     color: map-get($dark-theme, fg-color);
   }
 
-  .title { // Estilo para el título del formulario
+  .title {
+    // Estilo para el título del formulario
     display: flex;
     align-items: center;
     padding: 0.5rem;
     margin-top: 1.5rem;
     margin-left: 1rem;
     font-size: 1.5rem;
-    color: $primary-color;
+    color: $black;
     font-weight: bold;
     margin-bottom: 1rem;
 
@@ -30,7 +31,7 @@
       width: 40px;
       height: 40px;
       margin-right: 0.5rem;
-      filter: $filter-primary;
+      filter: $filter-black;
     }
 
     // Cuando el tema es oscuro el titulo sera blanco para mejor contraste
@@ -45,7 +46,7 @@
   .divider {
     display: block;
     height: 1px;
-    background-color: $primary-color;
+    background-color: $black;
   }
 
   // Controles (agregar, cancelar, buscar)
@@ -72,7 +73,9 @@
         font-weight: bold;
         cursor: pointer;
         border: none;
-        transition: background-color 0.3s, transform 0.5s ease-in-out;
+        transition:
+          background-color 0.3s,
+          transform 0.5s ease-in-out;
       }
 
       // Estilo para el botón de nuevo
@@ -101,7 +104,9 @@
         transform: translateY(-10px); // Animación para ocultar el botón
         margin-left: 1rem;
         pointer-events: none;
-        transition: opacity 0.5s, transform 0.5s ease-in-out;
+        transition:
+          opacity 0.5s,
+          transform 0.5s ease-in-out;
 
         // Estilo para el botón de cancelar cuando se muestra
         &.show {
