@@ -21,7 +21,13 @@ use crate::class::groups::{
     get_groups,
     create_group,
     update_group,
-    delete_group,
+    delete_group
+};
+use crate::class::classrooms::{
+    get_classrooms,
+    create_classroom,
+    delete_classroom,
+    update_classroom
 };
 use crate::db::{AppState, connect};
 
@@ -32,22 +38,27 @@ mod class;
 async fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            // Subjects
+            // Materias
             create_subject,
             delete_subject,
             update_subject,
             get_subjects,
             get_subjects_with_teachers,
-            // Teachers
+            // Profesores
             add_teacher,
             edit_teacher,
             get_all_teachers,
             delete_teacher,
-            // Groups
+            // Grupos
             create_group,
             update_group,
             delete_group,
             get_groups,
+            // Aulas
+            get_classrooms,
+            create_classroom,
+            delete_classroom,
+            update_classroom
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())
