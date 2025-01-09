@@ -12,6 +12,7 @@ simplemente llama a la vista deseada.
   import SubjectsView from '$lib/components/forms/subjects/SubjectsView.svelte';
   import TeachersView from '$lib/components/forms/teachers/TeachersView.svelte';
   import GroupsView from '$lib/components/forms/groups/GroupsView.svelte';
+  import ClassroomView from '$lib/components/forms/classrooms/ClassroomView.svelte';
 
   /* Utilidad */
   import SettingsView from '$lib/components/utils/Settings.svelte';
@@ -30,6 +31,9 @@ simplemente llama a la vista deseada.
       break;
     case 'groups':
       view = GroupsView;
+      break;
+    case 'classroom':
+      view = ClassroomView;
       break;
     default:
       view = NotFoundView;
