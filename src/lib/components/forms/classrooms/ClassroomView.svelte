@@ -8,60 +8,60 @@
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
 
-  import NewGroup from "./NewGroup.svelte";
+  import NewClassroom from "./NewClassroom.svelte";
   import {
-    groups,
-    loadGroups,
-    type GroupItem,
-  } from "$lib/modules/entities/groupsStore";
+    classrooms,
+    loadClassrooms,
+    type ClassroomItem,
+  } from "$lib/modules/entities/classroomStore";
 
   let search = "";
-  let filter: string = "Grado";
+  let filter: string = "";
 
-  // Carga los grupos desde la base de datos en rust
-  onMount(loadGroups);
+  // Carga las aulas desde la base de datos en rust
+  onMount(loadClassrooms);
 
   // Columnas de la tabla (key es el nombre de la propiedad en la interfaz)
   const columns = [
     { name: "ID", key: "id" },
-    { name: "Grado", key: "grade" },
-    { name: "Grupo", key: "group" },
-    { name: "Carrera", key: "career" },
-    { name: "Cantidad de estudiantes", key: "students" },
+    { name: "Edificio", key: "building_id" },
+    { name: "Aula", key: "building_number" },
+    { name: "Tipo de aula", key: "building_type" },
+    { name: "Capacidad del aula", key: "capacity" },
   ];
 
   let editShown = false;
-  let editItem: GroupItem | null = null;
-  const handleEdit = (item: GroupItem) => {
+  let editItem: ClassroomItem | null = null;
+  const handleEdit = (item: ClassroomItem) => {
     editShown = true;
     editItem = item;
     if (newShown) newShown = false;
   };
 
   let showModal = false;
-  let groupToDelete: GroupItem | null = null;
+  let classroomToDelete: ClassroomItem | null = null;
 
   const actions = [
     {
       name: "Editar",
-      action: (item: GroupItem) => {
+      action: (item: ClassroomItem) => {
         handleEdit(item);
       },
     },
     {
       name: "Eliminar",
-      action: (item: GroupItem) => {
-        groupToDelete = item;
+      action: (item: ClassroomItem) => {
+        classroomToDelete = item;
         showModal = true;
       },
     },
   ];
 
   const handleDelete = async () => {
-    if (!groupToDelete) return;
-    invoke("delete_group", { id: groupToDelete.id }).then(() => {
-      loadGroups();
-      emit("groups_updated");
+    if (!classroomToDelete) return;
+    invoke("delete_classroom", { id: classroomToDelete.id }).then(() => {
+      loadClassrooms();
+      emit("classroom_updated");
     });
     showModal = false;
   };
@@ -78,8 +78,8 @@
 
 <section class="form-container">
   <div class="title">
-    <img src="/icons/group.svg" alt="Grupos" />
-    <span>Grupos</span>
+    <img src="/icons/door.svg" alt="Aulas" />
+    <span>Aulas</span>
   </div>
   <div class="divider"></div>
   <div class="controls">
@@ -87,7 +87,7 @@
       <!-- Botón para agregar un nuevo elemento -->
       <button class="new-button" on:click={handleNew}>
         <img src="/icons/plus.svg" alt="Agregar" />
-        Agregar nuevo grupo
+        Agregar nueva aula
       </button>
 
       <!-- Botón para cancelar la edición o creación de una materia -->
@@ -107,13 +107,13 @@
   </div>
   <!-- Muestra el formulario de nueva materia si se presiona el botón -->
   {#if newShown}
-    <NewGroup item={null} />
+    <NewClassroom item={null} />
   {/if}
   {#if editShown}
-    <NewGroup item={editItem} />
+    <NewClassroom item={editItem} />
   {/if}
   <!-- Muestra la tabla -->
-  {#if $groups.length === 0 && !newShown && !editShown}
+  {#if $classrooms.length === 0 && !newShown && !editShown}
     <NoResults />
   {:else}
     {#if search}
@@ -121,27 +121,26 @@
         Mostrando resultados de búsqueda para "{search}"
       </div>
       <TableComponent
-        data={$groups.filter((s) => {
+        data={$classrooms.filter((s) => {
           switch (filter) {
             case "ID":
               return s.id.toString().includes(search);
-            case "Grado":
-              return s.grade.toString().includes(search);
-            case "Grupo":
-              return s.group.toLowerCase().includes(search.toLowerCase());
-            case "Especialidad":
-              return s.career.toLowerCase().includes(search.toLowerCase());
-            case "Cantidad estudiantes":
-              return s.students.toString().includes(search);
+            case "Edificio":
+              return s.building_id.toLowerCase().includes(search.toLowerCase());
+            case "Aula":
+              return s.building_number.toString().includes(search);
+            case "Tipo de aula":
+              return s.building_type
+                .toLowerCase()
+                .includes(search.toLowerCase());
+            case "Capacidad":
+              return s.capacity.toString().includes(search);
             default:
-              // Busqueda por defecto permite al usuario buscar por ejemplo '2A'
-              // Búsqueda genérica combinando campos
               return (
-                s.id.toString().includes(search) ||
-                s.grade.toString().includes(search) ||
-                s.group.toLowerCase().includes(search.toLowerCase()) ||
-                s.career.toLowerCase().includes(search.toLowerCase()) ||
-                s.students.toString().includes(search)
+                s.building_id.toLowerCase().includes(search.toLowerCase()) ||
+                s.building_number.toString().includes(search) ||
+                s.building_type.toLowerCase().includes(search.toLowerCase()) ||
+                s.capacity.toString().includes(search)
               );
           }
         })}
@@ -149,7 +148,7 @@
         {actions}
       />
     {:else}
-      <TableComponent data={$groups} {columns} {actions} />
+      <TableComponent data={$classrooms} {columns} {actions} />
     {/if}
 
     <!-- Modal de confirmación para eliminar una materia -->

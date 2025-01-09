@@ -31,7 +31,7 @@ pub async fn create_group(
     career: Option<String>,
     students: Option<i16>,
 ) -> Result<(), String> {
-    sqlx::query("INSERT INTO groups (grade, group, career, students) VALUES (?1, ?2, ?3, ?4)")
+    sqlx::query(r#"INSERT INTO groups (grade, "group", career, students) VALUES (?1, ?2, ?3, ?4)"#)
         .bind(grade)
         .bind(group)
         .bind(career)
@@ -99,7 +99,7 @@ pub async fn update_group(
     career: Option<String>,
     students: Option<i16>,
 ) -> Result<(), String> {
-    sqlx::query("UPDATE groups SET grade = ?1, group = ?2, career = ?3, students = ?4 WHERE id = ?5")
+    sqlx::query(r#"UPDATE groups SET grade = ?1, "group" = ?2, career = ?3, students = ?4 WHERE id = ?5"#)
         .bind(grade)
         .bind(group)
         .bind(career)
