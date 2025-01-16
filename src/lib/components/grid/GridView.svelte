@@ -1,10 +1,6 @@
 <script lang="ts">
   import "$styles/grid.scss";
-  import {
-    groups,
-    loadGroups,
-    type GroupItem,
-  } from "$lib/modules/entities/groupsStore";
+  import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
 
@@ -18,7 +14,7 @@
 
   // TODO: Por ahora los modulos viven aqui, despues los sacamos de la informacion
   //       registrada en ~School
-  export let modulesPerDay: number = 6;
+  export let modulesPerDay: number = 9;
 
   function handleModuleAssignment(
     groupId: string,
@@ -39,33 +35,34 @@
   });
 </script>
 
-<section class="grid">
-  <!-- Header row with days and their modules -->
-  <div class="grid__header">
-    <div class="header-group">Grupos</div>
+<section class="schedule-grid">
+  <!-- Header con los dias y los modulos -->
+  <div class="header-row">
+    <div class="corner-cell">Grupos</div>
     {#each days as day}
-      <div class="header-day">
-        <div class="day-name">{day}</div>
-        <div class="modules-row">
+      <div class="day-column">
+        <div class="day-header">{day}</div>
+        <div class="modules-header">
           {#each Array(modulesPerDay) as _, index}
-            <div class="module-header">{index + 1}</div>
+            <div class="module-label">{index + 1}</div>
           {/each}
         </div>
       </div>
     {/each}
   </div>
 
-  <!-- Groups and their modules -->
-  <div class="grid__content">
+  <!-- Grupos y los modulos -->
+  <div class="grid-content">
     {#each $groups as group}
-      <div class="grid__row">
-        <div class="grid__row__group">{group.grade}{group.group}</div>
+      <div class="group-row">
+        <div class="group-cell">{group.grade}{group.group}</div>
         {#each days as day}
-          <div class="day-slot">
+          <div class="day-modules">
             {#each Array(modulesPerDay) as _, moduleIndex}
-              <div 
-                class="module-slot"
-                on:click={() => handleModuleAssignment(group.id, day, moduleIndex)}
+              <div
+                class="module-cell"
+                on:click={() =>
+                  handleModuleAssignment(group.id, day, moduleIndex)}
               >
                 <!-- Module content will go here -->
               </div>
@@ -78,88 +75,106 @@
 </section>
 
 <style lang="scss">
-  .grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-    
-    &__header {
+  @use "../../../styles/variables";
+  .schedule-grid {
+    border: 1px solid variables.$white-overlay;
+    border-radius: 8px;
+    overflow: hidden;
+    background: variables.$white-overlay;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .header-row {
       display: grid;
       grid-template-columns: auto repeat(5, 1fr);
-      gap: 1rem;
-      align-items: start;
+      background-color: variables.$white-background;
+      border-bottom: 1px solid variables.$black;
 
-      .header-group {
-        min-width: 100px;
+      .corner-cell {
         padding: 0.5rem;
-        background-color: #f0f0f0;
-        border-radius: 4px;
+        font-weight: 600;
         text-align: center;
+        border-right: 1px solid variables.$black;
+        background-color: variables.$white-overlay;
       }
 
-      .header-day {
-        .day-name {
-          font-weight: bold;
-          margin-bottom: 0.5rem;
-          text-align: center;
-          padding: 0.5rem;
-          background-color: #f0f0f0;
-          border-radius: 4px;
+      .day-column {
+        border-right: 1px solid variables.$black;
+
+        &:last-child {
+          border-right: none;
         }
 
-        .modules-row {
-          display: flex;
-          gap: 0.5rem;
+        .day-header {
+          padding: 0.75rem;
+          font-weight: 600;
+          text-align: center;
+          border-bottom: 1px solid variables.$black;
+          background-color: variables.$white-overlay;
+        }
 
-          .module-header {
+        .modules-header {
+          display: flex;
+
+          .module-label {
             flex: 1;
+            padding: 0.5rem;
             text-align: center;
-            padding: 0.25rem;
-            background-color: #e0e0e0;
-            border-radius: 2px;
-            font-size: 0.8rem;
+            font-size: 0.875rem;
+            color: variables.$black;
+            border-right: 1px solid variables.$black;
+
+            &:last-child {
+              border-right: none;
+            }
           }
         }
       }
     }
-    
-    &__content {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    
-    &__row {
-      display: grid;
-      grid-template-columns: auto repeat(5, 1fr);
-      gap: 1rem;
-      align-items: center;
-      
-      &__group {
-        padding: 0.5rem;
-        background-color: #f0f0f0;
-        border-radius: 4px;
-        min-width: 100px;
-        text-align: center;
-      }
 
-      .day-slot {
-        display: flex;
-        gap: 0.5rem;
-        
-        .module-slot {
-          flex: 1;
-          background-color: #ffffff;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          padding: 0.5rem;
-          min-height: 40px;
-          cursor: pointer;
-          transition: background-color 0.2s;
-          
-          &:hover {
-            background-color: #f5f5f5;
+    .grid-content {
+      .group-row {
+        display: grid;
+        height: 40px;
+        grid-template-columns: auto repeat(5, 1fr);
+        border-bottom: 1px solid variables.$black;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .group-cell {
+          min-width: 42px;
+          padding: 0.75rem;
+          font-weight: 500;
+          text-align: center;
+          border-right: 1px solid variables.$black;
+          background-color: variables.$white-background;
+        }
+
+        .day-modules {
+          display: flex;
+          // border-right: 1px solid #ddd;
+          border-right: 1px solid variables.$black;
+
+          &:last-child {
+            border-right: none;
+          }
+
+          .module-cell {
+            flex: 1;
+            max-height: 92%;
+            border-right: 1px solid #eee;
+            background-color: variables.$white-hard;
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            &:last-child {
+              border-right: none;
+            }
+
+            &:hover {
+              background-color: variables.$white-overlay;
+            }
           }
         }
       }
