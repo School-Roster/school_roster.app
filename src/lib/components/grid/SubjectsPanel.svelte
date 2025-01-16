@@ -1,64 +1,68 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { dndzone } from "svelte-dnd-action";
-  import { flip } from "svelte/animate";
-  import { subjectsWithTeachers, loadSubjectsWithTeachers, type SubjectItem } from "$lib/modules/entities/subjectsStore";
+  import {
+    subjectsWithTeachers,
+    loadSubjectsWithTeachers,
+    type SubjectItem,
+  } from "$lib/modules/entities/subjectsStore";
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
 
   let selectedSubject: SubjectItem | null = null;
+  let cleanup: () => void;
 
   onMount(() => {
     loadSubjectsWithTeachers(); // Carga las materias desde la base de datos en rust
 
     // Escucha el evento para actualizar la vista de materias
-    listen("subjects_with_teachers_updated", async () => {
-      await loadSubjectsWithTeachers();
-    });
+    (async () => {
+      const listenerCleanup = await listen(
+        "subjects_with_teachers_updated",
+        async () => {
+          await loadSubjectsWithTeachers();
+        },
+      );
+      cleanup = listenerCleanup;
+    })();
+
+    return () => {
+      cleanup?.();
+    };
   });
 
-  /* Funcionalidad Drag and Drop */
-  const flipDurationMs = 150;
-  
-  const handleConsider = (e: any) => {
-    const updatedItems = e.detail.items;
-    // Only update the subjects store if necessary
-    subjectsWithTeachers.update((currentSubjects: SubjectItem[]) => {
-      return currentSubjects.map((subject, index) => updatedItems[index] || subject);
-    });
-  };
+  // Manejamos cuando el usuario agarra la materia
+  function handleDragStart(e: DragEvent, subject: SubjectItem) {
+    // Only send necessary data
+    const dragData = {
+      id: subject.id,
+      shorten: subject.shorten,
+      color: subject.color,
+      teacherId: subject.assigned_teacher?.id,
+    };
 
-  const handleFinalize = (e: any) => {
-    const updatedItems = e.detail.items;
-    subjectsWithTeachers.update((currentSubjects: SubjectItem[]) => {
-      return currentSubjects.map((subject, index) => updatedItems[index] || subject);
-    });
-  };
-
-  // Funcion para manejar el evento de click en una materia
-  function handleClick(item: SubjectItem) {
-    console.log("Clicked", item);
-    selectedSubject = item;
+    e.dataTransfer?.setData("application/json", JSON.stringify(dragData));
   }
+
+  // Memoize filtered subjects
+  $: assignedSubjects = $subjectsWithTeachers.filter(
+    (item) => item.assigned_teacher,
+  );
 </script>
 
 <div class="subjects-container">
-  <section
-    use:dndzone={{ items: $subjectsWithTeachers, flipDurationMs }}
-    on:consider={handleConsider}
-    on:finalize={handleFinalize}
-    class="items"
-  >
-    <!-- Muestra solo los items que tengan profesor asignado -->
-    {#each $subjectsWithTeachers.filter((item) => item.assigned_teacher) as item (item.id + '-' + item.assigned_teacher?.id)}
+  <section class="items">
+    {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
       <div
         class="subject"
         role="button"
         tabindex="0"
-        style="background-color: {item.color}; color: {getContrastColor(item.color)}"
-        animate:flip="{{duration: flipDurationMs}}"
-        on:click={() => handleClick(item)}
-        on:keydown={(e) => e.key === "Enter" && handleClick(item)}
+        draggable="true"
+        style="background-color: {item.color}; color: {getContrastColor(
+          item.color,
+        )}"
+        on:dragstart={(e) => handleDragStart(e, item)}
+        on:click={() => (selectedSubject = item)}
+        on:keydown={(e) => e.key === "Enter" && (selectedSubject = item)}
       >
         {item.shorten}
       </div>
@@ -67,15 +71,22 @@
 
   {#if selectedSubject}
     <div class="subjects-details">
-      <!-- Show the color of the subject -->
-      <div class="color" style="background-color: {selectedSubject.color}; color: {getContrastColor(selectedSubject.color)}">
+      <div
+        class="color"
+        style="background-color: {selectedSubject.color}; color: {getContrastColor(
+          selectedSubject.color,
+        )}"
+      >
         {selectedSubject.shorten}
       </div>
       <div class="details">
         <span>Nombre de la materia: {selectedSubject.name}</span>
         <span>Tipo: {selectedSubject.spec}</span>
         {#if selectedSubject.assigned_teacher}
-          <span>Profesor asignado: {selectedSubject.assigned_teacher.name} {selectedSubject.assigned_teacher.father_lastname}</span>
+          <span
+            >Profesor asignado: {selectedSubject.assigned_teacher.name}
+            {selectedSubject.assigned_teacher.father_lastname}</span
+          >
         {/if}
       </div>
     </div>

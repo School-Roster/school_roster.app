@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'mixins';
+@import "variables";
+@import "mixins";
 
 /* ----------------------------------------
  * Contenido del grid
@@ -16,33 +16,15 @@
  * Grid para los horarios
 ---------------------------------------- */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); /* 5 days + 1 column for hours */
-  gap: 1px;
+  /* display: grid; */
+  /* grid-template-columns: repeat(6, 1fr); */
+  /* gap: 1px; */
   @include theme(background-color, bg-color);
   @include theme(color, fg-color);
 
   .header {
     @include theme(background-color, bg-color);
     font-weight: bold;
-  }
-
-  div {
-    @include theme(background-color, bg-color);
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: center;
-    min-height: 50px;
-
-    body.dark & {
-      background-color: map-get($dark-theme, nav-bg-color);
-      color: map-get($dark-theme, fg-color);
-    }
-  }
-
-  body.dark & {
-    background-color: map-get($dark-theme, bg-color);
-    color: map-get($dark-theme, fg-color);
   }
 }
 
@@ -67,7 +49,7 @@
     padding: 10px;
     border: 1px solid #ccc;
     text-align: center;
-    min-width: 100px;
+    min-width: 40px;
     cursor: pointer;
 
     &:hover {
