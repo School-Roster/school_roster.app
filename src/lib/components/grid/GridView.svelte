@@ -1,8 +1,10 @@
 <script lang="ts">
   import "$styles/grid.scss";
   import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
+  import { getContrastColor } from "$lib/utilities/helpers";
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
+  import { writable } from "svelte/store";
 
   export let days: string[] = [
     "Lunes",
@@ -16,15 +18,9 @@
   //       registrada en ~School
   export let modulesPerDay: number = 9;
 
-  function handleModuleAssignment(
-    groupId: string,
-    day: string,
-    moduleIndex: number,
-  ) {
-    console.log(
-      `Assigning module for group ${groupId} on ${day} at index ${moduleIndex}`,
-    );
-  }
+  // Utilizamos Map() para mantener O(1)
+  // let assignments = new Map();
+  const assignmentsStore = writable(new Map());
 
   onMount(() => {
     loadGroups();
@@ -33,6 +29,63 @@
       await loadGroups();
     });
   });
+
+  // Funcion para cuando una materia entra en un modulo
+  function handleDragOver(e: DragEvent) {
+    e.preventDefault();
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("module-cell")) {
+      target.classList.add("drag-over");
+    }
+  }
+
+  // Funcion para cuando una materia abandona el modulo
+  function handleDragLeave(e: DragEvent) {
+    e.preventDefault();
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("module-cell")) {
+      target.classList.remove("drag-over");
+    }
+  }
+
+  // Funcion para cuando se suelta una materia en el modulo
+  function handleDrop(
+    e: DragEvent,
+    groupId: number,
+    day: string,
+    moduleIndex: number,
+  ) {
+    e.preventDefault();
+    const target = e.target as HTMLElement;
+    target.classList.remove("drag-over");
+
+    const subjectData = e.dataTransfer?.getData("application/json");
+    if (!subjectData) return;
+
+    const subject = JSON.parse(subjectData);
+    // Creamos una llave unica para el assign
+    const key = `${groupId}-${day}-${moduleIndex}`;
+
+    // assignments.set(key, subject);
+    // assignments = assignments; // Maneja reactividad
+    assignmentsStore.update((currentMap: any) => {
+      const newMap = new Map(currentMap);
+      newMap.set(key, subject);
+      return newMap;
+    });
+    // console.log("Updated assignments:", Array.from(assignments.entries())); // Debug log
+    // getAssignment(groupId, day, moduleIndex);
+  }
+
+  // Manera eficiente de conseguir los 'assigns'
+  function getAssignment(groupId: number, day: string, moduleIndex: number) {
+    const key = `${groupId}-${day}-${moduleIndex}`;
+    let assignment;
+    assignmentsStore.subscribe((map: any) => {
+      assignment = map.get(key);
+    })();
+    return assignment;
+  }
 </script>
 
 <section class="schedule-grid">
@@ -59,13 +112,33 @@
         {#each days as day}
           <div class="day-modules">
             {#each Array(modulesPerDay) as _, moduleIndex}
-              <div
-                class="module-cell"
-                on:click={() =>
-                  handleModuleAssignment(group.id, day, moduleIndex)}
-              >
-                <!-- Module content will go here -->
-              </div>
+              {#key $assignmentsStore}
+                {#if true}
+                  {@const assignment = getAssignment(
+                    group.id,
+                    day,
+                    moduleIndex,
+                  )}
+                  <div
+                    class="module-cell"
+                    class:has-subject={assignment}
+                    on:dragover={handleDragOver}
+                    on:dragleave={handleDragLeave}
+                    on:drop={(e) => handleDrop(e, group.id, day, moduleIndex)}
+                  >
+                    {#if assignment}
+                      <div
+                        class="subject-pill"
+                        style="background-color: {assignment.color}; color: {getContrastColor(
+                          assignment.color,
+                        )}"
+                      >
+                        {assignment.shorten}
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+              {/key}
             {/each}
           </div>
         {/each}
@@ -174,6 +247,23 @@
 
             &:hover {
               background-color: variables.$white-overlay;
+            }
+
+            /* Drag & drop */
+            &.drag-over {
+              background-color: #e3f2fd;
+              border: 2px dashed #2196f3;
+            }
+
+            .subject-pill {
+              height: 100%;
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 2px;
+              font-size: 0.675rem;
+              font-weight: 500;
             }
           }
         }
