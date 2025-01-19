@@ -7,6 +7,7 @@
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
+  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
 
   import NewGroup from "./NewGroup.svelte";
   import {
@@ -89,6 +90,8 @@
         <img src="/icons/plus.svg" alt="Agregar" />
         Agregar nuevo grupo
       </button>
+      <!-- Boton para importar de excel -->
+      <ImportExcel />
 
       <!-- Botón para cancelar la edición o creación de una materia -->
       <button
