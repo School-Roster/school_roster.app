@@ -31,13 +31,18 @@ use crate::class::classrooms::{
 };
 use crate::db::{AppState, connect};
 
+use crate::util::xlsx::{read_xlsx};
+
 mod db;
+mod util;
 mod class;
 
 #[tokio::main]
 async fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            // Utils
+            read_xlsx,
             // Materias
             create_subject,
             delete_subject,
