@@ -4,40 +4,28 @@
 use std::process;
 use tauri::Manager as _; // Necesario para poder usar manage()
 
-use crate::class::subjects::{
-    get_subjects,
-    create_subject,
-    delete_subject,
-    update_subject,
-    get_subjects_with_teachers
-};
-use crate::class::teachers::{
-    add_teacher,
-    edit_teacher,
-    get_all_teachers,
-    delete_teacher
-};
-use crate::class::groups::{
-    get_groups,
-    create_group,
-    update_group,
-    delete_group
-};
 use crate::class::classrooms::{
-    get_classrooms,
-    create_classroom,
-    delete_classroom,
-    update_classroom
+    create_classroom, delete_classroom, get_classrooms, update_classroom,
 };
-use crate::db::{AppState, connect};
+use crate::class::groups::{create_group, delete_group, get_groups, update_group};
+use crate::class::subjects::{
+    create_subject, delete_subject, get_subjects, get_subjects_with_teachers, update_subject,
+};
+use crate::class::teachers::{add_teacher, delete_teacher, edit_teacher, get_all_teachers};
+use crate::db::{connect, AppState};
 
-mod db;
+use crate::util::xlsx::read_xlsx;
+
 mod class;
+mod db;
+mod util;
 
 #[tokio::main]
 async fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            // Utils
+            read_xlsx,
             // Materias
             create_subject,
             delete_subject,
@@ -70,7 +58,9 @@ async fn main() {
         Err(err) => {
             eprintln!("Database connection error: {}", err);
             // If the database exists but migrations are mismatched, give a more helpful message
-            if err.to_string().contains("VersionMissing") || err.to_string().contains("VersionMismatch") {
+            if err.to_string().contains("VersionMissing")
+                || err.to_string().contains("VersionMismatch")
+            {
                 eprintln!("Migration version mismatch detected. Try one of the following:");
                 eprintln!("1. Delete the existing database file and restart the application");
                 eprintln!("2. Ensure your migration files in ./migrations/ are properly versioned");

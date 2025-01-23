@@ -7,6 +7,7 @@
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
+  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
 
   import NewGroup from "./NewGroup.svelte";
   import {
@@ -74,6 +75,18 @@
     newShown = !newShown;
     if (editShown) editShown = false;
   };
+
+  // Funcion para excel
+  function handleImport(event: CustomEvent) {
+    const { mappings } = event.detail;
+    console.log("Column mappings:", mappings);
+    // mappings will be like:
+    // {
+    //   "Name": "C1:C9",
+    //   "LastName": "D1:D9",
+    //   ...
+    // }
+  }
 </script>
 
 <section class="form-container">
@@ -89,6 +102,8 @@
         <img src="/icons/plus.svg" alt="Agregar" />
         Agregar nuevo grupo
       </button>
+      <!-- Boton para importar de excel -->
+      <ImportExcel availableData={columns} />
 
       <!-- Botón para cancelar la edición o creación de una materia -->
       <button
