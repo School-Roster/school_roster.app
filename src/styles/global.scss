@@ -1,8 +1,8 @@
 /* ----------------------------------------
  * Base
 ---------------------------------------- */
-@import 'variables';
-@import 'mixins';
+@import "variables";
+@import "mixins";
 
 body {
   font-family: $primary-font;
@@ -20,7 +20,12 @@ body.dark {
   color: map-get($dark-theme, fg-color);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: $secondary-font;
   font-weight: bold;
   color: $primary-color;
@@ -29,7 +34,9 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-button, input, select {
+button,
+input,
+select {
   font-size: 12px;
 }
 
@@ -40,6 +47,10 @@ main {
   display: flex;
   width: 100%;
   height: 100vh;
+  body.dark & {
+    background-color: map-get($dark-theme, bg-color);
+    color: map-get($dark-theme, fg-color);
+  }
 }
 
 /* ----------------------------------------
@@ -48,29 +59,29 @@ main {
  * Iconos: https://fontawesome.com/
 ---------------------------------------- */
 @font-face {
-  font-family: 'Inria Sans';
-  src: url('/fonts/Inria_Sans/InriaSans-Regular.ttf') format('truetype');
+  font-family: "Inria Sans";
+  src: url("/fonts/Inria_Sans/InriaSans-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inria Sans';
-  src: url('/fonts/Inria_Sans/InriaSans-Bold.ttf') format('truetype');
+  font-family: "Inria Sans";
+  src: url("/fonts/Inria_Sans/InriaSans-Bold.ttf") format("truetype");
   font-weight: bold;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inria Serif';
-  src: url('/fonts/Inria_Serif/InriaSerif-Regular.ttf') format('truetype');
+  font-family: "Inria Serif";
+  src: url("/fonts/Inria_Serif/InriaSerif-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inria Serif';
-  src: url('/fonts/Inria_Serif/InriaSerif-Bold.ttf') format('truetype');
+  font-family: "Inria Serif";
+  src: url("/fonts/Inria_Serif/InriaSerif-Bold.ttf") format("truetype");
   font-weight: bold;
   font-style: normal;
 }
