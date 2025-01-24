@@ -8,6 +8,7 @@
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
   import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
+  import { ClassType } from "$lib/utilities/helpers";
 
   import NewGroup from "./NewGroup.svelte";
   import {
@@ -31,15 +32,17 @@
     { name: "Cantidad de estudiantes", key: "students" },
   ];
 
-  let editShown = false;
+  let importShown: boolean = false;
+
+  let editShown: boolean = false;
   let editItem: GroupItem | null = null;
-  const handleEdit = (item: GroupItem) => {
+  const handleEdit: (item: GroupItem) => void = (item: GroupItem) => {
     editShown = true;
     editItem = item;
     if (newShown) newShown = false;
   };
 
-  let showModal = false;
+  let showModal: boolean = false;
   let groupToDelete: GroupItem | null = null;
 
   const actions = [
@@ -58,7 +61,7 @@
     },
   ];
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!groupToDelete) return;
     invoke("delete_group", { id: groupToDelete.id }).then(() => {
       loadGroups();
@@ -75,18 +78,11 @@
     newShown = !newShown;
     if (editShown) editShown = false;
   };
-
-  // Funcion para excel
-  function handleImport(event: CustomEvent) {
-    const { mappings } = event.detail;
-    console.log("Column mappings:", mappings);
-    // mappings will be like:
-    // {
-    //   "Name": "C1:C9",
-    //   "LastName": "D1:D9",
-    //   ...
-    // }
-  }
+  const importToggle = (): void => {
+    importShown = !importShown;
+    if (editShown) editShown = false;
+    if (newShown) newShown = false;
+  };
 </script>
 
 <section class="form-container">
@@ -98,12 +94,15 @@
   <div class="controls">
     <div class="controls-left">
       <!-- Botón para agregar un nuevo elemento -->
-      <button class="new-button" on:click={handleNew}>
+      <button class="new-button" on:click={handleNew} disabled={newShown || editShown}>
         <img src="/icons/plus.svg" alt="Agregar" />
         Agregar nuevo grupo
       </button>
+
       <!-- Boton para importar de excel -->
-      <ImportExcel availableData={columns} />
+      <button class="import-button" on:click={importToggle}>
+        Importar desde Excel
+      </button>
 
       <!-- Botón para cancelar la edición o creación de una materia -->
       <button
@@ -126,6 +125,9 @@
   {/if}
   {#if editShown}
     <NewGroup item={editItem} />
+  {/if}
+  {#if importShown}
+    <ImportExcel defaultClass={ClassType.Groups} availableData={columns} />
   {/if}
   <!-- Muestra la tabla -->
   {#if $groups.length === 0 && !newShown && !editShown}
