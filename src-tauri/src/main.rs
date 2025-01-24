@@ -7,7 +7,7 @@ use tauri::Manager as _; // Necesario para poder usar manage()
 use crate::class::classrooms::{
     create_classroom, delete_classroom, get_classrooms, update_classroom,
 };
-use crate::class::groups::{create_group, delete_group, get_groups, update_group};
+use crate::class::groups::{create_group, create_groups, delete_group, get_groups, update_group};
 use crate::class::subjects::{
     create_subject, delete_subject, get_subjects, get_subjects_with_teachers, update_subject,
 };
@@ -39,6 +39,7 @@ async fn main() {
             delete_teacher,
             // Grupos
             create_group,
+            create_groups,
             update_group,
             delete_group,
             get_groups,

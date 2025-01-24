@@ -9,3 +9,14 @@ export function getContrastColor(hex: string) {
   const yiq = (r * 299 + g * 587 + b * 114) / 1000; // algoritmo para calcular el brillo (YIQ)
   return yiq >= 128 ? "#000000" : "#ffffff"; // TODO: Esto podria usar el color de texto del tema actual
 }
+
+/** 
+  * Enum con las clases definidas en el programa
+  * Utilizado para mejorar el codigo
+  */
+export enum ClassType {
+  Groups,
+  Subjects,
+  Teachers,
+  Classrooms
+}
