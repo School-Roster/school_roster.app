@@ -85,7 +85,7 @@
   <div class="controls">
     <div class="controls-left">
       <!-- Botón para agregar un nuevo elemento -->
-      <button class="new-button" on:click={handleNew}>
+      <button class="new-button" on:click={handleNew} disabled={newShown || editShown}>
         <img src="/icons/plus.svg" alt="Agregar" />
         Agregar nueva aula
       </button>
