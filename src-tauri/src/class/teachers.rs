@@ -1,8 +1,8 @@
-use futures::TryStreamExt;
 use crate::db::AppState;
+use futures::TryStreamExt;
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::Row;
-use serde::{Deserialize, Serialize};
 
 /// Estructura simple de un profesor, solo contiene el ID, el nombre y el primer apellido
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,8 +24,8 @@ pub struct Teacher {
     pub phone: Option<String>,
     pub degree: Option<String>,
     pub commisioned_hours: Option<i16>, // Total de horas
-    pub active_hours: Option<i16>, // Horas activas en el programa
-    pub performance: Option<i16>, // Desempeño
+    pub active_hours: Option<i16>,      // Horas activas en el programa
+    pub performance: Option<i16>,       // Desempeño
 }
 
 /// Funcion para agregar un profesor
@@ -57,7 +57,8 @@ pub async fn add_teacher(
     performance: Option<i16>,
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
-    let teacher_id: i64 = sqlx::query_scalar("
+    let teacher_id: i64 = sqlx::query_scalar(
+        "
         INSERT INTO teachers (
             name,
             father_lastname,
@@ -71,43 +72,52 @@ pub async fn add_teacher(
         )
         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
         RETURNING id
-    ")
-        .bind(name)
-        .bind(father_lastname)
-        .bind(mother_lastname)
-        .bind(email)
-        .bind(phone)
-        .bind(degree)
-        .bind(commisioned_hours)
-        .bind(active_hours)
-        .bind(performance)
-        .fetch_one(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to create teacher: {}", e))?;
+    ",
+    )
+    .bind(name)
+    .bind(father_lastname)
+    .bind(mother_lastname)
+    .bind(email)
+    .bind(phone)
+    .bind(degree)
+    .bind(commisioned_hours)
+    .bind(active_hours)
+    .bind(performance)
+    .fetch_one(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to create teacher: {}", e))?;
 
     if let Some(subjects) = subjects {
         // Agregar las materias al profesor
         for subject_id in subjects {
-            let exists: Option<i16> = sqlx::query_scalar("
+            let exists: Option<i16> = sqlx::query_scalar(
+                "
                 SELECT 1 FROM teacher_subjects
                 WHERE teacher_id = ?1 AND subject_id = ?2
-            ")
-                .bind(teacher_id)
-                .bind(subject_id)
-                .fetch_optional(&pool.db)
-                .await
-                .map_err(|e| format!("Failed to check if subject is already attached to teacher: {}", e))?;
+            ",
+            )
+            .bind(teacher_id)
+            .bind(subject_id)
+            .fetch_optional(&pool.db)
+            .await
+            .map_err(|e| {
+                format!(
+                    "Failed to check if subject is already attached to teacher: {}",
+                    e
+                )
+            })?;
 
             if exists.is_none() {
-                sqlx::query("
+                sqlx::query(
+                    "
                     INSERT INTO teacher_subjects (teacher_id, subject_id)
-                    VALUES (?1, ?2)"
+                    VALUES (?1, ?2)",
                 )
-                    .bind(teacher_id)
-                    .bind(subject_id)
-                    .execute(&pool.db)
-                    .await
-                    .map_err(|e| format!("Failed to attach subject to teacher: {}", e))?;
+                .bind(teacher_id)
+                .bind(subject_id)
+                .execute(&pool.db)
+                .await
+                .map_err(|e| format!("Failed to attach subject to teacher: {}", e))?;
             } else {
                 println!("Subject already attached to teacher");
             }
@@ -149,7 +159,8 @@ pub async fn edit_teacher(
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
     // Actualizar los datos del profesor
-    sqlx::query("
+    sqlx::query(
+        "
         UPDATE teachers
         SET
             name = ?1,
@@ -162,20 +173,21 @@ pub async fn edit_teacher(
             active_hours = ?8,
             performance = ?9
         WHERE id = ?10
-    ")
-        .bind(name)
-        .bind(father_lastname)
-        .bind(mother_lastname)
-        .bind(email)
-        .bind(phone)
-        .bind(degree)
-        .bind(commisioned_hours)
-        .bind(active_hours)
-        .bind(performance)
-        .bind(id)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to update teacher: {}", e))?;
+    ",
+    )
+    .bind(name)
+    .bind(father_lastname)
+    .bind(mother_lastname)
+    .bind(email)
+    .bind(phone)
+    .bind(degree)
+    .bind(commisioned_hours)
+    .bind(active_hours)
+    .bind(performance)
+    .bind(id)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to update teacher: {}", e))?;
 
     if let Some(subjects) = subjects {
         // Eliminar las materias del profesor
@@ -187,15 +199,17 @@ pub async fn edit_teacher(
 
         // Agregar las materias al profesor
         for subject_id in subjects {
-            sqlx::query("
+            sqlx::query(
+                "
                 INSERT INTO teacher_subjects (teacher_id, subject_id)
                 VALUES (?1, ?2)
-            ")
-                .bind(id)
-                .bind(subject_id)
-                .execute(&pool.db)
-                .await
-                .map_err(|e| format!("Failed to attach subject to teacher: {}", e))?;
+            ",
+            )
+            .bind(id)
+            .bind(subject_id)
+            .execute(&pool.db)
+            .await
+            .map_err(|e| format!("Failed to attach subject to teacher: {}", e))?;
         }
     }
 
@@ -209,7 +223,9 @@ pub async fn edit_teacher(
 /// Se llama desde la interfaz de usuario para obtener todos los profesores
 #[allow(dead_code, unused)]
 #[tauri::command]
-pub async fn get_all_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<(Teacher, Vec<i16>)>, String> {
+pub async fn get_all_teachers(
+    pool: tauri::State<'_, AppState>,
+) -> Result<Vec<(Teacher, Vec<i16>)>, String> {
     // Obtener todos los profesores
     let teachers: Vec<Teacher> = sqlx::query_as::<_, Teacher>("SELECT * FROM teachers")
         .fetch(&pool.db)
@@ -220,14 +236,20 @@ pub async fn get_all_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<(T
     let mut teachers_with_subjects = Vec::new();
     for teacher in teachers {
         // Obtener las materias que imparte el profesor
-        let subjects: Vec<i16> = sqlx::query("SELECT subject_id FROM teacher_subjects WHERE teacher_id = ?1")
-            .bind(teacher.id) // Mapear el ID del profesor
-            .fetch(&pool.db)
-            .map_ok(|row| row.get::<i16, _>(0)) // Obtener el/los ID de la materia
-            .try_collect() // Convertir el resultado en un vector
-            .await
-            .map_err(|e| format!("Failed to fetch subjects for teacher {}: {}", teacher.name, e))?;
-        
+        let subjects: Vec<i16> =
+            sqlx::query("SELECT subject_id FROM teacher_subjects WHERE teacher_id = ?1")
+                .bind(teacher.id) // Mapear el ID del profesor
+                .fetch(&pool.db)
+                .map_ok(|row| row.get::<i16, _>(0)) // Obtener el/los ID de la materia
+                .try_collect() // Convertir el resultado en un vector
+                .await
+                .map_err(|e| {
+                    format!(
+                        "Failed to fetch subjects for teacher {}: {}",
+                        teacher.name, e
+                    )
+                })?;
+
         // Agregar el profesor y sus materias al vector
         teachers_with_subjects.push((teacher, subjects));
     }
