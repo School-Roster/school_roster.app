@@ -43,7 +43,8 @@
   };
 
   let showModal: boolean = false;
-  let groupToDelete: GroupItem | null = null;
+  // Manejamos eliminar por medio de un diccionario si hay varios seleccionados
+  let groupToDelete: { single?: GroupItem; multiple?: number[] } | null = null;
 
   const actions = [
     {
@@ -54,8 +55,12 @@
     },
     {
       name: "Eliminar",
-      action: (item: GroupItem) => {
-        groupToDelete = item;
+      action: (itemOrItems: GroupItem | number[]) => {
+        if (Array.isArray(itemOrItems)) {
+          groupToDelete = { multiple: itemOrItems };
+        } else {
+          groupToDelete = { single: itemOrItems };
+        }
         showModal = true;
       },
     },
@@ -63,10 +68,19 @@
 
   const handleDelete = async (): Promise<void> => {
     if (!groupToDelete) return;
-    invoke("delete_group", { id: groupToDelete.id }).then(() => {
+
+    try {
+      if (groupToDelete.multiple) {
+        console.log(groupToDelete.multiple);
+        await invoke("delete_groups", { ids: groupToDelete.multiple });
+      } else if (groupToDelete.single) {
+        await invoke("delete_group", { id: groupToDelete.single.id });
+      }
       loadGroups();
       emit("groups_updated");
-    });
+    } catch (error) {
+      console.error("Error deleting groups:", error);
+    }
     showModal = false;
   };
   const handleCancel = () => {
@@ -94,7 +108,11 @@
   <div class="controls">
     <div class="controls-left">
       <!-- Botón para agregar un nuevo elemento -->
-      <button class="new-button" on:click={handleNew} disabled={newShown || editShown}>
+      <button
+        class="new-button"
+        on:click={handleNew}
+        disabled={newShown || editShown}
+      >
         <img src="/icons/plus.svg" alt="Agregar" />
         Agregar nuevo grupo
       </button>
@@ -174,6 +192,10 @@
       isOpen={showModal}
       onConfirm={handleDelete}
       onCancel={handleCancel}
+      message={groupToDelete?.multiple ? 
+      `Are you sure you want to delete ${groupToDelete.multiple.length} items?` : 
+      `Are you sure you want to delete this group?`
+      }
     />
   {/if}
 </section>

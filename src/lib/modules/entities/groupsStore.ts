@@ -97,8 +97,9 @@ export async function importGroupsFromXlsx(
   excelData: Array<Record<string, unknown>>
 ): Promise<void> {
   console.log("Raw data:", excelData);
-  const required: string[] = ['grade', 'group'];
+
   // Checar por campos requeridos no importados
+  const required: string[] = ['grade', 'group'];
   const missingFields: string[] = required.filter(
     field => !mappings.some(m => m.field.key === field)
   );
@@ -118,12 +119,13 @@ export async function importGroupsFromXlsx(
     if (mapping.range.column) {
       acc[mapping.field.key] = {
         columnIndex: columnLetterToIndex(mapping.range.column),
-        startRow: mapping.range.startRow - 1,
+        startRow: mapping.range.startRow - 2,
         endRow: mapping.range.endRow ? mapping.range.endRow - 1 : undefined
       };
     }
     return acc;
   }, {} as Record<string, { columnIndex: number; startRow: number; endRow?: number }>);
+  console.log("columnMap: ", columnMap);
 
   // Preparar los grupos que seran importados
   const groupsToImport = excelData
@@ -135,7 +137,7 @@ export async function importGroupsFromXlsx(
         grade: Number(row['GRADO']),
         group: String(row['GRUPO']),
         career: columnMap.career
-          ? String(row['Career'] || '')
+          ? String(row['CARRERA'] || '')
           : null,
         students: columnMap.students
           ? Number(row['Cantidad'] || '')
