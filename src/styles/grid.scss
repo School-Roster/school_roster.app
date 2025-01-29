@@ -15,18 +15,6 @@
 /* ----------------------------------------
  * Grid para los horarios
 ---------------------------------------- */
-.grid {
-  /* display: grid; */
-  /* grid-template-columns: repeat(6, 1fr); */
-  /* gap: 1px; */
-  @include theme(background-color, bg-color);
-  @include theme(color, fg-color);
-
-  .header {
-    @include theme(background-color, bg-color);
-    font-weight: bold;
-  }
-}
 
 // Contentenedor para las materias.
 .subjects-container {
@@ -89,6 +77,180 @@
     body.dark & {
       background-color: map-get($dark-theme, nav-bg-color);
       color: map-get($dark-theme, fg-color);
+    }
+  }
+}
+
+/* ----------------------------------------
+ * Grid para los horarios
+---------------------------------------- */
+.schedule-grid {
+  border: 1px solid $white-overlay;
+  border-radius: 8px;
+  overflow: hidden;
+  background: $white-overlay;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  body.dark & {
+    background: $black;
+    border: 1px solid $white-overlay;
+  }
+
+  .header-row {
+    display: grid;
+    grid-template-columns: auto repeat(5, 1fr);
+    background-color: $white-background;
+    border-bottom: 1px solid $black;
+
+    body.dark & {
+      background-color: $black;
+      border-bottom: 1px solid $white-hard;
+    }
+
+    .corner-cell {
+      padding: 0.5rem;
+      font-weight: 600;
+      text-align: center;
+      border-right: 1px solid $black;
+      background-color: $white-overlay;
+
+      body.dark & {
+        background-color: map-get($dark-theme, bg-color);
+        color: map-get($dark-theme, fg-color);
+      }
+    }
+
+    .day-column {
+      border-right: 1px solid $black;
+
+      body.dark & {
+        border-right: 1px solid $white-hard;
+      }
+
+      &:last-child {
+        border-right: none;
+      }
+
+      .day-header {
+        padding: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        border-bottom: 1px solid $black;
+        background-color: $white-overlay;
+
+        body.dark & {
+          border-bottom: 1px solid $white-hard;
+          background-color: map-get($dark-theme, bg-color);
+        }
+      }
+
+      .modules-header {
+        display: flex;
+
+        .module-label {
+          flex: 1;
+          padding: 0.5rem;
+          text-align: center;
+          font-size: 0.875rem;
+          color: $black;
+          border-right: 1px solid $black;
+
+          body.dark & {
+            color: map-get($dark-theme, fg-color);
+            border-right: 1px solid $white-hard;
+          }
+
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+    }
+  }
+
+  .grid-content {
+    .group-row {
+      display: grid;
+      height: 40px;
+      grid-template-columns: auto repeat(5, 1fr);
+      border-bottom: 1px solid $black;
+
+      body.dark & {
+        border-bottom: 1px solid $white-hard;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .group-cell {
+        min-width: 42px;
+        padding: 0.75rem;
+        font-weight: 500;
+        text-align: center;
+        border-right: 1px solid $black;
+        background-color: $white-overlay;
+
+        body.dark & {
+          border-right: 1px solid $white-hard;
+          background-color: map-get($dark-theme, bg-color);
+        }
+      }
+
+      .day-modules {
+        display: flex;
+        border-right: 1px solid $black;
+
+        &:last-child {
+          border-right: none;
+        }
+
+        body.dark & {
+          border-right: 1px solid $white-hard;
+        }
+
+        .module-cell {
+          flex: 1;
+          max-height: 92%;
+          border-right: 1px solid #ddd;
+          background-color: $white-hard;
+          cursor: pointer;
+          transition: background 0.2s ease;
+
+          body.dark & {
+            border-right: 1px solid $black-hard;
+            background-color: $black;
+          }
+
+          &:last-child {
+            border-right: none;
+          }
+
+          &:hover {
+            background-color: $white-overlay;
+            body.dark & {
+              background-color: $blue;
+            }
+          }
+
+          /* Drag & drop */
+          &.drag-over {
+            background-color: $blue !important;
+            border: 1px dashed $other-color;
+          }
+
+          .subject-pill {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+            font-size: 0.675rem;
+            font-weight: 500;
+          }
+        }
+      }
     }
   }
 }

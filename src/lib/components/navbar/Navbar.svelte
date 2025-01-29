@@ -1,5 +1,6 @@
 <script lang="ts">
   import "$styles/nav.scss";
+    import ToggleDarkTheme from "../buttons/ToggleDarkTheme.svelte";
   import NavbarItem from "./NavbarItem.svelte";
   import { WebviewWindow } from "@tauri-apps/api/window";
 
@@ -40,5 +41,4 @@
       alt="Toggle Sidebar"
     />
   </button>
-
 </nav>
