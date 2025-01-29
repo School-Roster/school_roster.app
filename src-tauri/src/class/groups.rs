@@ -103,7 +103,7 @@ pub async fn get_groups(pool: tauri::State<'_, AppState>) -> Result<Vec<Group>, 
 /// * `pool` - Conexion a la base de datos
 /// * `id` - ID del grupo:
 /// Retorna un resultado vacio si la operacion fue exitosa
-/// Se llama desde la interfaz de usuario para eliminar una materia
+/// Se llama desde la interfaz de usuario para eliminar un grupo
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn delete_group(pool: tauri::State<'_, AppState>, id: i16) -> Result<(), String> {
@@ -112,6 +112,22 @@ pub async fn delete_group(pool: tauri::State<'_, AppState>, id: i16) -> Result<(
         .execute(&pool.db)
         .await
         .map_err(|e| format!("Failed to delete group: {}", e))?;
+
+    Ok(())
+}
+
+/// Funcion para eliminar varios grupos
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `ids` - Vector con los ID del grupo:
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para eliminar varios grupos
+#[allow(dead_code, unused)]
+#[tauri::command]
+pub async fn delete_groups(pool: tauri::State<'_, AppState>, ids: Vec<i16>) -> Result<(), String> {
+    for i in ids {
+        delete_group(pool.clone(), i).await?;
+    }
 
     Ok(())
 }
