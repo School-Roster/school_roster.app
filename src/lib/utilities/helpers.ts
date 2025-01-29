@@ -20,3 +20,7 @@ export enum ClassType {
   Teachers,
   Classrooms
 }
+
+/**
+  * TODO: Probar cambio de tema global
+  */

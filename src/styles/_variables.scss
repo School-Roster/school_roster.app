@@ -10,6 +10,13 @@ $white-hard: #eceff4; // Nord Snow Storm (Blanco más suave)
 $white-background: #e5e9f0; // Nord Snow Storm (Fondo claro)
 $white-overlay: #d8dee9; // Nord Snow Storm (Overlay claro)
 $black: #2e3440; // Nord Polar Night (Negro profundo)
+$black-hard: #3b4252; // Slightly lighter than deep black but retains a strong tone.
+$black-overlay: rgba(
+  46,
+  52,
+  64,
+  0.75
+); // Deep black with 75% opacity for overlay effects.
 $blue: $primary-color; // Deep Blue (ahora es el color principal)
 $red: $secondary-color; // Bright Blue (ahora es el color secundario)
 $gold: $other-color; // Bright Blue (TODO: Bright Blue ahora es el color terciario no es dorado, cambiar nombres en el proyecto)
