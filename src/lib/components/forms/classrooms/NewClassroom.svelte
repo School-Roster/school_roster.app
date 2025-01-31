@@ -106,8 +106,8 @@
         />
       {/if}
     </div>
+    <button class="form-button" on:click={handleSubmit}>
+      {item ? "Editar" : "Agregar"}
+    </button>
   </div>
-  <button class="form-button" on:click={handleSubmit}>
-    {item ? "Editar" : "Agregar"}
-  </button>
 </section>

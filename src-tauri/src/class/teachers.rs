@@ -277,3 +277,21 @@ pub async fn delete_teacher(
 
     Ok(())
 }
+
+/// Funcion para eliminar varios elementos de la base de datos
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `ids` - ID del elemento a eliminar
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para eliminar varios elementos
+#[allow(dead_code, unused)]
+#[tauri::command]
+pub async fn delete_teachers(
+    pool: tauri::State<'_, AppState>,
+    ids: Vec<i16>,
+) -> Result<(), String> {
+    for i in ids {
+        delete_teacher(pool.clone(), i).await?;
+    }
+    Ok(())
+}

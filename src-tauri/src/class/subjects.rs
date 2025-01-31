@@ -1,9 +1,9 @@
-use futures::TryStreamExt; // Para poder usar try_next() en los streams
+use crate::class::teachers::SimpleTeacher;
 use crate::db::AppState;
+use futures::TryStreamExt; // Para poder usar try_next() en los streams
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::Row;
-use serde::{Deserialize, Serialize};
-use crate::class::teachers::SimpleTeacher;
 
 /// Estructura de una materia
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
@@ -95,6 +95,24 @@ pub async fn delete_subject(pool: tauri::State<'_, AppState>, id: i16) -> Result
     Ok(())
 }
 
+/// Funcion para eliminar varios elementos de la base de datos
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `ids` - ID del elemento a eliminar
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para eliminar varios elementos
+#[allow(dead_code, unused)]
+#[tauri::command]
+pub async fn delete_subjects(
+    pool: tauri::State<'_, AppState>,
+    ids: Vec<i16>,
+) -> Result<(), String> {
+    for i in ids {
+        delete_subject(pool.clone(), i).await?;
+    }
+    Ok(())
+}
+
 /// Funcion para actualizar una materia
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
@@ -135,8 +153,11 @@ pub async fn update_subject(
 /// Se llama desde la interfaz de usuario para obtener todas las materias que tengan profesores asignados
 #[allow(dead_code, unused)]
 #[tauri::command]
-pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<SubjectWithTeacher>, String> {
-    let rows = sqlx::query("
+pub async fn get_subjects_with_teachers(
+    pool: tauri::State<'_, AppState>,
+) -> Result<Vec<SubjectWithTeacher>, String> {
+    let rows = sqlx::query(
+        "
         SELECT
             subjects.id as subject_id,
             subjects.name as subject_name,
@@ -149,10 +170,11 @@ pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Res
         FROM subjects
         LEFT JOIN teacher_subjects ON subjects.id = teacher_subjects.subject_id
         LEFT JOIN teachers ON teacher_subjects.teacher_id = teachers.id
-    ")
-        .fetch_all(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to fetch subjects with teachers: {}", e))?;
+    ",
+    )
+    .fetch_all(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to fetch subjects with teachers: {}", e))?;
 
     // Manualmente mapeamos los resultados a un vector de materias
     let mut subjects_with_teachers: Vec<SubjectWithTeacher> = Vec::new();

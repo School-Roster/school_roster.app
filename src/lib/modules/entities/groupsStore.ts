@@ -131,7 +131,6 @@ export async function importGroupsFromXlsx(
   const groupsToImport = excelData
     .slice(columnMap.grade.startRow, columnMap.grade.endRow || undefined)
     .map(row => {
-      const rowValues = Object.values(row);
       return {
         id: null,
         grade: Number(row['GRADO']),
