@@ -16,6 +16,7 @@
     loadGroups,
     type GroupItem,
   } from "$lib/modules/entities/groupsStore";
+  import ClassroomView from "../classrooms/ClassroomView.svelte";
 
   let search = "";
   let filter: string = "Grado";
@@ -83,7 +84,7 @@
     }
     showModal = false;
   };
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     showModal = false;
   };
 
@@ -192,10 +193,9 @@
       isOpen={showModal}
       onConfirm={handleDelete}
       onCancel={handleCancel}
-      message={groupToDelete?.multiple ? 
-      `Are you sure you want to delete ${groupToDelete.multiple.length} items?` : 
-      `Are you sure you want to delete this group?`
-      }
+      message={groupToDelete?.multiple
+        ? `Seguro que deseas eliminar ${groupToDelete.multiple.length} items?`
+        : `Estas seguro de eliminar este elemento?`}
     />
   {/if}
 </section>
