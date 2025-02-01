@@ -12,8 +12,8 @@ use crate::class::groups::{
     create_group, create_groups, delete_group, delete_groups, get_groups, update_group,
 };
 use crate::class::subjects::{
-    create_subject, delete_subject, delete_subjects, get_subjects, get_subjects_with_teachers,
-    update_subject,
+    create_subject, create_subjects, delete_subject, delete_subjects, get_subjects,
+    get_subjects_with_teachers, update_subject,
 };
 use crate::class::teachers::{
     add_teacher, delete_teacher, delete_teachers, edit_teacher, get_all_teachers,
@@ -34,6 +34,7 @@ async fn main() {
             read_xlsx,
             // Materias
             create_subject,
+            create_subjects,
             delete_subject,
             delete_subjects,
             update_subject,

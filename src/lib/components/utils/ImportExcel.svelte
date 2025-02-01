@@ -7,6 +7,7 @@
   import { ClassType } from "$lib/utilities/helpers";
   import { importGroupsFromXlsx } from "$lib/modules/entities/groupsStore";
   import { importClassroomsFromXlsx } from "$lib/modules/entities/classroomStore";
+    import { importSubjectsFromXlsx } from "$lib/modules/entities/subjectsStore";
 
   let dispatch: EventDispatcher<any> = createEventDispatcher();
 
@@ -90,6 +91,11 @@
           break;
         case ClassType.Classrooms:
           await importClassroomsFromXlsx(mappings, previewData);
+          dispatch("importComplete");
+          showPreview = false;
+          break;
+        case ClassType.Subjects:
+          await importSubjectsFromXlsx(mappings, previewData);
           dispatch("importComplete");
           showPreview = false;
           break;
