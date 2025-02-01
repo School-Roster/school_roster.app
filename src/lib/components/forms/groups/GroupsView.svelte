@@ -16,7 +16,6 @@
     loadGroups,
     type GroupItem,
   } from "$lib/modules/entities/groupsStore";
-  import ClassroomView from "../classrooms/ClassroomView.svelte";
 
   let search = "";
   let filter: string = "Grado";
@@ -194,7 +193,7 @@
       onConfirm={handleDelete}
       onCancel={handleCancel}
       message={groupToDelete?.multiple
-        ? `Seguro que deseas eliminar ${groupToDelete.multiple.length} items?`
+        ? `Seguro que deseas eliminar ${groupToDelete.multiple.length} elementos?`
         : `Estas seguro de eliminar este elemento?`}
     />
   {/if}

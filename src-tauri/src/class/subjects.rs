@@ -9,7 +9,7 @@ use sqlx::Row;
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Subject {
-    pub id: i16,
+    pub id: Option<i16>, // ID opcional cuando se crea por medio de la clase
     pub name: String,
     pub shorten: String,
     pub color: String,
@@ -45,7 +45,6 @@ pub async fn create_subject(
     color: String,
     spec: String,
 ) -> Result<(), String> {
-    println!("Creating subject: {} {} {} {}", name, shorten, color, spec);
     sqlx::query("INSERT INTO subjects (name, shorten, color, spec) VALUES (?1, ?2, ?3, ?4)")
         .bind(name)
         .bind(shorten)
@@ -56,6 +55,50 @@ pub async fn create_subject(
         .map_err(|e| format!("Failed to create subject: {}", e))?;
 
     println!("Subject created successfully");
+
+    Ok(())
+}
+
+/// Funcion para crear varios elementos a la vez
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `classrooms` - Vector de grupos
+/// Retorna Ok() si todo sale exitoso de lo contrario manda un mensaje con el error
+#[tauri::command]
+pub async fn create_subjects(
+    pool: tauri::State<'_, AppState>,
+    subject: Vec<Subject>,
+) -> Result<(), String> {
+    // let mut tx = pool
+    //     .db
+    //     .begin()
+    //     .await
+    //     .map_err(|e| format!("Failed to start transaction! {}", e))?;
+    // let s: String = String::from(if shorten.len() <= 0 {
+    //     shorten.chars().take(3).collect()
+    // } else {
+    //     shorten
+    // });
+
+    for i in subject {
+        sqlx::query("INSERT INTO subjects (shorten, name, color, spec) VALUES (?1, ?2, ?3, ?4)")
+            .bind(if i.shorten.len() <= 0 {
+                i.name.chars().take(3).collect()
+            } else {
+                i.shorten
+            })
+            .bind(i.name)
+            .bind(i.color)
+            .bind(i.spec)
+            // .execute(&mut tx)
+            .execute(&pool.db)
+            .await
+            .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
+    }
+
+    // tx.commit()
+    //     .await
+    //     .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     Ok(())
 }
