@@ -1,5 +1,6 @@
 <script lang="ts">
   import "$styles/nav.scss";
+  import ToggleDarkTheme from "../buttons/ToggleDarkTheme.svelte";
   import NavbarItem from "./NavbarItem.svelte";
   import { WebviewWindow } from "@tauri-apps/api/window";
 
@@ -25,9 +26,18 @@
 
 <nav class="sidebar" class:collapsed={isCollapsed}>
   <div class="logo">
-    <img src="/icons/logo_transparent.png" alt="Logo" />
     {#if !isCollapsed}
-      <h1>School Roster</h1>
+      <img
+        style="margin-top: 8px;"
+        src="/icons/logo_transparent.png"
+        alt="Logo"
+      />
+    {:else}
+      <img
+        style="justify-items: center; margin-bottom: 8px; align-items: center; margin-left: 10px;"
+        src="/icons/logo_transparent.png"
+        alt="Logo"
+      />
     {/if}
   </div>
 
@@ -40,5 +50,4 @@
       alt="Toggle Sidebar"
     />
   </button>
-
 </nav>

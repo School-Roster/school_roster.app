@@ -1,15 +1,15 @@
-use futures::TryStreamExt; // Para poder usar try_next() en los streams
+use crate::class::teachers::SimpleTeacher;
 use crate::db::AppState;
+use futures::TryStreamExt; // Para poder usar try_next() en los streams
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::Row;
-use serde::{Deserialize, Serialize};
-use crate::class::teachers::SimpleTeacher;
 
 /// Estructura de una materia
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Subject {
-    pub id: i16,
+    pub id: Option<i16>, // ID opcional cuando se crea por medio de la clase
     pub name: String,
     pub shorten: String,
     pub color: String,
@@ -45,7 +45,6 @@ pub async fn create_subject(
     color: String,
     spec: String,
 ) -> Result<(), String> {
-    println!("Creating subject: {} {} {} {}", name, shorten, color, spec);
     sqlx::query("INSERT INTO subjects (name, shorten, color, spec) VALUES (?1, ?2, ?3, ?4)")
         .bind(name)
         .bind(shorten)
@@ -56,6 +55,34 @@ pub async fn create_subject(
         .map_err(|e| format!("Failed to create subject: {}", e))?;
 
     println!("Subject created successfully");
+
+    Ok(())
+}
+
+/// Funcion para crear varios elementos a la vez
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `classrooms` - Vector de grupos
+/// Retorna Ok() si todo sale exitoso de lo contrario manda un mensaje con el error
+#[tauri::command]
+pub async fn create_subjects(
+    pool: tauri::State<'_, AppState>,
+    subject: Vec<Subject>,
+) -> Result<(), String> {
+    for i in subject {
+        sqlx::query("INSERT INTO subjects (shorten, name, color, spec) VALUES (?1, ?2, ?3, ?4)")
+            .bind(if i.shorten.len() <= 0 {
+                i.name.to_uppercase().chars().take(3).collect()
+            } else {
+                i.shorten
+            })
+            .bind(i.name)
+            .bind(i.color)
+            .bind(i.spec)
+            .execute(&pool.db)
+            .await
+            .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
+    }
 
     Ok(())
 }
@@ -92,6 +119,24 @@ pub async fn delete_subject(pool: tauri::State<'_, AppState>, id: i16) -> Result
         .await
         .map_err(|e| format!("Failed to delete subject: {}", e))?;
 
+    Ok(())
+}
+
+/// Funcion para eliminar varios elementos de la base de datos
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `ids` - ID del elemento a eliminar
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para eliminar varios elementos
+#[allow(dead_code, unused)]
+#[tauri::command]
+pub async fn delete_subjects(
+    pool: tauri::State<'_, AppState>,
+    ids: Vec<i16>,
+) -> Result<(), String> {
+    for i in ids {
+        delete_subject(pool.clone(), i).await?;
+    }
     Ok(())
 }
 
@@ -135,8 +180,11 @@ pub async fn update_subject(
 /// Se llama desde la interfaz de usuario para obtener todas las materias que tengan profesores asignados
 #[allow(dead_code, unused)]
 #[tauri::command]
-pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Result<Vec<SubjectWithTeacher>, String> {
-    let rows = sqlx::query("
+pub async fn get_subjects_with_teachers(
+    pool: tauri::State<'_, AppState>,
+) -> Result<Vec<SubjectWithTeacher>, String> {
+    let rows = sqlx::query(
+        "
         SELECT
             subjects.id as subject_id,
             subjects.name as subject_name,
@@ -149,10 +197,11 @@ pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Res
         FROM subjects
         LEFT JOIN teacher_subjects ON subjects.id = teacher_subjects.subject_id
         LEFT JOIN teachers ON teacher_subjects.teacher_id = teachers.id
-    ")
-        .fetch_all(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to fetch subjects with teachers: {}", e))?;
+    ",
+    )
+    .fetch_all(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to fetch subjects with teachers: {}", e))?;
 
     // Manualmente mapeamos los resultados a un vector de materias
     let mut subjects_with_teachers: Vec<SubjectWithTeacher> = Vec::new();
@@ -161,7 +210,7 @@ pub async fn get_subjects_with_teachers(pool: tauri::State<'_, AppState>) -> Res
         let teacher_id: Option<i16> = row.try_get("teacher_id").unwrap_or(None);
         let assigned_teacher: Option<SimpleTeacher> = match teacher_id {
             Some(teacher_id) => Some(SimpleTeacher {
-                id: teacher_id,
+                id: Some(teacher_id),
                 name: row.try_get("teacher_name").unwrap(),
                 father_lastname: row.try_get("teacher_father_lastname").unwrap(),
             }),

@@ -6,6 +6,7 @@
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
   import FilterAnimation from "$lib/components/buttons/FilterButton.svelte";
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
+  import { ClassType } from "$lib/utilities/helpers";
 
   import {
     teachers,
@@ -16,12 +17,25 @@
   import { loadSubjects } from "$lib/modules/entities/subjectsStore";
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
+  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
 
-  let search = "";
+  let search: string = "";
   let filter: string = "";
 
+  let importShown: boolean = false;
+  let editShown: boolean = false;
+  let editItem: any | null = null;
+
+  let newShown: boolean = false;
+
+  let showModal: boolean = false;
+  let teacherToDelete: {
+    single?: TeacherItem;
+    multiple?: number[];
+  } | null = null;
+
   // Carga las materias desde la base de datos en rust
-  onMount(() => {
+  onMount((): void => {
     loadTeachers();
     loadSubjects();
 
@@ -45,15 +59,7 @@
     { name: "Materias", key: "assigned_subjects" },
   ];
 
-  let editShown = false;
-  let editItem: any | null = null;
-
-  let newShown = false;
-
-  let showModal = false;
-  let teacherToDelete: TeacherItem | null = null;
-
-  const handleChange = () => {
+  const handleChange = (): void => {
     newShown = !newShown;
     if (editShown) editShown = false;
   };
@@ -61,7 +67,7 @@
   const actions = [
     {
       name: "Editar",
-      action: (item: TeacherItem) => {
+      action: (item: TeacherItem): void => {
         editShown = true;
         editItem = item;
         if (newShown) newShown = false;
@@ -69,24 +75,41 @@
     },
     {
       name: "Eliminar",
-      action: (item: TeacherItem) => {
-        teacherToDelete = item;
+      action: (itemOrItems: TeacherItem | number[]): void => {
+        if (Array.isArray(itemOrItems)) {
+          teacherToDelete = { multiple: itemOrItems };
+        } else {
+          teacherToDelete = { single: itemOrItems };
+        }
         showModal = true;
       },
     },
   ];
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!teacherToDelete) return;
-    invoke("delete_teacher", { teacher_id: teacherToDelete.id }).then(() => {
+    try {
+      if (teacherToDelete.multiple) {
+        await invoke("delete_teachers", { ids: teacherToDelete.multiple });
+      } else if (teacherToDelete.single) {
+        await invoke("delete_teacher", {
+          teacher_id: teacherToDelete.single.id,
+        });
+      }
       loadTeachers();
       emit("teachers_updated");
-      emit("subjects_with_teachers_updated");
-    });
+    } catch (err) {
+      console.log(err);
+    }
     showModal = false;
   };
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     showModal = false;
+  };
+  const importToggle = (): void => {
+    importShown = !importShown;
+    if (editShown) editShown = false;
+    if (newShown) newShown = false;
   };
 </script>
 
@@ -102,6 +125,11 @@
       <button class="new-button" on:click={handleChange}>
         <img src="/icons/plus.svg" alt="Agregar materia" />
         Agregar un nuevo profesor
+      </button>
+
+      <!-- Boton para importar de excel -->
+      <button class="import-button" on:click={importToggle}>
+        Importar desde Excel
       </button>
 
       <!-- Botón para cancelar la edición o creación de una materia -->
@@ -128,6 +156,9 @@
   {/if}
   {#if editShown}
     <NewTeacher item={editItem} />
+  {/if}
+  {#if importShown}
+    <ImportExcel defaultClass={ClassType.Teachers} availableData={columns} />
   {/if}
   <!-- Muestra la tabla de profesores -->
   {#if $teachers.length === 0 && !newShown && !editShown}
@@ -184,5 +215,8 @@
     isOpen={showModal}
     onConfirm={handleDelete}
     onCancel={handleCancel}
+    message={teacherToDelete?.multiple
+      ? `Seguro que deseas eliminar ${teacherToDelete.multiple.length} elementos?`
+      : `Estas seguro de eliminar este elemento?`}
   />
 </section>

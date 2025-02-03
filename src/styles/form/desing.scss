@@ -84,19 +84,47 @@
         background-color: $primary-color;
         visibility: visible;
 
-        &:hover {
-          background-color: lighten($primary-color, 10%);
-        }
-
         img {
           width: 20px;
           height: 20px;
           margin-right: 0.5rem;
           filter: $filter-white;
         }
+
+        &:hover {
+          background-color: lighten($primary-color, 10%);
+        }
+
+        &:disabled {
+          background-color: #cccccc;
+          cursor: not-allowed;
+          &:hover {
+            background-color: none;
+          }
+        }
       }
 
-      // Estilo para el botón de cancelar
+      // Estilo para el boton importar excel
+      .import-button {
+        @extend .controls-btn;
+        background-color: $white-overlay;
+        color: $black;
+        margin-left: 1rem;
+
+        &:hover {
+          background-color: lighten($other-color, 15%);
+        }
+
+        &:disabled {
+          background-color: #cccccc;
+          cursor: not-allowed;
+          &:hover {
+            background-color: none;
+          }
+        }
+      }
+
+      // Estilo para el botón de cancelar en controles del formulario
       .cancel-button {
         @extend .controls-btn;
         background-color: $red;

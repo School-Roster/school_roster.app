@@ -22,7 +22,6 @@ $table-even-bg: #0000000b;
     border-collapse: separate;
     border-spacing: 0 1px;
     border-radius: 8px;
-    /* table-layout: fixed; */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
     transition: all 0.3s ease-in-out;
@@ -82,6 +81,44 @@ $table-even-bg: #0000000b;
     padding: 10px;
     text-align: center;
     border-bottom: 1px solid $primary-color;
+  }
+
+  /* Checkbox */
+  input[type="checkbox"] {
+    appearance: none; // Remove default styling
+    width: 16px;
+    height: 16px;
+    border: 2px solid $primary-color;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition:
+      background-color 0.2s ease-in-out,
+      border-color 0.2s ease-in-out;
+
+    &:checked {
+      background-color: $primary-color;
+      border-color: $primary-color;
+
+      &::after {
+        content: "✔"; // Checkmark symbol
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: white;
+      }
+    }
+
+    &:hover {
+      border-color: darken($primary-color, 10%);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
+    }
   }
 
   .btn {

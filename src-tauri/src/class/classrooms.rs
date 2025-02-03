@@ -1,13 +1,13 @@
-use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use crate::db::AppState;
-use sqlx::prelude::FromRow;
+use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
 
 /// Estructural salon
 /// Se utiliza para mapear los datos de la base de datos a un objeto en Rust
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Classroom {
-    pub id: i16,
+    pub id: Option<i16>,
     pub building_id: Option<String>, // Puede ser una letra o numero entonces lo dejaremos como String
     pub building_number: i16, // Numero de aula, lo que sigue despues del building_id (ejemplo: 303)
     pub building_type: Option<String>,
@@ -44,6 +44,43 @@ pub async fn create_classroom(
     Ok(())
 }
 
+/// Funcion para crear varios elementos a la vez
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `classrooms` - Vector de grupos
+/// Retorna Ok() si todo sale exitoso de lo contrario manda un mensaje con el error
+#[tauri::command]
+pub async fn create_classrooms(
+    pool: tauri::State<'_, AppState>,
+    classroom: Vec<Classroom>,
+) -> Result<(), String> {
+    let mut tx = pool
+        .db
+        .begin()
+        .await
+        .map_err(|e| format!("Failed to start transaction! {}", e))?;
+
+    for c in classroom {
+        println!("Aula: {:?}", c);
+        sqlx::query(
+            r#"INSERT INTO classroom (building_id, building_number, building_type, capacity) VALUES (?1, ?2, ?3, ?4)"#,
+        )
+        .bind(c.building_id)
+        .bind(c.building_number)
+        .bind(c.building_type)
+        .bind(c.capacity)
+        .execute(&mut tx)
+        .await
+        .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
+    }
+
+    tx.commit()
+        .await
+        .map_err(|e| format!("Failed to commit transaction: {}", e))?;
+
+    Ok(())
+}
+
 /// Funcion para obtener todos los datos en la tabla
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
@@ -76,6 +113,24 @@ pub async fn delete_classroom(pool: tauri::State<'_, AppState>, id: i16) -> Resu
         .await
         .map_err(|e| format!("Failed to delete classroom: {}", e))?;
 
+    Ok(())
+}
+
+/// Funcion para eliminar varios elementos de la base de datos
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `ids` - ID del elemento a eliminar
+/// Retorna un resultado vacio si la operacion fue exitosa
+/// Se llama desde la interfaz de usuario para eliminar varios elementos
+#[allow(dead_code, unused)]
+#[tauri::command]
+pub async fn delete_classrooms(
+    pool: tauri::State<'_, AppState>,
+    ids: Vec<i16>,
+) -> Result<(), String> {
+    for i in ids {
+        delete_classroom(pool.clone(), i).await?;
+    }
     Ok(())
 }
 
