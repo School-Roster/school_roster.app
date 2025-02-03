@@ -69,36 +69,20 @@ pub async fn create_subjects(
     pool: tauri::State<'_, AppState>,
     subject: Vec<Subject>,
 ) -> Result<(), String> {
-    // let mut tx = pool
-    //     .db
-    //     .begin()
-    //     .await
-    //     .map_err(|e| format!("Failed to start transaction! {}", e))?;
-    // let s: String = String::from(if shorten.len() <= 0 {
-    //     shorten.chars().take(3).collect()
-    // } else {
-    //     shorten
-    // });
-
     for i in subject {
         sqlx::query("INSERT INTO subjects (shorten, name, color, spec) VALUES (?1, ?2, ?3, ?4)")
             .bind(if i.shorten.len() <= 0 {
-                i.name.chars().take(3).collect()
+                i.name.to_uppercase().chars().take(3).collect()
             } else {
                 i.shorten
             })
             .bind(i.name)
             .bind(i.color)
             .bind(i.spec)
-            // .execute(&mut tx)
             .execute(&pool.db)
             .await
             .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
     }
-
-    // tx.commit()
-    //     .await
-    //     .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     Ok(())
 }
@@ -226,7 +210,7 @@ pub async fn get_subjects_with_teachers(
         let teacher_id: Option<i16> = row.try_get("teacher_id").unwrap_or(None);
         let assigned_teacher: Option<SimpleTeacher> = match teacher_id {
             Some(teacher_id) => Some(SimpleTeacher {
-                id: teacher_id,
+                id: Some(teacher_id),
                 name: row.try_get("teacher_name").unwrap(),
                 father_lastname: row.try_get("teacher_father_lastname").unwrap(),
             }),

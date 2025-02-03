@@ -7,7 +7,8 @@
   import { ClassType } from "$lib/utilities/helpers";
   import { importGroupsFromXlsx } from "$lib/modules/entities/groupsStore";
   import { importClassroomsFromXlsx } from "$lib/modules/entities/classroomStore";
-    import { importSubjectsFromXlsx } from "$lib/modules/entities/subjectsStore";
+  import { importSubjectsFromXlsx } from "$lib/modules/entities/subjectsStore";
+  import { importTeachersFromXlsx } from "$lib/modules/entities/teachersStore";
 
   let dispatch: EventDispatcher<any> = createEventDispatcher();
 
@@ -94,6 +95,11 @@
           dispatch("importComplete");
           showPreview = false;
           break;
+        case ClassType.Teachers:
+          await importTeachersFromXlsx(mappings, previewData);
+          dispatch("importComplete");
+          showPreview = false;
+          break;
         case ClassType.Subjects:
           await importSubjectsFromXlsx(mappings, previewData);
           dispatch("importComplete");
@@ -104,7 +110,7 @@
       }
     } catch (err) {
       errorMessage = err instanceof Error ? err.message : "Import failed";
-      // dispatch('importError');
+      dispatch('importError');
     }
   }
 
