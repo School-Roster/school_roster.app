@@ -3,11 +3,20 @@
   import { emit } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import TableComponent from "$lib/components/tables/TableComponent.svelte";
-  import NewSubject from "./NewSubject.svelte";
-  import { subjects, loadSubjects, type SubjectItem } from "$lib/modules/entities/subjectsStore";
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
-  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
+
   import NoResults from "$lib/components/utils/NoResults.svelte";
+  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
+  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
+  import { ClassType } from "$lib/utilities/helpers";
+
+  import NewSubject from "./NewSubject.svelte";
+  import {
+    subjects,
+    loadSubjects,
+    type SubjectItem,
+  } from "$lib/modules/entities/subjectsStore";
+
 
   let search = "";
 
@@ -23,42 +32,71 @@
     { name: "Tipo", key: "spec" },
   ];
 
-  let editShown = false;
+  let importShown: boolean = false;
+
+  let editShown: boolean = false;
   let editItem: SubjectItem | null = null;
-  const handleEdit = (item: SubjectItem) => {
+  const handleEdit = (item: SubjectItem): void => {
     editShown = true;
     editItem = item;
     if (newShown) newShown = false;
   };
 
   let showModal = false;
-  let subjectToDelete: SubjectItem | null = null;
+  // Manejamos eliminar por medio de un diccionario si hay varios seleccionados
+  let subjectToDelete: { single?: SubjectItem; multiple?: number[] } | null = null;
 
   const actions = [
-    { name: "Editar", action: (item: SubjectItem) => {
-      handleEdit(item);
-    }},
-    { name: "Eliminar", action: (item: SubjectItem) => {
-      subjectToDelete = item;
-      showModal = true;
-    }},
+    {
+      name: "Editar",
+      action: (item: SubjectItem) => {
+        handleEdit(item);
+      },
+    },
+    {
+      name: "Eliminar",
+      action: (itemOrItems: SubjectItem| number[]): void => {
+        if (Array.isArray(itemOrItems)) {
+          subjectToDelete = { multiple: itemOrItems };
+        } else {
+          subjectToDelete = { single: itemOrItems };
+        }
+        showModal = true;
+      },
+    },
   ];
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!subjectToDelete) return;
-    invoke("delete_subject", { id: subjectToDelete.id })
-      .then(() => {
-        loadSubjects();
-        emit("subjects_updated");
-      });
+
+    try {
+      if (subjectToDelete.multiple) {
+        console.log(subjectToDelete.multiple);
+        await invoke("delete_subjects", { ids: subjectToDelete.multiple });
+      } else if (subjectToDelete.single) {
+        await invoke("delete_subject", { id: subjectToDelete.single.id });
+      }
+      loadSubjects();
+      emit("subjects_updated");
+    } catch (error) {
+      console.error("Error deleting subjects:", error);
+    }
+
     showModal = false;
   };
-  const handleCancel = () => { showModal = false; };
+  const handleCancel = (): void => {
+    showModal = false;
+  };
 
-  let newShown = false;
-  const handleNew = () => {
+  let newShown: boolean = false;
+  const handleNew = (): void => {
     newShown = !newShown;
     if (editShown) editShown = false;
+  };
+  const importToggle = (): void => {
+    importShown = !importShown;
+    if (editShown) editShown = false;
+    if (newShown) newShown = false;
   };
 </script>
 
@@ -76,9 +114,19 @@
         Agregar nueva materia
       </button>
 
+      <!-- Boton para importar de excel -->
+      <button class="import-button" on:click={importToggle}>
+        Importar desde Excel
+      </button>
+
       <!-- Botón para cancelar la edición o creación de una materia -->
-      <button class={newShown || editShown ? "cancel-button show" : "cancel-button"} 
-              on:click={() => { newShown = false; editShown = false; }}>
+      <button
+        class={newShown || editShown ? "cancel-button show" : "cancel-button"}
+        on:click={() => {
+          newShown = false;
+          editShown = false;
+        }}
+      >
         Cancelar
       </button>
     </div>
@@ -93,13 +141,24 @@
   {#if editShown}
     <NewSubject item={editItem} />
   {/if}
+  {#if importShown}
+    <ImportExcel defaultClass={ClassType.Subjects} availableData={columns} />
+  {/if}
   <!-- Muestra la tabla de materias -->
   {#if $subjects.length === 0 && !newShown && !editShown}
     <NoResults />
   {:else}
     {#if search}
-      <div class="search-results">Mostrando resultados de búsqueda para "{search}"</div>
-      <TableComponent data={$subjects.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))} {columns} {actions} />
+      <div class="search-results">
+        Mostrando resultados de búsqueda para "{search}"
+      </div>
+      <TableComponent
+        data={$subjects.filter((s) =>
+          s.name.toLowerCase().includes(search.toLowerCase()),
+        )}
+        {columns}
+        {actions}
+      />
     {:else}
       <TableComponent data={$subjects} {columns} {actions} />
     {/if}
@@ -109,6 +168,9 @@
       isOpen={showModal}
       onConfirm={handleDelete}
       onCancel={handleCancel}
+      message={subjectToDelete?.multiple
+        ? `Seguro que deseas eliminar ${subjectToDelete.multiple.length} elementos?`
+        : `Estas seguro de eliminar este elemento?`}
     />
   {/if}
 </section>

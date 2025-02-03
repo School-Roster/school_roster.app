@@ -1,6 +1,8 @@
 # Actualizar manualmente yaml
 pnpm-lock.yaml
 
+test/
+
 # Logs
 logs
 *.log

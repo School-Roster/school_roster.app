@@ -1,5 +1,6 @@
 import { writable } from "svelte/store";
 import { invoke } from "@tauri-apps/api";
+import { emit } from "@tauri-apps/api/event";
 import { type SimpleTeacherItem } from "./teachersStore";
 
 /**
@@ -46,4 +47,106 @@ export async function loadSubjectsWithTeachers() {
   const response = await invoke("get_subjects_with_teachers");
   console.log("Response from rust: ", response);
   subjectsWithTeachers.set(response as SubjectItem[]);
+}
+
+export async function editSubject(item: SubjectItem): Promise<void> {
+  if (!item) return;
+  if (!item.name || !item.shorten) {
+    alert("Por favor, rellene todos los campos");
+    return;
+  }
+  // TODO: Pasar el item directamente en vez de sus propiedades (mas limpio)
+  await invoke("update_subject", { id: item.id, name: item.name, shorten: item.shorten, color: item.color, spec: item.spec });
+  await loadSubjects();
+  await emit("subjects_updated");
+}
+
+// Manda la nueva materia a la base de datos en rust
+export async function addSubject(name: string, shorten: string, color: string, spec: string): Promise<void> {
+  if (!name) {
+    alert("Por favor, rellene todos los campos");
+    return;
+  }
+  if (!shorten) {
+    shorten = name.substring(0, 3).toUpperCase();
+  }
+
+  await invoke("create_subject", { name, shorten, color, spec });
+  await loadSubjects(); // Recarga las materias
+  await emit("subjects_updated"); // Emite un evento para actualizar la vista de materias
+}
+
+/**
+  * Funcion para importar varios grupos, se utiliza en ImportExcel
+  * @param {Array} mappings
+  * @param {Array} excelData
+  */
+export async function importSubjectsFromXlsx(
+  mappings: Array<{
+    field: { key: string, name: string };
+    range: { column: string, startRow: number, endRow: number | null };
+  }>,
+  excelData: Array<Record<string, unknown>>
+): Promise<void> {
+  console.log("Raw data:", excelData);
+
+  // Checar por campos requeridos no importados
+  const required: string[] = ['name'];
+  const missingFields: string[] = required.filter(
+    field => !mappings.some(m => m.field.key === field)
+  );
+  if (missingFields.length > 0) {
+    throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
+  }
+
+  // Convierte la columna en el index
+  const columnLetterToIndex = (letter: string): number => {
+    letter = letter.toUpperCase();
+    return letter.split('').reduce((acc, char) =>
+      acc * 26 + (char.charCodeAt(0) - 'A'.charCodeAt(0) + 1), 0) - 1;
+  };
+
+  // Crear diccionario del mapeo
+  const columnMap = mappings.reduce((acc, mapping) => {
+    if (mapping.range.column) {
+      acc[mapping.field.key] = {
+        columnIndex: columnLetterToIndex(mapping.range.column),
+        startRow: mapping.range.startRow - 2,
+        endRow: mapping.range.endRow ? mapping.range.endRow - 1 : undefined
+      };
+    }
+    return acc;
+  }, {} as Record<string, { columnIndex: number; startRow: number; endRow?: number }>);
+
+  // Preparar los grupos que seran importados
+  const subjectToImport = excelData
+    .slice(columnMap.name.startRow, columnMap.name.endRow || undefined)
+    .map(row => {
+      console.log(row);
+      return {
+        id: null,
+        name: String(row['Materia']),
+        shorten: String(row['Abreviacion']),
+        color: columnMap.color
+          ? String(row['Color'] || '')
+          : null,
+        spec: columnMap.spec
+          ? String(row['Especializacion'] || '')
+          : null
+      };
+    })
+    .filter(subject => subject.name);
+
+  if (subjectToImport.length === 0) {
+    throw new Error('No hay grupos validos en el intento de importar datos');
+  }
+
+  try {
+    await invoke("create_subjects", { subject: subjectToImport });
+    await loadSubjects();
+    await emit("subjects_updated");
+  } catch (error) {
+    console.error('Hubo un error importando las materias:', error);
+    throw error;
+  }
 }

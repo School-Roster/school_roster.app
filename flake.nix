@@ -1,6 +1,8 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11"; # Pin to 23.11 release
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # Pin to latest
+    # nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.11"; # Queremos mantenernos actualizados, pero habra casos que necesitemos utilizar versiones estables
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs =

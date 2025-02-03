@@ -7,6 +7,8 @@
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
+  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
+  import { ClassType } from "$lib/utilities/helpers";
 
   import NewClassroom from "./NewClassroom.svelte";
   import {
@@ -30,7 +32,8 @@
     { name: "Capacidad del aula", key: "capacity" },
   ];
 
-  let editShown = false;
+  let editShown: boolean = false;
+  let importShown: boolean = false;
   let editItem: ClassroomItem | null = null;
   const handleEdit = (item: ClassroomItem) => {
     editShown = true;
@@ -38,41 +41,62 @@
     if (newShown) newShown = false;
   };
 
-  let showModal = false;
-  let classroomToDelete: ClassroomItem | null = null;
+  let showModal: boolean = false;
+  let classroomToDelete: {
+    single?: ClassroomItem;
+    multiple?: number[];
+  } | null = null;
 
   const actions = [
     {
       name: "Editar",
-      action: (item: ClassroomItem) => {
+      action: (item: ClassroomItem): void => {
         handleEdit(item);
       },
     },
     {
       name: "Eliminar",
-      action: (item: ClassroomItem) => {
-        classroomToDelete = item;
+      action: (itemOrItems: ClassroomItem | number[]): void => {
+        if (Array.isArray(itemOrItems)) {
+          classroomToDelete = { multiple: itemOrItems };
+        } else {
+          classroomToDelete = { single: itemOrItems };
+        }
         showModal = true;
       },
     },
   ];
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!classroomToDelete) return;
-    invoke("delete_classroom", { id: classroomToDelete.id }).then(() => {
+
+    try {
+      if (classroomToDelete.multiple) {
+        console.log(classroomToDelete.multiple);
+        await invoke("delete_classrooms", { ids: classroomToDelete.multiple });
+      } else if (classroomToDelete.single) {
+        await invoke("delete_classroom", { id: classroomToDelete.single.id });
+      }
       loadClassrooms();
-      emit("classroom_updated");
-    });
+      emit("classrooms_updated");
+    } catch (error) {
+      console.error("Error deleting classroom:", error);
+    }
     showModal = false;
   };
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     showModal = false;
   };
 
-  let newShown = false;
-  const handleNew = () => {
+  let newShown: boolean = false;
+  const handleNew = (): void => {
     newShown = !newShown;
     if (editShown) editShown = false;
+  };
+  const importToggle = (): void => {
+    importShown = !importShown;
+    if (editShown) editShown = false;
+    if (newShown) newShown = false;
   };
 </script>
 
@@ -85,9 +109,18 @@
   <div class="controls">
     <div class="controls-left">
       <!-- Botón para agregar un nuevo elemento -->
-      <button class="new-button" on:click={handleNew}>
+      <button
+        class="new-button"
+        on:click={handleNew}
+        disabled={newShown || editShown}
+      >
         <img src="/icons/plus.svg" alt="Agregar" />
         Agregar nueva aula
+      </button>
+
+      <!-- Boton para importar de excel -->
+      <button class="import-button" on:click={importToggle}>
+        Importar desde Excel
       </button>
 
       <!-- Botón para cancelar la edición o creación de una materia -->
@@ -111,6 +144,9 @@
   {/if}
   {#if editShown}
     <NewClassroom item={editItem} />
+  {/if}
+  {#if importShown}
+    <ImportExcel defaultClass={ClassType.Classrooms} availableData={columns} />
   {/if}
   <!-- Muestra la tabla -->
   {#if $classrooms.length === 0 && !newShown && !editShown}
@@ -156,6 +192,9 @@
       isOpen={showModal}
       onConfirm={handleDelete}
       onCancel={handleCancel}
+      message={classroomToDelete?.multiple
+        ? `Seguro que deseas eliminar ${classroomToDelete.multiple.length} elementos?`
+        : `Estas seguro de eliminar este elemento?`}
     />
   {/if}
 </section>

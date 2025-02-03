@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 #[tauri::command]
 pub fn read_xlsx(file_path: &str) -> Result<Vec<HashMap<String, String>>, String> {
-    let mut workbook: Xlsx<_> = open_workbook(file_path)
-        .map_err(|e| format!("Failed to open workbook: {}", e))?;
+    let mut workbook: Xlsx<_> =
+        open_workbook(file_path).map_err(|e| format!("Failed to open workbook: {}", e))?;
 
     match workbook.worksheet_range("Sheet1") {
         Ok(range) => {
@@ -14,11 +14,7 @@ pub fn read_xlsx(file_path: &str) -> Result<Vec<HashMap<String, String>>, String
             let headers: Vec<String> = range
                 .rows()
                 .next()
-                .map(|row| {
-                    row.iter()
-                        .map(|cell| cell.to_string())
-                        .collect()
-                })
+                .map(|row| row.iter().map(|cell| cell.to_string()).collect())
                 .ok_or_else(|| "No headers found".to_string())?;
 
             // Procesamos cada fila
