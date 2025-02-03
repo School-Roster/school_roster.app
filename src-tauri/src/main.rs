@@ -16,7 +16,7 @@ use crate::class::subjects::{
     get_subjects_with_teachers, update_subject,
 };
 use crate::class::teachers::{
-    add_teacher, delete_teacher, delete_teachers, edit_teacher, get_all_teachers,
+    add_teacher, create_teachers, delete_teacher, delete_teachers, edit_teacher, get_all_teachers,
 };
 use crate::db::{connect, AppState};
 
@@ -42,6 +42,7 @@ async fn main() {
             get_subjects_with_teachers,
             // Profesores
             add_teacher,
+            create_teachers,
             edit_teacher,
             get_all_teachers,
             delete_teacher,
@@ -66,7 +67,7 @@ async fn main() {
         .expect("error while running tauri application");
 
     // Conectar a la base de datos y manejar posibles errores
-    let pool = match connect(&app).await {
+    let pool: Pool<Sqlite> = match connect(&app).await {
         Ok(pool) => pool,
         Err(err) => {
             eprintln!("Database connection error: {}", err);

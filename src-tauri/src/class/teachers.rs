@@ -7,7 +7,7 @@ use sqlx::Row;
 /// Estructura simple de un profesor, solo contiene el ID, el nombre y el primer apellido
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimpleTeacher {
-    pub id: i16,
+    pub id: Option<i16>,
     pub name: String,
     pub father_lastname: String,
 }
@@ -16,7 +16,7 @@ pub struct SimpleTeacher {
 /// Se utiliza para mapear los datos de un profesor de la base de datos a un objeto en Rust
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Teacher {
-    pub id: i16,
+    pub id: Option<i16>,
     pub name: String,
     pub father_lastname: String,
     pub mother_lastname: Option<String>,
@@ -122,6 +122,44 @@ pub async fn add_teacher(
                 println!("Subject already attached to teacher");
             }
         }
+    }
+
+    Ok(())
+}
+
+/// Funcion para crear varios profesores
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `teacher` - Clase del profesor (sin materia)
+/// Se llama desde la interfaz para registrar varios profesores a la vez utilizando excel (sin materias)
+/// Retorna un resultado vacio si la operacion fue exitosa
+#[allow(dead_code, unused)]
+#[tauri::command(rename_all = "snake_case")]
+pub async fn create_teachers(
+    pool: tauri::State<'_, AppState>,
+    teacher: Vec<Teacher>,
+) -> Result<(), String> {
+    for i in teacher {
+        sqlx::query(
+            "
+        INSERT INTO teachers (
+            name, father_lastname, mother_lastname,
+            email, phone, degree, commisioned_hours,
+            active_hours, performance
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+        )
+        .bind(i.name)
+        .bind(i.father_lastname)
+        .bind(i.mother_lastname)
+        .bind(i.email)
+        .bind(i.phone)
+        .bind(i.degree)
+        .bind(i.commisioned_hours)
+        .bind(i.active_hours)
+        .bind(i.performance)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error creating the teacher, error: {}", e))?;
     }
 
     Ok(())

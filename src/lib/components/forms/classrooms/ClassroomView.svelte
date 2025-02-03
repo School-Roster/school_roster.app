@@ -56,7 +56,7 @@
     },
     {
       name: "Eliminar",
-      action: (itemOrItems: ClassroomItem | number[]) => {
+      action: (itemOrItems: ClassroomItem | number[]): void => {
         if (Array.isArray(itemOrItems)) {
           classroomToDelete = { multiple: itemOrItems };
         } else {
@@ -88,8 +88,8 @@
     showModal = false;
   };
 
-  let newShown = false;
-  const handleNew = () => {
+  let newShown: boolean = false;
+  const handleNew = (): void => {
     newShown = !newShown;
     if (editShown) editShown = false;
   };
