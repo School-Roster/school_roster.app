@@ -1,73 +1,55 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::process;
-use tauri::Manager as _; // Necesario para poder usar manage()
-
-use crate::class::classrooms::{
-    create_classroom, create_classrooms, delete_classroom, delete_classrooms, get_classrooms,
-    update_classroom,
-};
-use crate::class::groups::{
-    create_group, create_groups, delete_group, delete_groups, get_groups, update_group,
-};
-use crate::class::subjects::{
-    create_subject, create_subjects, delete_subject, delete_subjects, get_subjects,
-    get_subjects_with_teachers, update_subject,
-};
-use crate::class::teachers::{
-    add_teacher, create_teachers, delete_teacher, delete_teachers, edit_teacher, get_all_teachers,
-};
-use crate::db::{connect, AppState};
-
-use crate::util::xlsx::read_xlsx;
-
 mod class;
 mod db;
 mod util;
+
+use crate::db::{connect, AppState};
+use std::process;
+use tauri::Manager as _; // Necesario para poder usar manage()
 
 #[tokio::main]
 async fn main() {
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            // Subjects
+            crate::class::subjects::create_subject,
+            crate::class::subjects::create_subjects,
+            crate::class::subjects::delete_subject,
+            crate::class::subjects::delete_subjects,
+            crate::class::subjects::update_subject,
+            crate::class::subjects::get_subjects,
+            crate::class::subjects::get_subjects_with_teachers,
+            // Teachers
+            crate::class::teachers::add_teacher,
+            crate::class::teachers::create_teachers,
+            crate::class::teachers::edit_teacher,
+            crate::class::teachers::get_all_teachers,
+            crate::class::teachers::delete_teacher,
+            crate::class::teachers::delete_teachers,
+            // Groups
+            crate::class::groups::create_group,
+            crate::class::groups::create_groups,
+            crate::class::groups::update_group,
+            crate::class::groups::delete_group,
+            crate::class::groups::delete_groups,
+            crate::class::groups::get_groups,
+            // Classrooms
+            crate::class::classrooms::get_classrooms,
+            crate::class::classrooms::create_classroom,
+            crate::class::classrooms::create_classrooms,
+            crate::class::classrooms::delete_classroom,
+            crate::class::classrooms::delete_classrooms,
+            crate::class::classrooms::update_classroom,
             // Utils
-            read_xlsx,
-            // Materias
-            create_subject,
-            create_subjects,
-            delete_subject,
-            delete_subjects,
-            update_subject,
-            get_subjects,
-            get_subjects_with_teachers,
-            // Profesores
-            add_teacher,
-            create_teachers,
-            edit_teacher,
-            get_all_teachers,
-            delete_teacher,
-            delete_teachers,
-            // Grupos
-            create_group,
-            create_groups,
-            update_group,
-            delete_group,
-            delete_groups,
-            get_groups,
-            // Aulas
-            get_classrooms,
-            create_classroom,
-            create_classrooms,
-            delete_classroom,
-            delete_classrooms,
-            update_classroom
+            crate::util::xlsx::read_xlsx,
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
-    // Conectar a la base de datos y manejar posibles errores
-    let pool: Pool<Sqlite> = match connect(&app).await {
+    let pool = match connect(&app).await {
         Ok(pool) => pool,
         Err(err) => {
             eprintln!("Database connection error: {}", err);
@@ -82,6 +64,7 @@ async fn main() {
             process::exit(1);
         }
     };
+
     app.manage(AppState { db: pool });
     app.run(|_, _| {});
 }
