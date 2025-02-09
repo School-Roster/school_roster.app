@@ -5,6 +5,8 @@
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
   import { writable, type Writable } from "svelte/store";
+  import { invoke } from "@tauri-apps/api";
+  import { assigns, loadAssignments } from "$lib/modules/entities/assignments";
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -23,8 +25,9 @@
   // let assignments = new Map();
   const assignmentsStore: Writable<Map<any, any>> = writable(new Map());
 
-  onMount(() => {
-    loadGroups();
+  onMount(async (): Promise<void> => {
+    await loadGroups();
+    await loadAssignments();
     // Carga los grupos de nuevo en caso de actualizados
     listen("groups_updated", async () => {
       await loadGroups();
@@ -50,32 +53,47 @@
   }
 
   // Funcion para cuando se suelta una materia en el modulo
-  function handleDrop(
+  async function handleDrop(
     e: DragEvent,
     groupId: number,
     day: string,
     moduleIndex: number,
-  ) {
+  ): Promise<void> {
     e.preventDefault();
     const target = e.target as HTMLElement;
     target.classList.remove("drag-over");
 
-    const subjectData = e.dataTransfer?.getData("application/json");
+    const subjectData: string | undefined =
+      e.dataTransfer?.getData("application/json");
     if (!subjectData) return;
 
-    const subject = JSON.parse(subjectData);
+    const subject: any = JSON.parse(subjectData);
+    console.log("Subject: ", subject.id, " Teacher: ", subject.teacherId);
+    // console.log(subject.id);
     // Creamos una llave unica para el assign
     const key = `${groupId}-${day}-${moduleIndex}`;
 
-    // assignments.set(key, subject);
-    // assignments = assignments; // Maneja reactividad
-    assignmentsStore.update((currentMap: any) => {
-      const newMap = new Map(currentMap);
-      newMap.set(key, subject);
-      return newMap;
-    });
-    // console.log("Updated assignments:", Array.from(assignments.entries())); // Debug log
-    // getAssignment(groupId, day, moduleIndex);
+    // assignmentsStore.update((currentMap: any) => {
+    //   const newMap = new Map(currentMap);
+    //   newMap.set(key, subject);
+    //   return newMap;
+    // });
+    try {
+      await invoke("save_assignment", {
+        group_id: groupId,
+        day,
+        module_index: moduleIndex,
+        subject_id: subject.id,
+        teacher_id: subject.teacherId,
+      });
+      assignmentsStore.update((currentMap) => {
+        const newMap = new Map(currentMap);
+        newMap.set(key, subject);
+        return newMap;
+      });
+    } catch (error) {
+      console.error("Failed to save assignment:", error);
+    }
   }
 
   // Manera eficiente de conseguir los 'assigns'
