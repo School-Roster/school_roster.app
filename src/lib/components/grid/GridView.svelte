@@ -4,7 +4,13 @@
   import { getContrastColor } from "$lib/utilities/helpers";
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
-  import { writable, type Writable } from "svelte/store";
+  import {
+    assignmentsStore,
+    loadAssignments,
+    getLocalAssignment,
+    handleAssignDrop,
+    handleAssignClick,
+  } from "$lib/modules/entities/assignments";
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -19,12 +25,9 @@
   //       registrada en configuracion
   export let modulesPerDay: number = 9;
 
-  // Utilizamos Map() para mantener O(1)
-  // let assignments = new Map();
-  const assignmentsStore: Writable<Map<any, any>> = writable(new Map());
-
-  onMount(() => {
-    loadGroups();
+  onMount(async (): Promise<void> => {
+    await loadGroups();
+    await loadAssignments(); // Llama a base de datos cuando se inicia el programa
     // Carga los grupos de nuevo en caso de actualizados
     listen("groups_updated", async () => {
       await loadGroups();
@@ -47,45 +50,6 @@
     if (target.classList.contains("module-cell")) {
       target.classList.remove("drag-over");
     }
-  }
-
-  // Funcion para cuando se suelta una materia en el modulo
-  function handleDrop(
-    e: DragEvent,
-    groupId: number,
-    day: string,
-    moduleIndex: number,
-  ) {
-    e.preventDefault();
-    const target = e.target as HTMLElement;
-    target.classList.remove("drag-over");
-
-    const subjectData = e.dataTransfer?.getData("application/json");
-    if (!subjectData) return;
-
-    const subject = JSON.parse(subjectData);
-    // Creamos una llave unica para el assign
-    const key = `${groupId}-${day}-${moduleIndex}`;
-
-    // assignments.set(key, subject);
-    // assignments = assignments; // Maneja reactividad
-    assignmentsStore.update((currentMap: any) => {
-      const newMap = new Map(currentMap);
-      newMap.set(key, subject);
-      return newMap;
-    });
-    // console.log("Updated assignments:", Array.from(assignments.entries())); // Debug log
-    // getAssignment(groupId, day, moduleIndex);
-  }
-
-  // Manera eficiente de conseguir los 'assigns'
-  function getAssignment(groupId: number, day: string, moduleIndex: number) {
-    const key = `${groupId}-${day}-${moduleIndex}`;
-    let assignment;
-    assignmentsStore.subscribe((map: any) => {
-      assignment = map.get(key);
-    })();
-    return assignment;
   }
 </script>
 
@@ -115,7 +79,7 @@
             {#each Array(modulesPerDay) as _, moduleIndex}
               {#key $assignmentsStore}
                 {#if true}
-                  {@const assignment = getAssignment(
+                  {@const assignment = getLocalAssignment(
                     group.id,
                     day,
                     moduleIndex,
@@ -126,14 +90,16 @@
                     class:has-subject={assignment}
                     on:dragover={handleDragOver}
                     on:dragleave={handleDragLeave}
-                    on:drop={(e) => handleDrop(e, group.id, day, moduleIndex)}
+                    on:drop={(e) =>
+                      handleAssignDrop(e, group.id, day, moduleIndex)}
                   >
                     {#if assignment}
                       <div
                         class="subject-pill"
-                        style="background-color: {assignment.color}; color: {getContrastColor(
-                          assignment.color,
+                        style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
+                          assignment.color || 'black',
                         )}"
+                        on:mousedown={(e) => handleAssignClick(e, assignment.id)}
                       >
                         {assignment.shorten}
                       </div>

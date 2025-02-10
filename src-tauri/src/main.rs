@@ -44,6 +44,10 @@ async fn main() {
             crate::class::classrooms::update_classroom,
             // Utils
             crate::util::xlsx::read_xlsx,
+            crate::util::assignments::get_all_assignments,
+            crate::util::assignments::get_assignment,
+            crate::util::assignments::save_assignment,
+            crate::util::assignments::delete_assignment,
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())
