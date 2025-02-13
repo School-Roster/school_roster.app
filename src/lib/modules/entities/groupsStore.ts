@@ -10,6 +10,7 @@ import type { SubjectItem } from "./subjectsStore";
   * @property {string} group - Grupo (A,B,C,...)
   * @property {string} career - Carrera (si aplica)
   * @property {number} students - Numero de alumnos (si aplica)
+  * @property {SubjectItem} preAssignedSubjects - Materias asignadas (si aplica)
   */
 export interface GroupItem {
   id: number;
@@ -34,7 +35,7 @@ export async function loadGroups() {
 
   const formattedGroups: GroupItem[] = response.map(([group, subjects]) => ({
     ...group,
-    subject: subjects, // Assign subjects to the group
+    preAssignedSubjects: subjects, // Assign subjects to the group
   }));
 
   groups.set(formattedGroups);
