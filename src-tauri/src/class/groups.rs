@@ -2,6 +2,9 @@ use crate::db::AppState;
 use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
+use sqlx::Row;
+
+use crate::class::subjects::Subject;
 
 /// Estructura de un grupo
 /// Se utiliza para mapear los datos del grupo de la base de datos a un objeto en Rust
@@ -12,6 +15,7 @@ pub struct Group {
     pub group: String,
     pub career: Option<String>,
     pub students: Option<i16>,
+    // pub subjects: Option<Vec<Subject>>,
 }
 
 /// Funcion para crear un grupo
@@ -30,17 +34,50 @@ pub async fn create_group(
     group: String,
     career: Option<String>,
     students: Option<i16>,
+    subjects: Option<Vec<Subject>>,
 ) -> Result<(), String> {
-    sqlx::query(r#"INSERT INTO groups (grade, "group", career, students) VALUES (?1, ?2, ?3, ?4)"#)
-        .bind(grade)
-        .bind(group)
-        .bind(career)
-        .bind(students)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to create group, error: {}", e))?;
+    let group_id: i16 = sqlx::query_scalar(
+        r#"
+        INSERT INTO groups (grade, "group", career, students)
+        VALUES (?1, ?2, ?3, ?4)
+        RETURNING id
+    "#,
+    )
+    .bind(grade)
+    .bind(group)
+    .bind(career)
+    .bind(students)
+    .fetch_one(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to create group, error: {}", e))?;
 
-    println!("Group created successfully");
+    if let Some(subjects) = subjects {
+        for subject in subjects {
+            // Checa si existe la materia en el grupo, regresa el id si se encuentra
+            let check_groups: Option<i16> = sqlx::query_scalar(
+                "
+                SELECT 1 FROM groups_subjects
+                WHERE group_id = ?1 AND subject_id = ?2
+                ",
+            )
+            .bind(group_id)
+            .bind(subject.id)
+            .fetch_optional(&pool.db)
+            .await
+            .map_err(|e| format!("Error checking if subject exists on group table: {}", e))?;
+
+            // Si no se encuentra lo asigna
+            if check_groups.is_none() {
+                sqlx::query("INSERT INTO groups_subjects (group_id, subject_id) VALUES (?1, ?2)")
+                    .bind(group_id)
+                    .bind(subject.id)
+                    .fetch_optional(&pool.db)
+                    .await
+                    .map_err(|e| format!("Error assigning subject to group: {}", e))?;
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -88,14 +125,45 @@ pub async fn create_groups(
 /// Se llama desde la interfaz de usuario para obtenerlos
 #[allow(dead_code, unused)]
 #[tauri::command]
-pub async fn get_groups(pool: tauri::State<'_, AppState>) -> Result<Vec<Group>, String> {
+pub async fn get_groups(
+    pool: tauri::State<'_, AppState>,
+) -> Result<Vec<(Group, Vec<Subject>)>, String> {
     let groups: Vec<Group> = sqlx::query_as::<_, Group>("SELECT * FROM groups")
         .fetch(&pool.db)
         .try_collect()
         .await
         .map_err(|e| e.to_string())?;
 
-    Ok(groups)
+    // Checar si hay alguna materia asignada al grupo
+    let mut groups_subjects: Vec<(Group, Vec<Subject>)> = Vec::new();
+    for group in groups {
+        // Obtener materias
+        let subject_id: Vec<i16> =
+            sqlx::query("SELECT subject_id FROM groups_subjects WHERE group_id = ?1")
+                .bind(group.id)
+                .fetch(&pool.db)
+                .map_ok(|row| row.get::<i16, _>(0)) // Obtener el/los ID de la materia
+                .try_collect()
+                .await
+                .map_err(|e| format!("Failed to get subject id from database: {}", e))?;
+
+        let mut subjects: Vec<Subject> = Vec::new();
+        for id in subject_id {
+            let subject: Subject =
+                sqlx::query_as::<_, Subject>("SELECT * FROM subjects WHERE id = ?1")
+                    .bind(id)
+                    .fetch_one(&pool.db)
+                    .await
+                    .map_err(|e| format!("Failed to get subject class: {}", e))?;
+
+            println!("Subject: {:?}", subject);
+            subjects.push(subject);
+        }
+
+        groups_subjects.push((group, subjects));
+    }
+
+    Ok(groups_subjects)
 }
 
 /// Funcion para eliminar un grupo
@@ -151,6 +219,7 @@ pub async fn update_group(
     group: String,
     career: Option<String>,
     students: Option<i16>,
+    subjects: Option<Vec<Subject>>,
 ) -> Result<(), String> {
     sqlx::query(
         r#"UPDATE groups SET grade = ?1, "group" = ?2, career = ?3, students = ?4 WHERE id = ?5"#,
@@ -163,6 +232,24 @@ pub async fn update_group(
     .execute(&pool.db)
     .await
     .map_err(|e| format!("Failed to update group: {}", e))?;
+
+    if let Some(subjects) = subjects {
+        // Eliminar las materias del grupo si existian
+        sqlx::query("DELETE FROM groups_subjects WHERE group_id = ?1")
+            .bind(id)
+            .execute(&pool.db)
+            .await
+            .map_err(|e| format!("Failed to delete group subject: {}", e))?;
+        for subject in subjects {
+            // Agrega materia al grupo
+            sqlx::query("INSERT INTO groups_subjects (group_id, subject_id) VALUES (?1, ?2)")
+                .bind(id)
+                .bind(subject.id)
+                .fetch_optional(&pool.db)
+                .await
+                .map_err(|e| format!("Failed to assign the subject to existed group: {}", e))?;
+        }
+    }
 
     Ok(())
 }

@@ -14,14 +14,6 @@
     selectedItems = new Set(selectedItems);
   };
 
-  // function toggleAll(): void {
-  //   if (selectedItems.size === data.length) {
-  //     selectedItems.clear();
-  //   } else {
-  //     selectedItems = new Set(data.map((item) => item.id));
-  //   }
-  //   selectedItems = new Set(selectedItems);
-  // }
   function toggleAll(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (!target.checked) {
