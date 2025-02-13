@@ -30,7 +30,7 @@
     { name: "Grupo", key: "group" },
     { name: "Carrera", key: "career" },
     { name: "Cantidad de estudiantes", key: "students" },
-    { name: "Materias pre-asignadas", key: "subject" },
+    { name: "Materias pre-asignadas", key: "preAssignedSubjects" },
   ];
 
   let importShown: boolean = false;

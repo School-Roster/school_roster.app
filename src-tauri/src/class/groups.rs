@@ -114,7 +114,6 @@ pub async fn create_groups(
         .await
         .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
-    println!("Groups created successfully");
     Ok(())
 }
 
@@ -156,7 +155,6 @@ pub async fn get_groups(
                     .await
                     .map_err(|e| format!("Failed to get subject class: {}", e))?;
 
-            println!("Subject: {:?}", subject);
             subjects.push(subject);
         }
 

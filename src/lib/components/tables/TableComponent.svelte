@@ -77,6 +77,17 @@
                 >
                   {item[column.key]}
                 </td>
+              {:else if column.key === "preAssignedSubjects"}
+                <td>
+                  {#if item[column.key] && Array.isArray(item[column.key])}
+                    {#each item[column.key] as subj, i}
+                      {subj.name}{#if i < item[column.key].length - 1},
+                      {/if}
+                    {/each}
+                  {:else}
+                    N/A
+                  {/if}
+                </td>
               {:else if !item[column.key]}
                 <td>N/A</td>
               {:else}
@@ -105,19 +116,3 @@
     </tbody>
   </table>
 </section>
-
-<style lang="scss">
-  .multi-delete-controls {
-    display: flex;
-    position: absolute;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-    border-radius: 4px;
-
-    span {
-      font-weight: 500;
-    }
-  }
-</style>
