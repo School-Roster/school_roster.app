@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import { invoke } from "@tauri-apps/api";
 import { emit } from "@tauri-apps/api/event";
+import type { SubjectItem } from "./subjectsStore";
 
 /**
   * Interfaz para los datos de los grupos
@@ -9,13 +10,15 @@ import { emit } from "@tauri-apps/api/event";
   * @property {string} group - Grupo (A,B,C,...)
   * @property {string} career - Carrera (si aplica)
   * @property {number} students - Numero de alumnos (si aplica)
+  * @property {SubjectItem} preAssignedSubjects - Materias asignadas (si aplica)
   */
 export interface GroupItem {
   id: number;
   grade: number;
   group: string,
   career: string,
-  students: number
+  students: number,
+  preAssignedSubjects?: SubjectItem[]
 }
 
 /**
@@ -27,8 +30,16 @@ export const groups = writable<GroupItem[]>([]);
  * Carga los grupos desde la base de datos
  */
 export async function loadGroups() {
-  const response = await invoke("get_groups");
-  groups.set(response as GroupItem[]);
+  // Tuple para obtener las materias asignadas y los grupos
+  const response: [GroupItem, SubjectItem[]][] = await invoke<[GroupItem, SubjectItem[]][]>('get_groups');
+
+  const formattedGroups: GroupItem[] = response.map(([group, subjects]) => ({
+    ...group,
+    preAssignedSubjects: subjects, // Assign subjects to the group
+  }));
+
+  groups.set(formattedGroups);
+  console.log(formattedGroups);
 }
 
 /**
@@ -37,9 +48,14 @@ export async function loadGroups() {
   * @param {string} group
   * @param {string} career
   * @param {number} students
+  * @param {SubjectItem} subjects
   */
 export async function addGroup(
-  grade: number, group: string, career: string | null, students: number | null
+  grade: number,
+  group: string,
+  career: string | null,
+  students: number | null,
+  subjects: SubjectItem[]
 ): Promise<void> {
   if (!grade || !group) {
     alert("Por favor, rellene todos los campos");
@@ -51,6 +67,8 @@ export async function addGroup(
     group,
     career: career || null,
     students: students || null,
+    subjects:
+      subjects.length > 0 ? subjects.map((s) => s) : null,
   });
   await loadGroups(); // Recarga las vistas
   await emit("groups_updated"); // Emite un evento para actualizar la vista de materias
@@ -65,8 +83,9 @@ export async function addGroup(
 /**
   * Funcion para editar un grupo existente
   * @param {GroupItem} item
+  * @param {SubjectItem} subjects
   */
-export async function editGroup(item: GroupItem): Promise<void> {
+export async function editGroup(item: GroupItem, subjects: SubjectItem[]): Promise<void> {
   if (!item) return;
   if (!item.grade || !item.group) {
     alert("Por favor, rellene todos los campos");
@@ -79,6 +98,8 @@ export async function editGroup(item: GroupItem): Promise<void> {
     group: item.group,
     career: item.career,
     students: item.students,
+    subjects:
+      subjects.length > 0 ? subjects.map((s) => s) : null,
   });
   await loadGroups();
   await emit("groups_updated");
