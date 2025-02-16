@@ -179,6 +179,13 @@ pub async fn delete_group(pool: tauri::State<'_, AppState>, id: i16) -> Result<(
         .await
         .map_err(|e| format!("Failed to delete group: {}", e))?;
 
+    // Borrar asignaciones de horario ligadas al grupo
+    sqlx::query("DELETE FROM assignments WHERE group_id = ?1")
+        .bind(id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Failed to delete group assignment: {}", e))?;
+
     Ok(())
 }
 
