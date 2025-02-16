@@ -313,6 +313,12 @@ pub async fn delete_teacher(
         .await
         .map_err(|e| format!("Failed to delete teacher: {}", e))?;
 
+    sqlx::query("DELETE FROM assignments WHERE teacher_id = ?1")
+        .bind(teacher_id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Failed to delete teacher: {}", e))?;
+
     Ok(())
 }
 
