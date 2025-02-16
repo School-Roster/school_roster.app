@@ -119,6 +119,12 @@ pub async fn delete_subject(pool: tauri::State<'_, AppState>, id: i16) -> Result
         .await
         .map_err(|e| format!("Failed to delete subject: {}", e))?;
 
+    sqlx::query("DELETE FROM groups_subjects WHERE subject_id = ?1")
+        .bind(id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Failed to delete subject: {}", e))?;
+
     Ok(())
 }
 

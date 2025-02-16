@@ -18,6 +18,7 @@
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
   import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
+    import { loadAssignments } from "$lib/modules/entities/assignments";
 
   let search: string = "";
   let filter: string = "";
@@ -97,7 +98,8 @@
         });
       }
       loadTeachers();
-      emit("teachers_updated");
+      loadAssignments();
+      await emit("teachers_updated");
     } catch (err) {
       console.log(err);
     }

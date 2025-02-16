@@ -11,6 +11,8 @@
     handleAssignDrop,
     handleAssignClick,
   } from "$lib/modules/entities/assignments";
+    import { loadSubjects, loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
+    import { loadTeachers } from "$lib/modules/entities/teachersStore";
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -31,6 +33,11 @@
     // Carga los grupos de nuevo en caso de actualizados
     listen("groups_updated", async () => {
       await loadGroups();
+    });
+    // Carga si las materias son actualizadas (con profesores)
+    listen("teachers_updated", async () => {
+      await loadSubjectsWithTeachers();
+      await loadAssignments(); // Llama a base de datos cuando se inicia el programa
     });
   });
 
