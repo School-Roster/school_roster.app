@@ -20,17 +20,15 @@
     key: string;
   }> = [];
 
+  let excelHeaders: string[] = [];
+
   // Datos de excel
   type ColumnMapping = {
     field: {
       name: string;
       key: string;
     };
-    range: {
-      column: string;
-      startRow: number;
-      endRow: number | null;
-    };
+    excelHeader?: string;
   };
 
   let previewData: Array<Record<string, unknown>> = [];
@@ -42,11 +40,7 @@
     if (availableData.length > 0 && mappings.length === 0) {
       mappings = availableData.map((field) => ({
         field,
-        range: {
-          column: "",
-          startRow: 1,
-          endRow: null,
-        },
+        excelHeader: undefined,
       }));
     }
   }
@@ -61,14 +55,17 @@
 
       if (filePath) {
         // Llama a rust para que lea el archivo dado
-        const rows: any[] = await invoke("read_xlsx", {
+        let [headers, rows] = await invoke("read_xlsx", {
           filePath,
-          previewRows: 5,
-        });
+        }) as [string[], Array<Record<string, unknown>>];
 
-        // Rust consiguio datos
+        console.log("Headers: ", headers);
+        console.log("Rows: ", rows);
+
+        excelHeaders = headers;
+        previewData = rows;
+
         if (rows.length > 0) {
-          previewData = rows;
           showPreview = true;
           errorMessage = null;
         }
@@ -81,27 +78,41 @@
     }
   }
 
+  // Generate the header mappings for import
+  function generateHeaderMappings(): Record<string, string> {
+    const headerMap: Record<string, string> = {};
+
+    for (const mapping of mappings) {
+      if (mapping.excelHeaders) {
+        headerMap[mapping.field.key] = mapping.excelHeaders;
+      }
+    }
+
+    return headerMap;
+  }
+
   async function performImport(): Promise<void> {
     console.log("attempt:", mappings);
     try {
+      const headerMappings = generateHeaderMappings();
       switch (defaultClass) {
         case ClassType.Groups:
-          await importGroupsFromXlsx(mappings, previewData);
+          await importGroupsFromXlsx(headerMappings, previewData);
           dispatch("importComplete");
           showPreview = false;
           break;
         case ClassType.Classrooms:
-          await importClassroomsFromXlsx(mappings, previewData);
+          await importClassroomsFromXlsx(headerMappings, previewData);
           dispatch("importComplete");
           showPreview = false;
           break;
         case ClassType.Teachers:
-          await importTeachersFromXlsx(mappings, previewData);
+          await importTeachersFromXlsx(headerMappings, previewData);
           dispatch("importComplete");
           showPreview = false;
           break;
         case ClassType.Subjects:
-          await importSubjectsFromXlsx(mappings, previewData);
+          await importSubjectsFromXlsx(headerMappings, previewData);
           dispatch("importComplete");
           showPreview = false;
           break;
@@ -110,7 +121,7 @@
       }
     } catch (err) {
       errorMessage = err instanceof Error ? err.message : "Import failed";
-      dispatch('importError');
+      dispatch("importError");
     }
   }
 
@@ -129,42 +140,43 @@
       <!-- Asignar columna -->
       <div class="form-group">
         <h3>Asignar columnas</h3>
+
+        {#if previewData.length > 0}
+          <div class="preview-sample">
+            <h4>Vista previa de datos</h4>
+            <table>
+              <thead>
+                <tr>
+                  {#each excelHeaders as header}
+                    <th>{header}</th>
+                  {/each}
+                </tr>
+              </thead>
+              <tbody>
+                {#each previewData.slice(0, 3) as row}
+                  <tr>
+                    {#each excelHeaders as header}
+                      <td>{row[header]}</td>
+                    {/each}
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        {/if}
         <div class="columns-grid">
           {#each mappings as m}
             {#if m.field.key !== "id"}
               <div class="column-mapping">
                 <span class="field-name">{m.field.name}</span>
-                <div class="range-imputs">
-                  <div class="column-input">
-                    <label>Columna:</label>
-                    <input
-                      type="text"
-                      bind:value={m.range.column}
-                      placeholder="A"
-                      maxlength="3"
-                      style="text-transform: uppercase;"
-                    />
-                  </div>
-
-                  <div class="row-inputs">
-                    <div>
-                      <label>Fila inicial:</label>
-                      <input
-                        type="number"
-                        bind:value={m.range.startRow}
-                        min="1"
-                      />
-                    </div>
-                    <div>
-                      <label>Fila final:</label>
-                      <input
-                        type="number"
-                        bind:value={m.range.endRow}
-                        min={m.range.startRow || 1}
-                        placeholder="fila final"
-                      />
-                    </div>
-                  </div>
+                <div class="header-selector">
+                  <label>Columna del Excel:</label>
+                  <select bind:value={m.excelHeaders}>
+                    <option value="">Seleccionar columna</option>
+                    {#each excelHeaders as header}
+                      <option value={header}>{header}</option>
+                    {/each}
+                  </select>
                 </div>
               </div>
             {/if}
@@ -177,7 +189,7 @@
         <button
           class="import-button"
           on:click={performImport}
-          disabled={!mappings.some((m) => m.range.column && m.range.startRow)}
+          disabled={!mappings.some((m) => m.excelHeader)}
         >
           Importar columnas seleccionadas
         </button>
@@ -188,3 +200,39 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .preview-sample {
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f0f0f0;
+  }
+  
+  .column-mapping {
+    margin-bottom: 15px;
+  }
+  
+  .header-selector {
+    margin-top: 5px;
+  }
+  
+  .header-selector select {
+    width: 100%;
+    padding: 5px;
+  }
+</style>

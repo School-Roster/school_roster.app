@@ -1,8 +1,12 @@
 use calamine::{open_workbook, Reader, Xlsx};
 use std::collections::HashMap;
 
+/// Funcion para leer un archivo de excel
+/// # Argumentos
+/// * `file_path` - Ruta absoluta del archivo importado
+/// Retorna un vector con los headers y los datos si exitoso, de lo contrario arroja error por terminal.
 #[tauri::command]
-pub fn read_xlsx(file_path: &str) -> Result<Vec<HashMap<String, String>>, String> {
+pub fn read_xlsx(file_path: &str) -> Result<(Vec<String>, Vec<HashMap<String, String>>), String> {
     let mut workbook: Xlsx<_> =
         open_workbook(file_path).map_err(|e| format!("Failed to open workbook: {}", e))?;
 
@@ -10,7 +14,7 @@ pub fn read_xlsx(file_path: &str) -> Result<Vec<HashMap<String, String>>, String
         Ok(range) => {
             let mut rows = Vec::new();
 
-            // Obtiene los headers de la primera fila
+            // Obtiene los headers
             let headers: Vec<String> = range
                 .rows()
                 .next()
@@ -28,7 +32,7 @@ pub fn read_xlsx(file_path: &str) -> Result<Vec<HashMap<String, String>>, String
                 rows.push(row_data);
             }
 
-            Ok(rows)
+            Ok((headers, rows))
         }
         Err(e) => Err(format!("Failed to read worksheet: {}", e)),
     }
