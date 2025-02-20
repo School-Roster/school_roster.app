@@ -13,6 +13,7 @@ simplemente llama a la vista deseada.
   import TeachersView from '$lib/components/forms/teachers/TeachersView.svelte';
   import GroupsView from '$lib/components/forms/groups/GroupsView.svelte';
   import ClassroomView from '$lib/components/forms/classrooms/ClassroomView.svelte';
+  import loginView from'$lib/components/forms/login/login-view.svelte';
 
   /* Utilidad */
   import SettingsView from '$lib/components/utils/Settings.svelte';
@@ -38,6 +39,10 @@ simplemente llama a la vista deseada.
     default:
       view = NotFoundView;
       break;
+    case 'login':
+      view = loginView;
+      break;
+    
   }
 
   /**
