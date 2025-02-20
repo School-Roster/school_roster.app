@@ -72,14 +72,11 @@ export async function loadTeachers(): Promise<void> {
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Array} mappings
+  * @param {Array} headerMappings
   * @param {Array} excelData
   */
 export async function importTeachersFromXlsx(
-  mappings: Array<{
-    field: { key: string, name: string };
-    range: { column: string, startRow: number, endRow: number | null };
-  }>,
+  headerMappings: Record<string, string>,
   excelData: Array<Record<string, unknown>>
 ): Promise<void> {
   console.log("Raw data:", excelData);

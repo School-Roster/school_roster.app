@@ -6,6 +6,8 @@
 </div>
 
 <style lang="scss">
+  @use "../../../styles/variables";
+
   .container--without-results {
     display: flex;
     flex-direction: column;
@@ -27,16 +29,24 @@
 
     h1 {
       font-family: "Inria Sans";
-      color: #191724;
+      color: variables.$other-color;
       font-size: 2.25rem;
       font-weight: bold;
       font-style: bold;
       margin: 16px 0;
+
+      body.dark & {
+        color: variables.$other-color;
+      }
     }
 
     p {
       margin-top: 0;
       font-size: 1rem;
+    }
+
+    a {
+      color: variables.$blue;
     }
   }
 </style>

@@ -84,14 +84,11 @@ export async function editClassroom(item: ClassroomItem): Promise<void> {
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Array} mappings
+  * @param {Record} headerMappings
   * @param {Array} excelData
   */
 export async function importClassroomsFromXlsx(
-  mappings: Array<{
-    field: { key: string, name: string };
-    range: { column: string, startRow: number, endRow: number | null };
-  }>,
+  headerMappings: Record<string, string>,
   excelData: Array<Record<string, unknown>>
 ): Promise<void> {
   console.log("Raw data:", excelData);
