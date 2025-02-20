@@ -1,15 +1,15 @@
 <script lang="ts">
   import ToggleDarkTheme from "../buttons/ToggleDarkTheme.svelte";
 
-  let dias = ["Lunes"];
-  let modulos = ["Matemáticas"];
+  let dias = ["..."];
+  let modulos = ["..."];
 </script>
 
 <section class="config-card">
   <h2>Configuración</h2>
 
   <div class="config-section">
-    <h3>Días</h3>
+    <h3>Nombre</h3>
     <ul>
       {#each dias as dia}
         <li>{dia}</li>
@@ -18,7 +18,7 @@
   </div>
 
   <div class="config-section">
-    <h3>Módulos</h3>
+    <h3>Escuela</h3>
     <ul>
       {#each modulos as modulo}
         <li>{modulo}</li>
