@@ -3,5 +3,7 @@ CREATE TABLE IF NOT EXISTS subjects (
     name TEXT NOT NULL,
     shorten TEXT NOT NULL,
     color TEXT NOT NULL,
-    spec TEXT NOT NULL
+    spec TEXT NOT NULL,
+    required_modules INTEGER NOT NULL,
+    priority INTEGER
 );
