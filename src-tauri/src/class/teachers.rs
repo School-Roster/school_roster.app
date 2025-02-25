@@ -23,38 +23,23 @@ pub struct Teacher {
     pub email: Option<String>,
     pub phone: Option<String>,
     pub degree: Option<String>,
-    pub commisioned_hours: Option<i16>, // Total de horas
-    pub active_hours: Option<i16>,      // Horas activas en el programa
-    pub performance: Option<i16>,       // Desempeño
+    pub commisioned_hours: Option<i16>,      // Total de horas
+    pub active_hours: Option<i16>,           // Horas activas en el programa
+    pub performance: Option<i16>,            // Desempeño
+    pub preferred_days: Option<Vec<String>>, // Dias preferidos del profesor
+    pub preferred_modules: Option<Vec<i16>>, // Modulos preferidos del profesor
 }
 
 /// Funcion para agregar un profesor
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `name` - Nombre del profesor
-/// * `father_lastname` - Apellido paterno del profesor
-/// * `mother_lastname` - Apellido materno del profesor (opcional puede ser nulo)
-/// * `email` - Correo electronico del profesor (opcional puede ser nulo)
-/// * `phone` - Telefono del profesor (opcional puede ser nulo)
-/// * `degree` - Grado academico del profesor (opcional puede ser nulo)
-/// * `commisioned_hours` - Total de horas comisionadas del profesor (opcional puede ser nulo)
-/// * `active_hours` - Total de horas activas del profesor (opcional puede ser nulo)
-/// * `performance` - Desempeño del profesor (opcional puede ser nulo)
-/// * `subjects` - Materias que imparte el profesor (opcional puede ser nulo)
+/// * `teacher` - Clase del profesor
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command(rename_all = "snake_case")]
 pub async fn add_teacher(
     pool: tauri::State<'_, AppState>,
-    name: String,
-    father_lastname: String,
-    mother_lastname: Option<String>,
-    email: Option<String>,
-    phone: Option<String>,
-    degree: Option<String>,
-    commisioned_hours: Option<i16>,
-    active_hours: Option<i16>,
-    performance: Option<i16>,
+    teacher: Teacher,
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
     let teacher_id: i64 = sqlx::query_scalar(
@@ -68,25 +53,30 @@ pub async fn add_teacher(
             degree,
             commisioned_hours,
             active_hours,
-            performance
+            performance,
+            preferred_days,
+            preferred_modules
         )
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
         RETURNING id
     ",
     )
-    .bind(name)
-    .bind(father_lastname)
-    .bind(mother_lastname)
-    .bind(email)
-    .bind(phone)
-    .bind(degree)
-    .bind(commisioned_hours)
-    .bind(active_hours)
-    .bind(performance)
+    .bind(teacher.name)
+    .bind(teacher.father_lastname)
+    .bind(teacher.mother_lastname)
+    .bind(teacher.email)
+    .bind(teacher.phone)
+    .bind(teacher.degree)
+    .bind(teacher.commisioned_hours)
+    .bind(teacher.active_hours)
+    .bind(teacher.performance)
+    .bind(teacher.preferred_days)
+    .bind(teacher.preferred_modules)
     .fetch_one(&pool.db)
     .await
     .map_err(|e| format!("Failed to create teacher: {}", e))?;
 
+    // Si existen materias vincularlas con el profesor
     if let Some(subjects) = subjects {
         // Agregar las materias al profesor
         for subject_id in subjects {
@@ -145,8 +135,8 @@ pub async fn create_teachers(
         INSERT INTO teachers (
             name, father_lastname, mother_lastname,
             email, phone, degree, commisioned_hours,
-            active_hours, performance
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            active_hours, performance, preferred_days, preferred_moduels
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
         )
         .bind(i.name)
         .bind(i.father_lastname)
@@ -157,6 +147,8 @@ pub async fn create_teachers(
         .bind(i.commisioned_hours)
         .bind(i.active_hours)
         .bind(i.performance)
+        .bind(i.preferred_days)
+        .bind(i.preferred_modules)
         .execute(&pool.db)
         .await
         .map_err(|e| format!("Error creating the teacher, error: {}", e))?;
@@ -168,32 +160,14 @@ pub async fn create_teachers(
 /// Funcion para editar un profesor
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `id` - ID del profesor
-/// * `name` - Nombre del profesor
-/// * `father_lastname` - Apellido paterno del profesor
-/// * `mother_lastname` - Apellido materno del profesor (opcional puede ser nulo)
-/// * `email` - Correo electronico del profesor (opcional puede ser nulo)
-/// * `phone` - Telefono del profesor (opcional puede ser nulo)
-/// * `degree` - Grado academico del profesor (opcional puede ser nulo)
-/// * `commisioned_hours` - Total de horas comisionadas del profesor (opcional puede ser nulo)
-/// * `active_hours` - Total de horas activas del profesor (opcional puede ser nulo)
-/// * `performance` - Desempeño del profesor (opcional puede ser nulo)
+/// * `teacher` - Clase del profesor (sin materia)
 /// * `subjects` - Materias que imparte el profesor (opcional puede ser nulo)
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command(rename_all = "snake_case")]
 pub async fn edit_teacher(
     pool: tauri::State<'_, AppState>,
-    id: i16,
-    name: String,
-    father_lastname: String,
-    mother_lastname: Option<String>,
-    email: Option<String>,
-    phone: Option<String>,
-    degree: Option<String>,
-    commisioned_hours: Option<i16>,
-    active_hours: Option<i16>,
-    performance: Option<i16>,
+    teacher: Teacher,
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
     // Actualizar los datos del profesor
@@ -209,20 +183,24 @@ pub async fn edit_teacher(
             degree = ?6,
             commisioned_hours = ?7,
             active_hours = ?8,
-            performance = ?9
-        WHERE id = ?10
+            performance = ?9,
+            preferred_days = ?10,
+            preferred_modules = ?11
+        WHERE id = ?12
     ",
     )
-    .bind(name)
-    .bind(father_lastname)
-    .bind(mother_lastname)
-    .bind(email)
-    .bind(phone)
-    .bind(degree)
-    .bind(commisioned_hours)
-    .bind(active_hours)
-    .bind(performance)
-    .bind(id)
+    .bind(teacher.name)
+    .bind(teacher.father_lastname)
+    .bind(teacher.mother_lastname)
+    .bind(teacher.email)
+    .bind(teacher.phone)
+    .bind(teacher.degree)
+    .bind(teacher.commisioned_hours)
+    .bind(teacher.active_hours)
+    .bind(teacher.performance)
+    .bind(teacher.preferred_days)
+    .bind(teacher.preferred_modules)
+    .bind(teacher.id)
     .execute(&pool.db)
     .await
     .map_err(|e| format!("Failed to update teacher: {}", e))?;
