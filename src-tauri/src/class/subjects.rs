@@ -14,6 +14,8 @@ pub struct Subject {
     pub shorten: String,
     pub color: String,
     pub spec: String,
+    pub required_modules: i16,
+    pub priority: i16,
 }
 
 /// Estructura de una materia con profesor asignado
@@ -25,34 +27,37 @@ pub struct SubjectWithTeacher {
     pub shorten: String,
     pub color: String,
     pub spec: String,
+    pub required_modules: i16,
+    pub priority: i16,
     pub assigned_teacher: Option<SimpleTeacher>,
 }
 
 /// Funcion para crear una materia
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `name` - Nombre de la materia
-/// * `shorten` - Abreviatura de la materia
-/// * `color` - Color de la materia
-/// * `spec` - Especificacion de la materia
+/// * `subject` - Materia
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn create_subject(
     pool: tauri::State<'_, AppState>,
-    name: String,
-    shorten: String,
-    color: String,
-    spec: String,
+    subject: Subject,
 ) -> Result<(), String> {
-    sqlx::query("INSERT INTO subjects (name, shorten, color, spec) VALUES (?1, ?2, ?3, ?4)")
-        .bind(name)
-        .bind(shorten)
-        .bind(color)
-        .bind(spec)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to create subject: {}", e))?;
+    sqlx::query(
+        "
+        INSERT INTO subjects (name, shorten, color, spec, required_modules, priority)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+        ",
+    )
+    .bind(subject.name)
+    .bind(subject.shorten)
+    .bind(subject.color)
+    .bind(subject.spec)
+    .bind(subject.required_modules)
+    .bind(subject.priority)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to create subject: {}", e))?;
 
     println!("Subject created successfully");
 
@@ -149,22 +154,14 @@ pub async fn delete_subjects(
 /// Funcion para actualizar una materia
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `id` - ID de la materia
-/// * `name` - Nombre de la materia
-/// * `shorten` - Abreviatura de la materia
-/// * `color` - Color de la materia
-/// * `spec` - Especificacion de la materia
+/// * `subject` - Clase de la materia
 /// Retorna un resultado vacio si la operacion fue exitosa
 /// Se llama desde la interfaz de usuario para actualizar una materia
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn update_subject(
     pool: tauri::State<'_, AppState>,
-    id: i16,
-    name: String,
-    shorten: String,
-    color: String,
-    spec: String,
+    subject: Subject,
 ) -> Result<(), String> {
     sqlx::query("UPDATE subjects SET name = ?1, shorten = ?2, color = ?3, spec = ?4 WHERE id = ?5")
         .bind(name)

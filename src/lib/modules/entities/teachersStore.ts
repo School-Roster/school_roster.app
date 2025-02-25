@@ -14,6 +14,8 @@ import { emit } from "@tauri-apps/api/event";
   * @property {string} degree - Grado académico (opcional)
   * @property {number} commissioned_hours - Horas comisionadas (opcional)
   * @property {number} active_hours - Horas activas (opcional)
+  * @property {string[]} preferred_days - Dias preferidos del profesor (opcional)
+  * @property {number[]} preferred_modules - Modulos preferidos del profesor (opcional)
   */
 export interface TeacherItem {
   id: number;
@@ -26,6 +28,8 @@ export interface TeacherItem {
   commissioned_hours: number;
   active_hours: number;
   performance: number;
+  preferred_days: string[];
+  preferred_modules: number[];
 }
 
 /**
@@ -39,7 +43,6 @@ export interface SimpleTeacherItem {
   name: string;
   father_lastname: string;
 }
-
 
 /**
  * Lista todos los profesores registrados
