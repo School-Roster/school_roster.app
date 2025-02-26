@@ -10,7 +10,7 @@
     loadSubjects,
     type SubjectItem,
   } from "$lib/modules/entities/subjectsStore";
-  import { loadTeachers } from "$lib/modules/entities/teachersStore";
+  import { loadTeachers, type TeacherItem } from "$lib/modules/entities/teachersStore";
 
   let id: number;
   let name: string;
@@ -22,6 +22,8 @@
   let comissioned_hours: number;
   let active_hours: number; // Horas activas es automatico con la suma total de las horas de las materias, no se puede editar
   let performance: number;
+  let preferred_days: string[];
+  let preferred_modules: number[];
 
   let selectedSubjects: SubjectItem[] = [];
   let showSubjects: boolean = false;
@@ -42,6 +44,8 @@
       comissioned_hours = item.commissioned_hours;
       active_hours = item.active_hours;
       performance = item.performance;
+      preferred_days = item.preferred_days;
+      preferred_modules = item.preferred_modules;
       // Map assigned_subjects names to the SubjectItem objects
       selectedSubjects = item.assigned_subjects.map((subjectName: string) => {
         const subject = $subjects.find((s) => s.name === subjectName);
@@ -57,6 +61,8 @@
       comissioned_hours = 0;
       active_hours = 0;
       performance = 0;
+      preferred_days = [];
+      preferred_modules = [];
       selectedSubjects = [];
     }
   }
@@ -86,17 +92,23 @@
       emit("subjects_with_teachers_updated");
     }
 
-    // Registrar nuevo profesor
-    await invoke("add_teacher", {
+    let teacher: TeacherItem = TeacherItem {
       name,
       father_lastname,
-      mother_lastname: mother_lastname || null,
-      email: email || null,
-      phone: phone || null,
-      degree: degree || null,
-      comissioned_hours: comissioned_hours || null,
-      active_hours: active_hours || null,
-      performance: performance || null,
+      mother_lastname,
+      email,
+      phone,
+      degree,
+      comissioned_hours,
+      active_hours,
+      performance,
+      preferred_days,
+      preferred_modules,
+    };
+
+    // Registrar nuevo profesor
+    await invoke("add_teacher", {
+      teacher,
       subjects:
         selectedSubjects.length > 0 ? selectedSubjects.map((s) => s.id) : null, // Pasamos solo los ids de las materias seleccionadas
     });
@@ -130,6 +142,12 @@
     if (selectedSubjects.length > 0) {
       emit("subjects_with_teachers_updated");
     }
+
+    let teacher: TeacherItem = TeacherItem {
+      name,
+      father_lastname,
+      mother_lastname,
+    };
 
     // Registrar nuevo profesor
     await invoke("edit_teacher", {
@@ -182,11 +200,7 @@
 
 <!-- Formulario para agregar un nuevo profesor -->
 <section class="form-editor">
-  {#if item}
-    <h1>Editar profesor</h1>
-  {:else}
-    <h1>Registro de profesores</h1>
-  {/if}
+  <h1>{item ? "Editar Profesor" : "Registrar nuevo profesor"}</h1>
   <div class="form-group">
     <div class="form-field">
       <label for="name"><img src="/icons/teacher.svg" alt="Nombre" /></label>
@@ -268,6 +282,26 @@
         placeholder="Rendimiento"
         id="performance"
         bind:value={performance}
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="name"><img src="/icons/chart.svg" alt="DiasPreferidos" /></label>
+      <input
+        type="text"
+        placeholder="Dias preferidos del profesor (Opcional)"
+        id="preferred_days"
+        bind:value={preferred_days}
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="name"><img src="/icons/chart.svg" alt="DiasPreferidos" /></label>
+      <input
+        type="number"
+        placeholder="Modulos preferidos del profesor (Opcional)"
+        id="preferred_days"
+        bind:value={preferred_modules}
       />
     </div>
 
