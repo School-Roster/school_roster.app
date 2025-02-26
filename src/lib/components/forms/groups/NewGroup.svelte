@@ -1,4 +1,6 @@
 <script lang="ts">
+  import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
+
   import {
     addGroup,
     editGroup,
@@ -57,15 +59,26 @@
 <section class="form-editor">
   <h1>{item ? "Editar grupo existente" : "Generar nuevo grupo"}</h1>
   <div class="form-group">
+    <script>
+      import TooltipIcon from "$lib/components/TooltipIcon.svelte";
+      export let item = { grade: "" };
+      let grade = "";
+    </script>
+    
     <div class="form-field">
-      <label for="grade"><img src="/icons/group.svg" alt="Icon" /></label>
+      <label for="grade">
+        <img src="/icons/group.svg" alt="Icon" />
+      </label>
+    
       {#if item}
         <input
           type="text"
           placeholder="* Grado"
           id="grade"
           bind:value={item.grade}
+          
         />
+        
       {:else}
         <input
           type="number"
@@ -73,8 +86,13 @@
           id="grade"
           bind:value={grade}
         />
+        <div class="informacion-icon">
+          <TooltipIcon />
+        </div>
       {/if}
+
     </div>
+    
     <div class="form-field">
       <label for="group"><img src="/icons/group.svg" alt="Icon" /></label>
       {#if item}
@@ -169,3 +187,13 @@
     </button>
   </div>
 </section>
+
+<style lang="scss">
+  .informacion-icon {
+    margin-right: 80px; 
+    margin-top: 4px;
+  }
+  </style>
+  
+
+  
