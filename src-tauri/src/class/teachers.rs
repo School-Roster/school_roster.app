@@ -167,7 +167,6 @@ pub async fn create_teachers(
 #[tauri::command(rename_all = "snake_case")]
 pub async fn edit_teacher(
     pool: tauri::State<'_, AppState>,
-    id: i16,
     teacher: Teacher,
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
@@ -201,7 +200,7 @@ pub async fn edit_teacher(
     .bind(teacher.performance)
     .bind(teacher.preferred_days)
     .bind(teacher.preferred_modules)
-    .bind(id)
+    .bind(teacher.id)
     .execute(&pool.db)
     .await
     .map_err(|e| format!("Failed to update teacher: {}", e))?;
