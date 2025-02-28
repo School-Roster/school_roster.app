@@ -147,7 +147,7 @@
 
     <div class="form-field">
       <label for="name"><img src="/icons/at.svg" alt="Correo" /></label>
-      <input type="email" placeholder="Correo" id="email" bind:value={email} />
+      <input type="email" placeholder="Correo" id="email" bind:value={t.email} />
     </div>
 
     <div class="form-field">

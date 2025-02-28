@@ -1,8 +1,8 @@
 use crate::db::AppState;
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
-use sqlx::Row;
+use sqlx::error::Error as SqlxError;
+use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 /// Estructura simple de un profesor, solo contiene el ID, el nombre y el primer apellido
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,7 +14,7 @@ pub struct SimpleTeacher {
 
 /// Estructura de un profesor
 /// Se utiliza para mapear los datos de un profesor de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Teacher {
     pub id: Option<i16>,
     pub name: String,
@@ -23,11 +23,40 @@ pub struct Teacher {
     pub email: Option<String>,
     pub phone: Option<String>,
     pub degree: Option<String>,
-    pub commisioned_hours: Option<i16>,      // Total de horas
-    pub active_hours: Option<i16>,           // Horas activas en el programa
-    pub performance: Option<i16>,            // Desempeño
-    pub preferred_days: Option<Vec<String>>, // Dias preferidos del profesor
-    pub preferred_modules: Option<Vec<i16>>, // Modulos preferidos del profesor
+    pub commisioned_hours: Option<i16>, // Total de horas
+    pub active_hours: Option<i16>,      // Horas activas en el programa
+    pub performance: Option<i16>,       // Desempeño
+    pub preferred_days: Vec<String>,    // Dias preferidos del profesor
+    pub preferred_modules: Vec<i16>,    // Modulos preferidos del profesor
+}
+
+// Implement FromRow for Teacher
+impl<'r> FromRow<'r, SqliteRow> for Teacher {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        // For the Vec fields, get them as strings and deserialize
+        let preferred_days_str: String = row.try_get("preferred_days")?;
+        let preferred_days: Vec<String> =
+            serde_json::from_str(&preferred_days_str).unwrap_or_default();
+
+        let preferred_modules_str: String = row.try_get("preferred_modules")?;
+        let preferred_modules: Vec<i16> =
+            serde_json::from_str(&preferred_modules_str).unwrap_or_default();
+
+        Ok(Teacher {
+            id: row.try_get("id")?,
+            name: row.try_get("name")?,
+            father_lastname: row.try_get("father_lastname")?,
+            mother_lastname: row.try_get("mother_lastname")?,
+            email: row.try_get("email")?,
+            phone: row.try_get("phone")?,
+            degree: row.try_get("degree")?,
+            commisioned_hours: row.try_get("commisioned_hours")?,
+            active_hours: row.try_get("active_hours")?,
+            performance: row.try_get("performance")?,
+            preferred_days,
+            preferred_modules,
+        })
+    }
 }
 
 /// Funcion para agregar un profesor
@@ -42,6 +71,12 @@ pub async fn add_teacher(
     teacher: Teacher,
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
+    let preferred_days = serde_json::to_string(&teacher.preferred_days)
+        .map_err(|e| format!("Failed to serialize teacher preferred days: {:?}", e))?;
+
+    let preferred_modules = serde_json::to_string(&teacher.preferred_modules)
+        .map_err(|e| format!("Failed to serialize teacher preferred modules: {:?}", e))?;
+
     let teacher_id: i64 = sqlx::query_scalar(
         "
         INSERT INTO teachers (
@@ -70,8 +105,8 @@ pub async fn add_teacher(
     .bind(teacher.commisioned_hours)
     .bind(teacher.active_hours)
     .bind(teacher.performance)
-    .bind(teacher.preferred_days)
-    .bind(teacher.preferred_modules)
+    .bind(preferred_days)
+    .bind(preferred_modules)
     .fetch_one(&pool.db)
     .await
     .map_err(|e| format!("Failed to create teacher: {}", e))?;
@@ -130,12 +165,17 @@ pub async fn create_teachers(
     teacher: Vec<Teacher>,
 ) -> Result<(), String> {
     for i in teacher {
+        let preferred_days = serde_json::to_string(&i.preferred_days)
+            .map_err(|e| format!("Failed to serialize preferred_days: {}", e))?;
+        let preferred_modules = serde_json::to_string(&i.preferred_modules)
+            .map_err(|e| format!("Failed to serialize teacher preferred modules: {}", e))?;
+
         sqlx::query(
             "
         INSERT INTO teachers (
             name, father_lastname, mother_lastname,
             email, phone, degree, commisioned_hours,
-            active_hours, performance, preferred_days, preferred_moduels
+            active_hours, performance, preferred_days, preferred_modules
         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
         )
         .bind(i.name)
@@ -147,8 +187,8 @@ pub async fn create_teachers(
         .bind(i.commisioned_hours)
         .bind(i.active_hours)
         .bind(i.performance)
-        .bind(i.preferred_days)
-        .bind(i.preferred_modules)
+        .bind(preferred_days)
+        .bind(preferred_modules)
         .execute(&pool.db)
         .await
         .map_err(|e| format!("Error creating the teacher, error: {}", e))?;
@@ -170,6 +210,11 @@ pub async fn edit_teacher(
     teacher: Teacher,
     subjects: Option<Vec<i16>>,
 ) -> Result<(), String> {
+    let preferred_days = serde_json::to_string(&teacher.preferred_days)
+        .map_err(|e| format!("Failed to serialize teacher preferred days: {:?}", e))?;
+    let preferred_modules = serde_json::to_string(&teacher.preferred_modules)
+        .map_err(|e| format!("Failed to serialize teacher preferred modules: {:?}", e))?;
+
     // Actualizar los datos del profesor
     sqlx::query(
         "
@@ -198,8 +243,8 @@ pub async fn edit_teacher(
     .bind(teacher.commisioned_hours)
     .bind(teacher.active_hours)
     .bind(teacher.performance)
-    .bind(teacher.preferred_days)
-    .bind(teacher.preferred_modules)
+    .bind(preferred_days)
+    .bind(preferred_modules)
     .bind(teacher.id)
     .execute(&pool.db)
     .await
@@ -208,7 +253,7 @@ pub async fn edit_teacher(
     if let Some(subjects) = subjects {
         // Eliminar las materias del profesor
         sqlx::query("DELETE FROM teacher_subjects WHERE teacher_id = ?1")
-            .bind(id)
+            .bind(teacher.id)
             .execute(&pool.db)
             .await
             .map_err(|e| format!("Failed to delete teacher subjects: {}", e))?;
@@ -221,7 +266,7 @@ pub async fn edit_teacher(
                 VALUES (?1, ?2)
             ",
             )
-            .bind(id)
+            .bind(teacher.id)
             .bind(subject_id)
             .execute(&pool.db)
             .await
@@ -244,8 +289,7 @@ pub async fn get_all_teachers(
 ) -> Result<Vec<(Teacher, Vec<i16>)>, String> {
     // Obtener todos los profesores
     let teachers: Vec<Teacher> = sqlx::query_as::<_, Teacher>("SELECT * FROM teachers")
-        .fetch(&pool.db)
-        .try_collect()
+        .fetch_all(&pool.db)
         .await
         .map_err(|e| e.to_string())?;
 
