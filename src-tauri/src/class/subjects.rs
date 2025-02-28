@@ -75,7 +75,7 @@ pub async fn create_subjects(
     subject: Vec<Subject>,
 ) -> Result<(), String> {
     for i in subject {
-        sqlx::query("INSERT INTO subjects (shorten, name, color, spec) VALUES (?1, ?2, ?3, ?4)")
+        sqlx::query("INSERT INTO subjects (shorten, name, color, spec, required_modules, priority) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
             .bind(if i.shorten.len() <= 0 {
                 i.name.to_uppercase().chars().take(3).collect()
             } else {
@@ -84,6 +84,8 @@ pub async fn create_subjects(
             .bind(i.name)
             .bind(i.color)
             .bind(i.spec)
+            .bind(i.required_modules)
+            .bind(i.priority)
             .execute(&pool.db)
             .await
             .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
@@ -163,15 +165,28 @@ pub async fn update_subject(
     pool: tauri::State<'_, AppState>,
     subject: Subject,
 ) -> Result<(), String> {
-    sqlx::query("UPDATE subjects SET name = ?1, shorten = ?2, color = ?3, spec = ?4 WHERE id = ?5")
-        .bind(name)
-        .bind(shorten)
-        .bind(color)
-        .bind(spec)
-        .bind(id)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to update subject: {}", e))?;
+    sqlx::query(
+        "
+        UPDATE subjects SET
+            name = ?1,
+            shorten = ?2,
+            color = ?3,
+            spec = ?4,
+            required_modules = ?5,
+            priority = ?6,
+        WHERE id = ?7
+    ",
+    )
+    .bind(subject.name)
+    .bind(subject.shorten)
+    .bind(subject.color)
+    .bind(subject.spec)
+    .bind(subject.required_modules)
+    .bind(subject.priority)
+    .bind(subject.id)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to update subject: {}", e))?;
 
     Ok(())
 }
@@ -226,6 +241,8 @@ pub async fn get_subjects_with_teachers(
             shorten: row.try_get("subject_shorten").unwrap(),
             color: row.try_get("subject_color").unwrap(),
             spec: row.try_get("subject_spec").unwrap(),
+            required_modules: row.try_get("subject_required_modules").unwrap(),
+            priority: row.try_get("subject_priority").unwrap(),
             assigned_teacher,
         };
 
