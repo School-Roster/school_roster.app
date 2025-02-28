@@ -44,4 +44,8 @@ export const itemData = [
   { it: 0, name: "Historial", icon: "/icons/clock.svg", menu: "todo", submenu: [] },
 
   { it: 0, name: "Configuracion", icon: "/icons/school.svg", menu: "settings", submenu: [] },
+
+  { it: 0, name: "Login", icon: "/icons/login.svg", menu: "login", submenu: [] },
+
+
 ];
