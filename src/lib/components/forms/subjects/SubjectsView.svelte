@@ -30,6 +30,8 @@
     { name: "Abreviatura", key: "shorten" },
     { name: "Color", key: "color" },
     { name: "Tipo", key: "spec" },
+    { name: "Modulos por semana", key: "required_modules" },
+    { name: "Prioridad (1-5)", key: "priority" },
   ];
 
   let importShown: boolean = false;
