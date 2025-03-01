@@ -173,7 +173,7 @@ pub async fn update_subject(
             color = ?3,
             spec = ?4,
             required_modules = ?5,
-            priority = ?6,
+            priority = ?6
         WHERE id = ?7
     ",
     )
@@ -183,7 +183,7 @@ pub async fn update_subject(
     .bind(subject.spec)
     .bind(subject.required_modules)
     .bind(subject.priority)
-    .bind(subject.id)
+    .bind(Some(subject.id))
     .execute(&pool.db)
     .await
     .map_err(|e| format!("Failed to update subject: {}", e))?;
@@ -209,6 +209,8 @@ pub async fn get_subjects_with_teachers(
             subjects.shorten as subject_shorten,
             subjects.color as subject_color,
             subjects.spec as subject_spec,
+            subjects.required_modules as subject_modules,
+            subjects.priority as subject_priority,
             teachers.id as teacher_id,
             teachers.name as teacher_name,
             teachers.father_lastname as teacher_father_lastname
@@ -241,7 +243,7 @@ pub async fn get_subjects_with_teachers(
             shorten: row.try_get("subject_shorten").unwrap(),
             color: row.try_get("subject_color").unwrap(),
             spec: row.try_get("subject_spec").unwrap(),
-            required_modules: row.try_get("subject_required_modules").unwrap(),
+            required_modules: row.try_get("subject_modules").unwrap(),
             priority: row.try_get("subject_priority").unwrap(),
             assigned_teacher,
         };
