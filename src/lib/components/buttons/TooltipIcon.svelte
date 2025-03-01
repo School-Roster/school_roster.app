@@ -14,7 +14,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="tooltip-container"
+  class="tooltip-container form-information-icon"
   on:mouseenter={handleMouseEnter}
   on:mouseleave={handleMouseLeave}
 >

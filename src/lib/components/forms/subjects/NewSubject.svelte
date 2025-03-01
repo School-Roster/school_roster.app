@@ -7,33 +7,53 @@
     type SubjectItem,
   } from "$lib/modules/entities/subjectsStore";
   import ColorPicker from "$lib/components/buttons/ColorPicker.svelte";
+  import { onMount } from "svelte";
+  import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
 
-  let name: string = "";
-  let shorten: string = "";
   /*
     TODO: Generar un color que pueda usarse sin cambiarlo para no perder el tiempo
     NOTE: Tendremos en cuenta los colores registrados en la base de datos
       para que no se repitan y darle al usuario una recomendación de color
   */
-  let color: string = "#ff00aa";
-  let spec: string = "";
+  let subject: SubjectItem = {
+    name: "",
+    shorten: "",
+    color: "#a50044",
+    spec: "",
+    required_modules: null,
+    priority: null,
+  };
 
   // Para editar una materia agregamos el item como propiedad
   export let item: SubjectItem | null = null;
 
+  function initForm(item: SubjectItem | null): void {
+    if (item) {
+      subject.id = item.id;
+      subject.name = item.name;
+      subject.shorten = item.shorten;
+      subject.color = item.color;
+      subject.required_modules = item.required_modules;
+      subject.priority = item.priority;
+      subject.assigned_teacher = item.assigned_teacher;
+    }
+  }
+
   const handleSubmit = (): void => {
     if (item) {
-      editSubject(item);
+      editSubject(subject);
     } else {
-      addSubject(name, shorten, color, spec);
-
-      // Limpiamos los campos
-      name = "";
-      shorten = "";
-      color = "#a50044";
-      spec = "Obligatoria";
+      addSubject(subject);
     }
+    subject.name = "";
+    subject.shorten = "";
+    subject.color = "#a50044";
+    subject.spec = "Obligatoria";
   };
+
+  onMount((): void => {
+    initForm(item);
+  });
 </script>
 
 <section class="form-editor">
@@ -41,61 +61,59 @@
   <div class="form-group">
     <div class="form-field">
       <label for="name"><img src="/icons/books.svg" alt="Materia" /></label>
-      {#if item}
-        <input
-          type="text"
-          placeholder="Escribe nombre de materia"
-          id="name"
-          bind:value={item.name}
-        />
-      {:else}
-        <input
-          type="text"
-          placeholder="Escribe nombre de materia"
-          id="name"
-          bind:value={name}
-        />
-      {/if}
+      <input
+        type="text"
+        placeholder="Escribe nombre de materia"
+        id="name"
+        bind:value={subject.name}
+      />
     </div>
     <div class="form-field">
       <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
-      {#if item}
-        <input
-          type="text"
-          placeholder="Abreviatura"
-          id="shorten"
-          bind:value={item.shorten}
-        />
-      {:else}
-        <input
-          type="text"
-          placeholder="Abreviatura"
-          id="shorten"
-          bind:value={shorten}
-        />
-      {/if}
+      <input
+        type="text"
+        placeholder="Abreviatura"
+        id="shorten"
+        bind:value={subject.shorten}
+      />
     </div>
 
     <div class="form-field">
-      {#if item}
-        <ColorPicker bind:value={item.color} />
-      {:else}
-        <ColorPicker bind:value={color} />
-      {/if}
+      <ColorPicker bind:value={subject.color} />
     </div>
     <div class="form-field">
       <label for="spec">Tipo</label>
-      {#if item}
-        <select id="spec" bind:value={item.spec}>
-          <option class="opt" value="Obligatoria">Obligatoria</option>
-          <option class="opt" value="Optativa">Optativa</option>
-        </select>
-      {:else}
-        <select id="spec" bind:value={spec}>
-          <option class="opt" value="Obligatoria">Obligatoria</option>
-          <option class="opt" value="Optativa">Optativa</option>
-        </select>
-      {/if}
+      <select id="spec" bind:value={subject.spec}>
+        <!-- TODO: Agregar especializaciones desde pantalla de configuracion -->
+        <option class="opt" value="Obligatoria">Obligatoria</option>
+        <option class="opt" value="Optativa">Optativa</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
+      <input
+        type="number"
+        placeholder="Modulos a la semana (ejemplo: 4)"
+        id="required_modules"
+        bind:value={subject.required_modules}
+        on:input={() => subject.required_modules = subject.required_modules ?? 0} 
+      />
+      <TooltipIcon
+        description="Este campo es necesario para generar el horario automaticamente."
+      />
+    </div>
+    <div class="form-field">
+      <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
+      <input
+        type="number"
+        placeholder="Prioridad de la materia (ejemplo: 5)"
+        id="priority"
+        bind:value={subject.priority}
+        on:input={() => subject.priority = subject.priority ?? 0} 
+      />
+      <TooltipIcon
+        description="Las materias con mayor prioridad se priorizan en los primeros modulos de la semana (1-5)."
+      />
     </div>
     <button class="form-button" on:click={handleSubmit}>
       {item ? "Editar materia" : "Agregar materia"}
