@@ -62,10 +62,14 @@
             filter: $filter-white;
           }
         }
-
       }
 
       // Estilos para el input y select (barra despues de la imagen)
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
       input,
       select {
         padding: 0.5rem 0.5rem;
@@ -78,7 +82,9 @@
         font-family: $primary-font;
         color: $black;
         background-color: $white-overlay;
-        transition: border-color 0.3s, background-color 0.3s;
+        transition:
+          border-color 0.3s,
+          background-color 0.3s;
 
         &:focus {
           background-color: lighten($white-overlay, 5%);
@@ -119,6 +125,11 @@
         }
       }
 
+      .form-information-icon {
+        margin-right: 1rem;
+        margin-top: 4px;
+      }
+
       span {
         margin-left: 0.5rem;
         color: lighten($black, 40%);
@@ -137,7 +148,6 @@
         font-style: normal;
         padding: 0.25rem 0.5rem;
       }
-
     } // .form-field
 
     .subject-list {
@@ -232,7 +242,9 @@
       font-weight: bold;
       cursor: pointer;
       border: none;
-      transition: background-color 0.3s, transform 0.5s ease-in-out;
+      transition:
+        background-color 0.3s,
+        transform 0.5s ease-in-out;
       background-color: $primary-color;
       margin-top: 1rem;
 
@@ -247,6 +259,5 @@
         }
       }
     } // .form-button
-
   } // .form-group
 }
