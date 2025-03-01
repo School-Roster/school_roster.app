@@ -11,6 +11,7 @@
   } from "$lib/modules/entities/subjectsStore";
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
+  import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
 
   // Variables locales
   let grade: number;
@@ -56,15 +57,19 @@
 
 <section class="form-editor">
   <h1>{item ? "Editar grupo existente" : "Generar nuevo grupo"}</h1>
-  <div class="form-group">
+  <div class="form-group">  
     <div class="form-field">
-      <label for="grade"><img src="/icons/group.svg" alt="Icon" /></label>
+      <label for="grade">
+        <img src="/icons/group.svg" alt="Icon" />
+      </label>
+    
       {#if item}
         <input
           type="text"
           placeholder="* Grado"
           id="grade"
           bind:value={item.grade}
+          
         />
       {:else}
         <input
@@ -73,8 +78,13 @@
           id="grade"
           bind:value={grade}
         />
+        <div class="form-information-icon">
+          <TooltipIcon description="Grado del grupo (ejemplo: 2)"/>
+        </div>
       {/if}
+
     </div>
+    
     <div class="form-field">
       <label for="group"><img src="/icons/group.svg" alt="Icon" /></label>
       {#if item}
@@ -169,3 +179,6 @@
     </button>
   </div>
 </section>
+  
+
+  
