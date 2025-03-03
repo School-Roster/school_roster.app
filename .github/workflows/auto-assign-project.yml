@@ -1,0 +1,50 @@
+name: Auto Assign Issue to Project
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assign-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Issue to Project
+        run: |
+          gh api graphql -F projectId='PVT_kwDOC_8gMM4Azg58' -F contentId='${{ github.event.issue.node_id }}' -f query='
+          mutation($projectId: ID!, $contentId: ID!) {
+            addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+              item {
+                id
+              }
+            }
+          }'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Set Status to "Not started ⏰"
+        run: |
+          gh api graphql -F projectId='PVT_kwDOC_8gMM4Azg58' -F itemId='${{ github.event.issue.node_id }}' -F fieldId='PVTSSF_lADOC_8gMM4Azg58zgpS0gc' -F value='{"text": "Por hacer"}' -f query='
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+            updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value}) {
+              projectV2Item {
+                id
+              }
+            }
+          }'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Set Start Date to Today
+        run: |
+          TODAY=$(date +'%Y-%m-%d')
+          gh api graphql -F projectId='PVT_kwDOC_8gMM4Azg58' -F itemId='${{ github.event.issue.node_id }}' -F fieldId='PVTF_lADOC_8gMM4Azg58zgpS0hQ' -F value="{\"date\": \"$TODAY\"}" -f query='
+          mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+            updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value}) {
+              projectV2Item {
+                id
+              }
+            }
+          }'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
