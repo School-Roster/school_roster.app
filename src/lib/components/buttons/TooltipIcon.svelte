@@ -21,7 +21,7 @@
   <img
     class="information-icon"
     src="/icons/information.svg"
-    alt="informacion-icon"
+    alt="information-icon"
   />
 
   {#if showTooltip}
@@ -36,12 +36,8 @@
 
   .information-icon {
     width: 1.5rem;
-    filter: variables.$filter-black;
-
-    body.dark & {
-      filter: variables.$filter-other;
-    }
   }
+
   .tooltip-container {
     position: relative;
     display: inline-block;
