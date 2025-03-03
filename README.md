@@ -15,6 +15,7 @@
   </p>
 </p>
 
-School Roster es una aplicacion de codigo abierto multiplataforma escrita en rust.
 > [!WARNING]
 > Proyecto en progreso...
+
+School Roster es una aplicacion de codigo abierto multiplataforma escrita en rust.
