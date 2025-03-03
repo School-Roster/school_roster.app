@@ -49,6 +49,8 @@
     subject.shorten = "";
     subject.color = "#a50044";
     subject.spec = "Obligatoria";
+    subject.required_modules = null;
+    subject.priority = null;
   };
 
   onMount((): void => {
@@ -63,7 +65,7 @@
       <label for="name"><img src="/icons/books.svg" alt="Materia" /></label>
       <input
         type="text"
-        placeholder="Escribe nombre de materia"
+        placeholder="* Escribe nombre de materia"
         id="name"
         bind:value={subject.name}
       />
@@ -72,9 +74,24 @@
       <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
       <input
         type="text"
-        placeholder="Abreviatura"
+        placeholder="Abreviatura (opcional)"
         id="shorten"
         bind:value={subject.shorten}
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
+      <input
+        type="number"
+        placeholder="* Modulos a la semana"
+        id="required_modules"
+        bind:value={subject.required_modules}
+        on:input={() =>
+          (subject.required_modules = subject.required_modules ?? 0)}
+      />
+      <TooltipIcon
+        description="Este campo es necesario para generar el horario automaticamente."
       />
     </div>
 
@@ -93,26 +110,13 @@
       <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
       <input
         type="number"
-        placeholder="Modulos a la semana (ejemplo: 4)"
-        id="required_modules"
-        bind:value={subject.required_modules}
-        on:input={() => subject.required_modules = subject.required_modules ?? 0} 
-      />
-      <TooltipIcon
-        description="Este campo es necesario para generar el horario automaticamente."
-      />
-    </div>
-    <div class="form-field">
-      <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>
-      <input
-        type="number"
-        placeholder="Prioridad de la materia (ejemplo: 5)"
+        placeholder="Prioridad de la materia (opcional)"
         id="priority"
         bind:value={subject.priority}
-        on:input={() => subject.priority = subject.priority ?? 0} 
+        on:input={() => (subject.priority = subject.priority ?? 0)}
       />
       <TooltipIcon
-        description="Las materias con mayor prioridad se priorizan en los primeros modulos de la semana (1-5)."
+        description="Las materias con mayor prioridad se asignaran en los primeros modulos del dia (ejemplo: 5 -mayor prioridad-)."
       />
     </div>
     <button class="form-button" on:click={handleSubmit}>
