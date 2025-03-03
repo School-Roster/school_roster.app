@@ -13,6 +13,7 @@ pub struct Assignment {
     pub module_index: i16,
     pub subject_id: i16,
     pub teacher_id: i16,
+    pub classroom_id: i16,
     pub subject_shorten: String,
     pub subject_color: String,
 }

@@ -13,12 +13,14 @@ import { type SimpleTeacherItem } from "./teachersStore";
   * @property {SimpleTeacherItem} assigned_teacher - Profesor asign
   */
 export interface SubjectItem {
-  id: number;
+  id?: number;
   name: string;
   shorten: string;
   color: string;
   spec: string;
-  assigned_teacher: SimpleTeacherItem | null;
+  required_modules: number | null,
+  priority: number | null,
+  assigned_teacher?: SimpleTeacherItem | null;
 }
 
 /**
@@ -56,22 +58,26 @@ export async function editSubject(item: SubjectItem): Promise<void> {
     return;
   }
   // TODO: Pasar el item directamente en vez de sus propiedades (mas limpio)
-  await invoke("update_subject", { id: item.id, name: item.name, shorten: item.shorten, color: item.color, spec: item.spec });
+  await invoke("update_subject", { subject: item });
   await loadSubjects();
   await emit("subjects_updated");
 }
 
 // Manda la nueva materia a la base de datos en rust
-export async function addSubject(name: string, shorten: string, color: string, spec: string): Promise<void> {
-  if (!name) {
+export async function addSubject(subject: SubjectItem): Promise<void> {
+  if (!subject.name) {
     alert("Por favor, rellene todos los campos");
     return;
   }
-  if (!shorten) {
-    shorten = name.substring(0, 3).toUpperCase();
+  if (!subject.shorten) { // Crea una abreviacion si no se proporciono alguna
+    subject.shorten = subject.name.substring(0, 3).toUpperCase();
   }
 
-  await invoke("create_subject", { name, shorten, color, spec });
+  if (subject.required_modules == null) {
+    subject.required_modules = 0;
+  }
+
+  await invoke("create_subject", { subject });
   await loadSubjects(); // Recarga las materias
   await emit("subjects_updated"); // Emite un evento para actualizar la vista de materias
 }

@@ -14,6 +14,8 @@ pub struct Subject {
     pub shorten: String,
     pub color: String,
     pub spec: String,
+    pub required_modules: Option<i16>,
+    pub priority: Option<i16>,
 }
 
 /// Estructura de una materia con profesor asignado
@@ -25,34 +27,37 @@ pub struct SubjectWithTeacher {
     pub shorten: String,
     pub color: String,
     pub spec: String,
+    pub required_modules: i16,
+    pub priority: i16,
     pub assigned_teacher: Option<SimpleTeacher>,
 }
 
 /// Funcion para crear una materia
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `name` - Nombre de la materia
-/// * `shorten` - Abreviatura de la materia
-/// * `color` - Color de la materia
-/// * `spec` - Especificacion de la materia
+/// * `subject` - Materia
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn create_subject(
     pool: tauri::State<'_, AppState>,
-    name: String,
-    shorten: String,
-    color: String,
-    spec: String,
+    subject: Subject,
 ) -> Result<(), String> {
-    sqlx::query("INSERT INTO subjects (name, shorten, color, spec) VALUES (?1, ?2, ?3, ?4)")
-        .bind(name)
-        .bind(shorten)
-        .bind(color)
-        .bind(spec)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to create subject: {}", e))?;
+    sqlx::query(
+        "
+        INSERT INTO subjects (name, shorten, color, spec, required_modules, priority)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+        ",
+    )
+    .bind(subject.name)
+    .bind(subject.shorten)
+    .bind(subject.color)
+    .bind(subject.spec)
+    .bind(subject.required_modules)
+    .bind(subject.priority)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to create subject: {}", e))?;
 
     println!("Subject created successfully");
 
@@ -70,7 +75,7 @@ pub async fn create_subjects(
     subject: Vec<Subject>,
 ) -> Result<(), String> {
     for i in subject {
-        sqlx::query("INSERT INTO subjects (shorten, name, color, spec) VALUES (?1, ?2, ?3, ?4)")
+        sqlx::query("INSERT INTO subjects (shorten, name, color, spec, required_modules, priority) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
             .bind(if i.shorten.len() <= 0 {
                 i.name.to_uppercase().chars().take(3).collect()
             } else {
@@ -79,6 +84,8 @@ pub async fn create_subjects(
             .bind(i.name)
             .bind(i.color)
             .bind(i.spec)
+            .bind(i.required_modules)
+            .bind(i.priority)
             .execute(&pool.db)
             .await
             .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
@@ -149,32 +156,37 @@ pub async fn delete_subjects(
 /// Funcion para actualizar una materia
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `id` - ID de la materia
-/// * `name` - Nombre de la materia
-/// * `shorten` - Abreviatura de la materia
-/// * `color` - Color de la materia
-/// * `spec` - Especificacion de la materia
+/// * `subject` - Clase de la materia
 /// Retorna un resultado vacio si la operacion fue exitosa
 /// Se llama desde la interfaz de usuario para actualizar una materia
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn update_subject(
     pool: tauri::State<'_, AppState>,
-    id: i16,
-    name: String,
-    shorten: String,
-    color: String,
-    spec: String,
+    subject: Subject,
 ) -> Result<(), String> {
-    sqlx::query("UPDATE subjects SET name = ?1, shorten = ?2, color = ?3, spec = ?4 WHERE id = ?5")
-        .bind(name)
-        .bind(shorten)
-        .bind(color)
-        .bind(spec)
-        .bind(id)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to update subject: {}", e))?;
+    sqlx::query(
+        "
+        UPDATE subjects SET
+            name = ?1,
+            shorten = ?2,
+            color = ?3,
+            spec = ?4,
+            required_modules = ?5,
+            priority = ?6
+        WHERE id = ?7
+    ",
+    )
+    .bind(subject.name)
+    .bind(subject.shorten)
+    .bind(subject.color)
+    .bind(subject.spec)
+    .bind(subject.required_modules)
+    .bind(subject.priority)
+    .bind(Some(subject.id))
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to update subject: {}", e))?;
 
     Ok(())
 }
@@ -197,6 +209,8 @@ pub async fn get_subjects_with_teachers(
             subjects.shorten as subject_shorten,
             subjects.color as subject_color,
             subjects.spec as subject_spec,
+            subjects.required_modules as subject_modules,
+            subjects.priority as subject_priority,
             teachers.id as teacher_id,
             teachers.name as teacher_name,
             teachers.father_lastname as teacher_father_lastname
@@ -229,6 +243,8 @@ pub async fn get_subjects_with_teachers(
             shorten: row.try_get("subject_shorten").unwrap(),
             color: row.try_get("subject_color").unwrap(),
             spec: row.try_get("subject_spec").unwrap(),
+            required_modules: row.try_get("subject_modules").unwrap(),
+            priority: row.try_get("subject_priority").unwrap(),
             assigned_teacher,
         };
 

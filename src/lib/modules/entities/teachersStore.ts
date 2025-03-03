@@ -14,9 +14,11 @@ import { emit } from "@tauri-apps/api/event";
   * @property {string} degree - Grado académico (opcional)
   * @property {number} commissioned_hours - Horas comisionadas (opcional)
   * @property {number} active_hours - Horas activas (opcional)
+  * @property {string[]} preferred_days - Dias preferidos del profesor (opcional)
+  * @property {number[]} preferred_modules - Modulos preferidos del profesor (opcional)
   */
 export interface TeacherItem {
-  id: number;
+  id?: number;
   name: string;
   father_lastname: string;
   mother_lastname: string;
@@ -26,6 +28,8 @@ export interface TeacherItem {
   commissioned_hours: number;
   active_hours: number;
   performance: number;
+  preferred_days?: string[];
+  preferred_modules?: number[];
 }
 
 /**
@@ -40,17 +44,69 @@ export interface SimpleTeacherItem {
   father_lastname: string;
 }
 
-
 /**
  * Lista todos los profesores registrados
  */
 export const teachers = writable<TeacherItem[]>([]);
 
 /**
+ * Manda la nueva materia a la base de datos en rust
+ */
+export async function addTeacher(teacher: TeacherItem, selectedSubjects: SubjectItem[]): Promise<void> {
+  if (!teacher.name || !teacher.father_lastname) {
+    alert("Por favor, rellene todos los campos necesarios");
+    return;
+  }
+
+  if (teacher.commissioned_hours < 0 || teacher.performance < 0) {
+    alert("Por favor, rellene los campos con valores positivos");
+    return;
+  }
+
+  if (selectedSubjects.length > 0) {
+    emit("subjects_with_teachers_updated");
+  }
+
+  // Registrar nuevo profesor
+  await invoke("add_teacher", {
+    teacher,
+    subjects:
+      selectedSubjects.length > 0 ? selectedSubjects.map((s) => s.id) : null, // Pasamos solo los ids de las materias seleccionadas
+  });
+  await loadTeachers(); // Recarga las materias
+  await emit("teachers_updated"); // Emite un evento para actualizar la vista de materias
+}
+
+export async function editTeacher(teacher: TeacherItem, selectedSubjects: SubjectItem[]): Promise<void> {
+  if (!teacher.name || !teacher.father_lastname) {
+    alert("Por favor, rellene todos los campos necesarios");
+    return;
+  }
+
+  if (teacher.commissioned_hours < 0 || teacher.performance < 0) {
+    alert("Por favor, rellene los campos numericos con valores positivos");
+    return;
+  }
+
+  if (selectedSubjects.length > 0) {
+    emit("subjects_with_teachers_updated");
+  }
+
+  // Registrar nuevo profesor
+  await invoke("edit_teacher", {
+    teacher,
+    subjects:
+      selectedSubjects.length > 0 ? selectedSubjects.map((s) => s.id) : null, // Pasamos solo los ids de las materias seleccionadas
+  });
+  await loadTeachers(); // Recarga las materias
+  await emit("teachers_updated"); // Emite un evento para actualizar la vista de materias
+}
+
+/**
  * Carga a los profesores de la base de datos
  */
 export async function loadTeachers(): Promise<void> {
-  const response: [TeacherItem, number[]][]  = await invoke<[TeacherItem, number[]][]>('get_all_teachers'); // Tuple para obtener los profesores y las materias asignadas
+  const response: [TeacherItem, number[]][] = await invoke<[TeacherItem, number[]][]>('get_all_teachers'); // Tuple para obtener los profesores y las materias asignadas
 
   let subjectList: SubjectItem[] = [];
   // Necesitamos la lista de materias para poder asignarlas a los profesores sin hacer otra petición
@@ -72,14 +128,11 @@ export async function loadTeachers(): Promise<void> {
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Array} mappings
+  * @param {Array} headerMappings
   * @param {Array} excelData
   */
 export async function importTeachersFromXlsx(
-  mappings: Array<{
-    field: { key: string, name: string };
-    range: { column: string, startRow: number, endRow: number | null };
-  }>,
+  headerMappings: Record<string, string>,
   excelData: Array<Record<string, unknown>>
 ): Promise<void> {
   console.log("Raw data:", excelData);
@@ -144,7 +197,7 @@ export async function importTeachersFromXlsx(
           : null
       };
     })
-    .filter(teacher => teacher.name&& teacher.father_lastname);
+    .filter(teacher => teacher.name && teacher.father_lastname);
 
   if (teacherToImport.length === 0) {
     throw new Error('No hay profesores validos en el intento de importar datos');
