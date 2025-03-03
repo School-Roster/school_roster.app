@@ -5,8 +5,8 @@
     type GroupItem,
   } from "$lib/modules/entities/groupsStore";
   import {
-    loadSubjects,
-    subjects,
+    loadSubjectsWithTeachers,
+    subjectsWithTeachers,
     type SubjectItem,
   } from "$lib/modules/entities/subjectsStore";
   import { listen } from "@tauri-apps/api/event";
@@ -26,9 +26,9 @@
   export let item: GroupItem | null = null;
 
   onMount(() => {
-    loadSubjects();
+    loadSubjectsWithTeachers();
     listen("subjects_updated", async () => {
-      await loadSubjects();
+      await loadSubjectsWithTeachers();
     });
   });
 
@@ -159,7 +159,7 @@
     <!-- Lista de materias -->
     {#if showSubjects}
       <div class="subject-list">
-        {#each $subjects as subject}
+        {#each $subjectsWithTeachers as subject}
           <div class="subject-item">
             <input
               type="checkbox"

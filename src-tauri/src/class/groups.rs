@@ -15,7 +15,6 @@ pub struct Group {
     pub group: String,
     pub career: Option<String>,
     pub students: Option<i16>,
-    // pub subjects: Option<Vec<Subject>>,
 }
 
 /// Funcion para crear un grupo

@@ -18,8 +18,8 @@ export interface SubjectItem {
   shorten: string;
   color: string;
   spec: string;
-  required_modules: number,
-  priority: number,
+  required_modules: number | null,
+  priority: number | null,
   assigned_teacher?: SimpleTeacherItem | null;
 }
 
@@ -71,6 +71,10 @@ export async function addSubject(subject: SubjectItem): Promise<void> {
   }
   if (!subject.shorten) { // Crea una abreviacion si no se proporciono alguna
     subject.shorten = subject.name.substring(0, 3).toUpperCase();
+  }
+
+  if (subject.required_modules == null) {
+    subject.required_modules = 0;
   }
 
   await invoke("create_subject", { subject });

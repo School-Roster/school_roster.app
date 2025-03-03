@@ -14,8 +14,8 @@ pub struct Subject {
     pub shorten: String,
     pub color: String,
     pub spec: String,
-    pub required_modules: i16,
-    pub priority: i16,
+    pub required_modules: Option<i16>,
+    pub priority: Option<i16>,
 }
 
 /// Estructura de una materia con profesor asignado
