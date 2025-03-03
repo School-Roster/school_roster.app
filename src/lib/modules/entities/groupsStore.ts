@@ -107,64 +107,43 @@ export async function editGroup(item: GroupItem, subjects: SubjectItem[]): Promi
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Array} mappings
-  * @param {Array} excelData
+  * @param {Record<string, string>} headerMappings
+  * @param {Array<Record<string, unknown>>} excelData
   */
 export async function importGroupsFromXlsx(
-  mappings: Array<{
-    field: { key: string, name: string };
-    range: { column: string, startRow: number, endRow: number | null };
-  }>,
+  headerMappings: Record<string, string>,
   excelData: Array<Record<string, unknown>>
 ): Promise<void> {
-  console.log("Raw data:", excelData);
-
   // Checar por campos requeridos no importados
   const required: string[] = ['grade', 'group'];
   const missingFields: string[] = required.filter(
-    field => !mappings.some(m => m.field.key === field)
+    field => !headerMappings[field]
   );
   if (missingFields.length > 0) {
     throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
   }
 
-  // Convierte la columna en el index
-  const columnLetterToIndex = (letter: string): number => {
-    letter = letter.toUpperCase();
-    return letter.split('').reduce((acc, char) =>
-      acc * 26 + (char.charCodeAt(0) - 'A'.charCodeAt(0) + 1), 0) - 1;
-  };
-
-  // Crear diccionario del mapeo
-  const columnMap = mappings.reduce((acc, mapping) => {
-    if (mapping.range.column) {
-      acc[mapping.field.key] = {
-        columnIndex: columnLetterToIndex(mapping.range.column),
-        startRow: mapping.range.startRow - 2,
-        endRow: mapping.range.endRow ? mapping.range.endRow - 1 : undefined
-      };
-    }
-    return acc;
-  }, {} as Record<string, { columnIndex: number; startRow: number; endRow?: number }>);
-  console.log("columnMap: ", columnMap);
+  console.log(headerMappings);
+  console.log(excelData);
 
   // Preparar los grupos que seran importados
   const groupsToImport = excelData
-    .slice(columnMap.grade.startRow, columnMap.grade.endRow || undefined)
     .map(row => {
       return {
         id: null,
-        grade: Number(row['GRADO']),
-        group: String(row['GRUPO']),
-        career: columnMap.career
-          ? String(row['CARRERA'] || '')
+        grade: Number(row[headerMappings.grade]),
+        group: String(row[headerMappings.group]),
+        career: headerMappings.career
+          ? String(row[headerMappings.career] || '')
           : null,
-        students: columnMap.students
-          ? Number(row['Cantidad'] || '')
+        students: headerMappings.students
+          ? Number(row[headerMappings.students] || '')
           : null
       };
     })
     .filter(group => group.grade && group.group);
+
+  console.log("Grupos: ", groupsToImport);
 
   if (groupsToImport.length === 0) {
     throw new Error('No hay grupos validos en el intento de importar datos');

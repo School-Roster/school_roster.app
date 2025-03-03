@@ -8,5 +8,7 @@ CREATE TABLE IF NOT EXISTS teachers (
     degree TEXT,
     commisioned_hours INTEGER,
     active_hours INTEGER,
-    performance INTEGER
+    performance INTEGER,
+    preferred_days TEXT,
+    preferred_modules TEXT
 );

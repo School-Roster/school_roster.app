@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS classroom (
     building_id TEXT NOT NULL,
     building_number INTEGER NOT NULL,
     building_type TEXT,
-    capacity INTEGER
+    capacity INTEGER,
+    availability TEXT
 );
