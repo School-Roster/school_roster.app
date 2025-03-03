@@ -55,9 +55,9 @@
 
       if (filePath) {
         // Llama a rust para que lea el archivo dado
-        let [headers, rows] = await invoke("read_xlsx", {
+        let [headers, rows] = (await invoke("read_xlsx", {
           filePath,
-        }) as [string[], Array<Record<string, unknown>>];
+        })) as [string[], Array<Record<string, unknown>>];
 
         console.log("Headers: ", headers);
         console.log("Rows: ", rows);
@@ -144,7 +144,7 @@
         {#if previewData.length > 0}
           <div class="preview-sample">
             <h4>Vista previa de datos</h4>
-            <table>
+            <table class="import-table">
               <thead>
                 <tr>
                   {#each excelHeaders as header}
@@ -171,7 +171,7 @@
                 <span class="field-name">{m.field.name}</span>
                 <div class="header-selector">
                   <label>Columna del Excel:</label>
-                  <select bind:value={m.excelHeaders}>
+                  <select bind:value={m.excelHeader}>
                     <option value="">Seleccionar columna</option>
                     {#each excelHeaders as header}
                       <option value={header}>{header}</option>
@@ -206,31 +206,33 @@
     margin-bottom: 20px;
     overflow-x: auto;
   }
-  
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-bottom: 20px;
+
+  .import-table {
+    &table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    &th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    &th {
+      background-color: #f0f0f0;
+    }
   }
-  
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  th {
-    background-color: #f0f0f0;
-  }
-  
   .column-mapping {
     margin-bottom: 15px;
   }
-  
+
   .header-selector {
     margin-top: 5px;
   }
-  
+
   .header-selector select {
     width: 100%;
     padding: 5px;
