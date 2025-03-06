@@ -1,6 +1,7 @@
 <script lang="ts">
   import { open } from "@tauri-apps/api/dialog";
-  import { invoke } from "@tauri-apps/api";
+  import { readBinaryFile } from "@tauri-apps/api/fs";
+  import { read, utils } from "xlsx";
   import { onMount } from "svelte";
   import { createEventDispatcher, type EventDispatcher } from "svelte";
 
@@ -12,29 +13,19 @@
 
   let dispatch: EventDispatcher<any> = createEventDispatcher();
 
-  // Nos dice para que clase se importaran los datos
   export let defaultClass: ClassType;
-  // Datos que el usuario debera seleccionar
-  export let availableData: Array<{
-    name: string;
-    key: string;
-  }> = [];
+  export let availableData: Array<{ name: string; key: string }> = [];
 
   let excelHeaders: string[] = [];
-
-  // Datos de excel
-  type ColumnMapping = {
-    field: {
-      name: string;
-      key: string;
-    };
-    excelHeader?: string;
-  };
-
   let previewData: Array<Record<string, unknown>> = [];
   let mappings: ColumnMapping[] = [];
   let showPreview: boolean = false;
   let errorMessage: string | null = null;
+
+  type ColumnMapping = {
+    field: { name: string; key: string };
+    excelHeader?: string;
+  };
 
   $: {
     if (availableData.length > 0 && mappings.length === 0) {
@@ -45,54 +36,51 @@
     }
   }
 
-  // Funcion para obtener el archivo xlsx
   async function openFile(): Promise<void> {
-    try {
-      // Abre el explorador para seleccionar el archivo
-      const filePath: string | string[] | null = await open({
-        filters: [{ name: "Excel Files", extensions: ["xlsx"] }],
-      });
+  try {
+    const filePath: string | string[] | null = await open({
+      filters: [{ name: "Excel Files", extensions: ["xlsx"] }],
+    });
 
-      if (filePath) {
-        // Llama a rust para que lea el archivo dado
-        let [headers, rows] = (await invoke("read_xlsx", {
-          filePath,
-        })) as [string[], Array<Record<string, unknown>>];
+    if (filePath && typeof filePath === "string") {
+      // Read the file as a binary buffer using Tauri's fs API
+      const arrayBuffer = await readBinaryFile(filePath);
+      const workbook = read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = utils.sheet_to_json(worksheet, { header: 1 });
 
-        console.log("Headers: ", headers);
-        console.log("Rows: ", rows);
+      if (jsonData.length > 0) {
+        excelHeaders = jsonData[0] as string[];
+        previewData = jsonData.slice(1).map((row: any) => {
+          const rowData: Record<string, unknown> = {};
+          excelHeaders.forEach((header, index) => {
+            rowData[header] = row[index];
+          });
+          return rowData;
+        });
 
-        excelHeaders = headers;
-        previewData = rows;
-
-        if (rows.length > 0) {
-          showPreview = true;
-          errorMessage = null;
-        }
+        showPreview = true;
+        errorMessage = null;
       }
-    } catch (e) {
-      console.log(e);
-      errorMessage = e instanceof Error ? e.message : "An error occurred";
-    } finally {
-      console.log("Done!, Class:", defaultClass);
     }
+  } catch (e) {
+    console.error(e);
+    errorMessage = e instanceof Error ? e.message : "An error occurred";
   }
+}
 
-  // Generate the header mappings for import
   function generateHeaderMappings(): Record<string, string> {
     const headerMap: Record<string, string> = {};
-
     for (const mapping of mappings) {
-      if (mapping.excelHeaders) {
-        headerMap[mapping.field.key] = mapping.excelHeaders;
+      if (mapping.excelHeader) {
+        headerMap[mapping.field.key] = mapping.excelHeader;
       }
     }
-
     return headerMap;
   }
 
   async function performImport(): Promise<void> {
-    console.log("attempt:", mappings);
     try {
       const headerMappings = generateHeaderMappings();
       switch (defaultClass) {
@@ -137,7 +125,6 @@
         <span>{errorMessage}</span>
       {/if}
 
-      <!-- Asignar columna -->
       <div class="form-group">
         <h3>Asignar columnas</h3>
 
@@ -183,7 +170,6 @@
           {/each}
         </div>
       </div>
-      <!-- end: Asignar columna -->
 
       <div class="actions">
         <button
@@ -208,23 +194,22 @@
   }
 
   .import-table {
-    &table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-bottom: 20px;
-    }
-
-    &th,
-    td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-
-    &th {
-      background-color: #f0f0f0;
-    }
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
   }
+
+  .import-table th,
+  .import-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .import-table th {
+    background-color: #f0f0f0;
+  }
+
   .column-mapping {
     margin-bottom: 15px;
   }
