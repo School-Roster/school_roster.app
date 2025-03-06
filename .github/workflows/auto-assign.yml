@@ -1,6 +1,6 @@
 name: Auto-Assign PR for reviews
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened]
 
 jobs:
@@ -12,7 +12,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Assign PR to awtgerry
-        run: gh pr edit ${{ github.event.pull_request_target.number }} --add-reviewer "awtGerry"
+        run: gh pr edit ${{ github.event.pull_request.number }} --add-reviewer "awtGerry"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
