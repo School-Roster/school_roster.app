@@ -1,13 +1,12 @@
 use crate::class::teachers::SimpleTeacher;
 use crate::db::AppState;
-use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
-use sqlx::Row;
+use sqlx::error::Error as SqlxError;
+use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 /// Estructura de una materia
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Subject {
     pub id: Option<i16>, // ID opcional cuando se crea por medio de la clase
     pub name: String,
@@ -16,6 +15,20 @@ pub struct Subject {
     pub spec: String,
     pub required_modules: Option<i16>,
     pub priority: Option<i16>,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for Subject {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        Ok(Subject {
+            id: row.try_get("id")?,
+            name: row.try_get("name")?,
+            shorten: row.try_get("shorten")?,
+            color: row.try_get("color")?,
+            spec: row.try_get("spec")?,
+            required_modules: row.try_get("required_modules")?,
+            priority: row.try_get("priority")?,
+        })
+    }
 }
 
 /// Estructura de una materia con profesor asignado
@@ -103,8 +116,7 @@ pub async fn create_subjects(
 #[tauri::command]
 pub async fn get_subjects(pool: tauri::State<'_, AppState>) -> Result<Vec<Subject>, String> {
     let subjects: Vec<Subject> = sqlx::query_as::<_, Subject>("SELECT * FROM subjects")
-        .fetch(&pool.db)
-        .try_collect()
+        .fetch_all(&pool.db)
         .await
         .map_err(|e| e.to_string())?;
 
