@@ -1,35 +1,22 @@
 <script lang="ts">
+  import { open } from "@tauri-apps/api/dialog";
+  import { readBinaryFile } from "@tauri-apps/api/fs";
+  import { read, utils } from "xlsx";
   import { onMount } from "svelte";
-  import * as XLSX from "xlsx";
+  import { createEventDispatcher, type EventDispatcher } from "svelte";
 
-<<<<<<< HEAD
   import { ClassType } from "$lib/utilities/helpers";
   import { importGroupsFromXlsx } from "$lib/modules/entities/groupsStore";
   import { importClassroomsFromXlsx } from "$lib/modules/entities/classroomStore";
   import { importSubjectsFromXlsx } from "$lib/modules/entities/subjectsStore";
   import { importTeachersFromXlsx } from "$lib/modules/entities/teachersStore";
   import ExcelPreview from "./ExcelPreview.svelte";
-=======
-  // Interfaces y tipos
-  interface CellPosition {
-    col: number;
-    row: number;
-    colLetter: string;
-  }
-  let fileInput: HTMLInputElement;
->>>>>>> 558e5382b884a64a76ff5b1ebb51b0404b0a829f
 
-  let preview_container: HTMLDivElement;
-  let workbook: XLSX.WorkBook | null = null;
-  let activeSheet: string | null = null;
-  let sheetNames: string[] = [];
+  let dispatch: EventDispatcher<any> = createEventDispatcher();
 
-  /*
-  let startCell: HTMLTableCellElement | null = null;
-  let endCell: HTMLTableCellElement | null = null;
-  */
+  export let defaultClass: ClassType;
+  export let availableData: Array<{ name: string; key: string }> = [];
 
-<<<<<<< HEAD
   let excelHeaders: string[] = [];
   let previewData: Array<Record<string, unknown>> = [];
   let mappings: ColumnMapping[] = [];
@@ -37,46 +24,21 @@
   let errorMessage: string | null = null;
   let data: { [key: string]: String | Number }[] = [];
   let fileName: string;
-=======
-  function upload_file(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const file: File | undefined = target.files?.[0];
-    if (!file) return;
->>>>>>> 558e5382b884a64a76ff5b1ebb51b0404b0a829f
 
-    const reader = new FileReader();
+  type ColumnMapping = {
+    field: { name: string; key: string };
+    excelHeader?: string;
+  };
 
-    reader.onload = function (e: ProgressEvent<FileReader>): void {
-      try {
-        const result = e.target?.result;
-        if (!result) return;
-
-        const data = new Uint8Array(result as ArrayBuffer);
-        workbook = XLSX.read(data, { type: "array" });
-        sheetNames = workbook.SheetNames;
-
-        if (sheetNames.length > 0) {
-          activeSheet = sheetNames[0];
-          render_sheet(activeSheet);
-        }
-      } catch (error) {
-        console.error("Error parsing Excel file:", error);
-        alert("Error al procesar el archivo Excel");
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  function change_sheet(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    activeSheet = select.value;
-    if (activeSheet) {
-      render_sheet(activeSheet);
+  $: {
+    if (availableData.length > 0 && mappings.length === 0) {
+      mappings = availableData.map((field) => ({
+        field,
+        excelHeader: undefined,
+      }));
     }
   }
 
-<<<<<<< HEAD
   async function openFile(): Promise<void> {
     try {
       const filePath: string | string[] | null = await open({
@@ -115,72 +77,53 @@
       errorMessage = e instanceof Error ? e.message : "An error occurred";
     }
   }
-=======
-  function render_sheet(sheetName: string): void {
-    if (!workbook) return;
 
-    const worksheet = workbook.Sheets[sheetName];
-    const htmlTable: string = XLSX.utils.sheet_to_html(worksheet, {
-      id: "excel-preview-table",
-    });
-
-    preview_container.innerHTML = htmlTable;
-
-    // Obtener la tabla recién insertada
-    const table = preview_container.querySelector(
-      "#excel-preview-table",
-    ) as HTMLTableElement;
-    if (!table) return;
-
-    // Añadir atributos de data-col y data-row a cada celda
-    process_table_cells(table);
->>>>>>> 558e5382b884a64a76ff5b1ebb51b0404b0a829f
-
-    // Añadir eventos de selección directamente a cada celda para garantizar que funcionen
-    /*
-    table.querySelectorAll("td").forEach((cell: HTMLTableCellElement): void => {
-        // TODO: AQUI AGREGUEN LA SELECCION DE CELDA
-        // usen cell.addEventListener
-      });
-    });
-    */
-  }
-
-  function process_table_cells(table: HTMLTableElement): void {
-    const rows = table.querySelectorAll("tr");
-
-    rows.forEach((row: HTMLTableRowElement, rowIndex: number): void => {
-      const cells: NodeListOf<HTMLTableCellElement> =
-        row.querySelectorAll("td");
-      cells.forEach((cell, colIndex) => {
-        const realColIndex = colIndex + 1;
-        cell.dataset.col = realColIndex.toString();
-        cell.dataset.row = rowIndex.toString();
-        cell.dataset.colLetter = getColumnLetter(realColIndex);
-
-        // Hacer explícitamente seleccionables las celdas
-        cell.style.userSelect = "none";
-        cell.style.cursor = "cell";
-      });
-    });
-  }
-
-  function getColumnLetter(columnIndex: number): string {
-    let temp: number;
-    let letter: string = "";
-    let colNum: number = columnIndex;
-
-    while (colNum > 0) {
-      temp = (colNum - 1) % 26;
-      letter = String.fromCharCode(temp + 65) + letter;
-      colNum = Math.floor((colNum - temp - 1) / 26);
+  function generateHeaderMappings(): Record<string, string> {
+    const headerMap: Record<string, string> = {};
+    for (const mapping of mappings) {
+      if (mapping.excelHeader) {
+        headerMap[mapping.field.key] = mapping.excelHeader;
+      }
     }
-
-    return letter;
+    return headerMap;
   }
+
+  async function performImport(): Promise<void> {
+    try {
+      const headerMappings = generateHeaderMappings();
+      switch (defaultClass) {
+        case ClassType.Groups:
+          await importGroupsFromXlsx(headerMappings, previewData);
+          dispatch("importComplete");
+          showPreview = false;
+          break;
+        case ClassType.Classrooms:
+          await importClassroomsFromXlsx(headerMappings, previewData);
+          dispatch("importComplete");
+          showPreview = false;
+          break;
+        case ClassType.Teachers:
+          await importTeachersFromXlsx(headerMappings, previewData);
+          dispatch("importComplete");
+          showPreview = false;
+          break;
+        case ClassType.Subjects:
+          await importSubjectsFromXlsx(headerMappings, previewData);
+          dispatch("importComplete");
+          showPreview = false;
+          break;
+        default:
+          throw new Error("Unsupported import type");
+      }
+    } catch (err) {
+      errorMessage = err instanceof Error ? err.message : "Import failed";
+      dispatch("importError");
+    }
+  }
+
+  onMount(openFile);
 </script>
 
-<<<<<<< HEAD
 {#if showPreview}
   <div class="excel-wrapper">
     <h2>{fileName}</h2>
@@ -189,31 +132,69 @@
   <!-- <div class="form-editor">
     <div class="form-field">
       <h2>Vista previa y asignar columnas</h2>
-=======
-<div class="excel-preview-container">
-  <div class="controls">
-    <input
-      type="file"
-      accept=".xlsx,.xls,.csv"
-      bind:this={fileInput}
-      on:change={upload_file}
-    />
->>>>>>> 558e5382b884a64a76ff5b1ebb51b0404b0a829f
 
-    {#if workbook && sheetNames.length > 0}
-      <div class="sheet-selector">
-        <label for="sheet-select">Hoja:</label>
-        <select
-          id="sheet-select"
-          value={activeSheet || ""}
-          on:change={change_sheet}
-        >
-          {#each sheetNames as name}
-            <option value={name}>{name}</option>
+      {#if errorMessage}
+        <span>{errorMessage}</span>
+      {/if}
+
+      <div class="form-group">
+        <h3>Asignar columnas</h3>
+
+        {#if previewData.length > 0}
+          <div class="preview-sample">
+            <h4>Vista previa de datos</h4>
+            <table class="import-table">
+              <thead>
+                <tr>
+                  {#each excelHeaders as header}
+                    <th>{header}</th>
+                  {/each}
+                </tr>
+              </thead>
+              <tbody>
+                {#each previewData.slice(0, 3) as row}
+                  <tr>
+                    {#each excelHeaders as header}
+                      <td>{row[header]}</td>
+                    {/each}
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        {/if}
+        <div class="columns-grid">
+          {#each mappings as m}
+            {#if m.field.key !== "id"}
+              <div class="column-mapping">
+                <span class="field-name">{m.field.name}</span>
+                <div class="header-selector">
+                  <label>Columna del Excel:</label>
+                  <select bind:value={m.excelHeader}>
+                    <option value="">Seleccionar columna</option>
+                    {#each excelHeaders as header}
+                      <option value={header}>{header}</option>
+                    {/each}
+                  </select>
+                </div>
+              </div>
+            {/if}
           {/each}
-        </select>
+        </div>
       </div>
-<<<<<<< HEAD
+
+      <div class="actions">
+        <button
+          class="import-button"
+          on:click={performImport}
+          disabled={!mappings.some((m) => m.excelHeader)}
+        >
+          Importar columnas seleccionadas
+        </button>
+        <button class="cancel-button" on:click={() => (showPreview = false)}>
+          Cancelar
+        </button>
+      </div>
     </div>
   </div> -->
 {/if}
@@ -226,39 +207,34 @@
     margin-bottom: 20px;
     overflow-x: auto;
   }
-=======
-    {/if}
-  </div>
 
-  <div class="preview" bind:this={preview_container}></div>
-</div>
->>>>>>> 558e5382b884a64a76ff5b1ebb51b0404b0a829f
-
-<style lang="scss">
-  :global(#excel-preview-table) {
+  .import-table {
     border-collapse: collapse;
     width: 100%;
-    table-layout: fixed;
+    margin-bottom: 20px;
   }
-  :global(#excel-preview-table td),
-  :global(#excel-preview-table th) {
+
+  .import-table th,
+  .import-table td {
     border: 1px solid #ddd;
-    padding: 4px 8px;
-    min-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    padding: 8px;
+    text-align: left;
   }
 
-  :global(#excel-preview-table th) {
-    background-color: #f2f2f2;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    font-weight: bold;
+  .import-table th {
+    background-color: #f0f0f0;
   }
 
-  :global(#excel-preview-table td.selected) {
-    background-color: rgba(66, 133, 244, 0.3);
+  .column-mapping {
+    margin-bottom: 15px;
+  }
+
+  .header-selector {
+    margin-top: 5px;
+  }
+
+  .header-selector select {
+    width: 100%;
+    padding: 5px;
   }
 </style>
