@@ -1,20 +1,41 @@
 use crate::db::AppState;
 use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
-use sqlx::Row;
+use sqlx::error::Error as SqlxError;
+use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 use crate::class::subjects::Subject;
+use crate::class::subjects::SubjectWithTeacher;
 
 /// Estructura de un grupo
 /// Se utiliza para mapear los datos del grupo de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Group {
     pub id: Option<i16>,
     pub grade: i16,
     pub group: String,
     pub career: Option<String>,
     pub students: Option<i16>,
+    pub required_subjects: Vec<SubjectWithTeacher>,
+    pub max_modules_per_day: i16,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for Group {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        let required_subjects_str: String = row.try_get("required_subjects")?;
+        let required_subjects: Vec<SubjectWithTeacher> =
+            serde_json::from_str(&required_subjects_str).unwrap_or_default();
+
+        Ok(Group {
+            id: row.try_get("id")?,
+            grade: row.try_get("name")?,
+            group: row.try_get("shorten")?,
+            career: row.try_get("color")?,
+            students: row.try_get("spec")?,
+            required_subjects,
+            max_modules_per_day: row.try_get("priority")?,
+        })
+    }
 }
 
 /// Funcion para crear un grupo
@@ -127,8 +148,7 @@ pub async fn get_groups(
     pool: tauri::State<'_, AppState>,
 ) -> Result<Vec<(Group, Vec<Subject>)>, String> {
     let groups: Vec<Group> = sqlx::query_as::<_, Group>("SELECT * FROM groups")
-        .fetch(&pool.db)
-        .try_collect()
+        .fetch_all(&pool.db)
         .await
         .map_err(|e| e.to_string())?;
 
