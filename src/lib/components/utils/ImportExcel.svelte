@@ -4,12 +4,14 @@
   import { read, utils } from "xlsx";
   import { onMount } from "svelte";
   import { createEventDispatcher, type EventDispatcher } from "svelte";
+  // import { basename } from "@tauri-apps/api/path";
 
   import { ClassType } from "$lib/utilities/helpers";
   import { importGroupsFromXlsx } from "$lib/modules/entities/groupsStore";
   import { importClassroomsFromXlsx } from "$lib/modules/entities/classroomStore";
   import { importSubjectsFromXlsx } from "$lib/modules/entities/subjectsStore";
   import { importTeachersFromXlsx } from "$lib/modules/entities/teachersStore";
+  import ExcelPreview from "./ExcelPreview.svelte";
 
   let dispatch: EventDispatcher<any> = createEventDispatcher();
 
@@ -21,6 +23,8 @@
   let mappings: ColumnMapping[] = [];
   let showPreview: boolean = false;
   let errorMessage: string | null = null;
+  let data: { [key: string]: String | Number }[] = [];
+  let fileName: string;
 
   type ColumnMapping = {
     field: { name: string; key: string };
@@ -37,38 +41,43 @@
   }
 
   async function openFile(): Promise<void> {
-  try {
-    const filePath: string | string[] | null = await open({
-      filters: [{ name: "Excel Files", extensions: ["xlsx"] }],
-    });
+    try {
+      const filePath: string | string[] | null = await open({
+        filters: [{ name: "Excel Files", extensions: ["xlsx", "xls"] }],
+      });
 
-    if (filePath && typeof filePath === "string") {
-      // Read the file as a binary buffer using Tauri's fs API
-      const arrayBuffer = await readBinaryFile(filePath);
-      const workbook = read(arrayBuffer, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = utils.sheet_to_json(worksheet, { header: 1 });
+      if (filePath && typeof filePath === "string") {
+        const dividedFilePath = filePath.split('/')
+        fileName = dividedFilePath[dividedFilePath.length-1]
+        // Read the file as a binary buffer using Tauri's fs API
+        const arrayBuffer = await readBinaryFile(filePath);
+        const workbook = read(arrayBuffer, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        data = utils.sheet_to_json(worksheet, { header: 1 });
 
-      if (jsonData.length > 0) {
-        excelHeaders = jsonData[0] as string[];
-        previewData = jsonData.slice(1).map((row: any) => {
-          const rowData: Record<string, unknown> = {};
-          excelHeaders.forEach((header, index) => {
-            rowData[header] = row[index];
-          });
-          return rowData;
-        });
+        //Codigo anterior
+        // if (jsonData.length > 0) {
+        //   excelHeaders = jsonData[0] as string[];
+        //   previewData = jsonData.slice(1).map((row: any) => {
+        //     const rowData: Record<string, unknown> = {};
+        //     excelHeaders.forEach((header, index) => {
+        //       rowData[header] = row[index];
+        //     });
+        //     return rowData;
+        //   });
+        // }
 
-        showPreview = true;
-        errorMessage = null;
+        if(data.length <= 0) return alert('Excel vacío')
+
+          showPreview = true;
+          errorMessage = null;
       }
+    } catch (e) {
+      console.error(e);
+      errorMessage = e instanceof Error ? e.message : "An error occurred";
     }
-  } catch (e) {
-    console.error(e);
-    errorMessage = e instanceof Error ? e.message : "An error occurred";
   }
-}
 
   function generateHeaderMappings(): Record<string, string> {
     const headerMap: Record<string, string> = {};
@@ -117,7 +126,11 @@
 </script>
 
 {#if showPreview}
-  <div class="form-editor">
+  <div class="excel-wrapper">
+    <h2>{fileName}</h2>
+    <ExcelPreview {data}/>
+  </div>
+  <!-- <div class="form-editor">
     <div class="form-field">
       <h2>Vista previa y asignar columnas</h2>
 
@@ -184,10 +197,13 @@
         </button>
       </div>
     </div>
-  </div>
+  </div> -->
 {/if}
 
 <style>
+  .excel-wrapper {
+    margin: 1.5rem 0.5rem
+  }
   .preview-sample {
     margin-bottom: 20px;
     overflow-x: auto;
