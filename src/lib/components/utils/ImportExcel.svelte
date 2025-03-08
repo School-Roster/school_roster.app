@@ -4,7 +4,6 @@
   import { read, utils } from "xlsx";
   import { onMount } from "svelte";
   import { createEventDispatcher, type EventDispatcher } from "svelte";
-  // import { basename } from "@tauri-apps/api/path";
 
   import { ClassType } from "$lib/utilities/helpers";
   import { importGroupsFromXlsx } from "$lib/modules/entities/groupsStore";
