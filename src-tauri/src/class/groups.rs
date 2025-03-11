@@ -5,7 +5,7 @@ use sqlx::error::Error as SqlxError;
 use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 use crate::class::subjects::Subject;
-use crate::class::subjects::SubjectWithTeacher;
+// use crate::class::subjects::SubjectWithTeacher;
 
 /// Estructura de un grupo
 /// Se utiliza para mapear los datos del grupo de la base de datos a un objeto en Rust
@@ -16,24 +16,24 @@ pub struct Group {
     pub group: String,
     pub career: Option<String>,
     pub students: Option<i16>,
-    pub required_subjects: Vec<SubjectWithTeacher>,
-    pub max_modules_per_day: i16,
+    // pub required_subjects: Vec<SubjectWithTeacher>,
+    pub max_modules_per_day: Option<i16>,
 }
 
 impl<'r> FromRow<'r, SqliteRow> for Group {
     fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
-        let required_subjects_str: String = row.try_get("required_subjects")?;
-        let required_subjects: Vec<SubjectWithTeacher> =
-            serde_json::from_str(&required_subjects_str).unwrap_or_default();
+        // let required_subjects_str: String = row.try_get("required_subjects")?;
+        // let required_subjects: Vec<SubjectWithTeacher> =
+        //     serde_json::from_str(&required_subjects_str).unwrap_or_default();
 
         Ok(Group {
             id: row.try_get("id")?,
-            grade: row.try_get("name")?,
-            group: row.try_get("shorten")?,
-            career: row.try_get("color")?,
-            students: row.try_get("spec")?,
-            required_subjects,
-            max_modules_per_day: row.try_get("priority")?,
+            grade: row.try_get("grade")?,
+            group: row.try_get("group")?,
+            career: row.try_get("career")?,
+            students: row.try_get("students")?,
+            // required_subjects,
+            max_modules_per_day: row.try_get("max_modules_per_day")?,
         })
     }
 }
@@ -41,32 +41,27 @@ impl<'r> FromRow<'r, SqliteRow> for Group {
 /// Funcion para crear un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `grade` - Grado
-/// * `group` - Grupo
-/// * `career` - Carrera (Opcional)
-/// * `students` - Cantidad de alumnos (Opcional)
+/// * `group` - Clase del grupo
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn create_group(
     pool: tauri::State<'_, AppState>,
-    grade: i16,
-    group: String,
-    career: Option<String>,
-    students: Option<i16>,
+    g: Group,
     subjects: Option<Vec<Subject>>,
 ) -> Result<(), String> {
     let group_id: i16 = sqlx::query_scalar(
         r#"
-        INSERT INTO groups (grade, "group", career, students)
-        VALUES (?1, ?2, ?3, ?4)
+        INSERT INTO groups (grade, "group", career, students, max_modules_per_day)
+        VALUES (?1, ?2, ?3, ?4, ?5)
         RETURNING id
     "#,
     )
-    .bind(grade)
-    .bind(group)
-    .bind(career)
-    .bind(students)
+    .bind(g.grade)
+    .bind(g.group)
+    .bind(g.career)
+    .bind(g.students)
+    .bind(g.max_modules_per_day)
     .fetch_one(&pool.db)
     .await
     .map_err(|e| format!("Failed to create group, error: {}", e))?;
@@ -227,32 +222,25 @@ pub async fn delete_groups(pool: tauri::State<'_, AppState>, ids: Vec<i16>) -> R
 /// Funcion para actualizar un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `id` - ID del grupo
-/// * `grade` - Grado
-/// * `group` - Grupo
-/// * `career` - Carrera (Opcional)
-/// * `students` - Cantidad de alumnos (Opcional)
+/// * `group` - Clase del grupo
 /// Retorna un resultado vacio si la operacion fue exitosa
 /// Se llama desde la interfaz de usuario para actualizar un grupo
 #[allow(dead_code, unused)]
 #[tauri::command]
 pub async fn update_group(
     pool: tauri::State<'_, AppState>,
-    id: i16,
-    grade: i16,
-    group: String,
-    career: Option<String>,
-    students: Option<i16>,
+    g: Group,
     subjects: Option<Vec<Subject>>,
 ) -> Result<(), String> {
     sqlx::query(
-        r#"UPDATE groups SET grade = ?1, "group" = ?2, career = ?3, students = ?4 WHERE id = ?5"#,
+        r#"UPDATE groups SET grade = ?1, "group" = ?2, career = ?3, students = ?4, max_modules_per_day = ?5 WHERE id = ?6"#,
     )
-    .bind(grade)
-    .bind(group)
-    .bind(career)
-    .bind(students)
-    .bind(id)
+    .bind(g.grade)
+    .bind(g.group)
+    .bind(g.career)
+    .bind(g.students)
+    .bind(g.max_modules_per_day)
+    .bind(g.id)
     .execute(&pool.db)
     .await
     .map_err(|e| format!("Failed to update group: {}", e))?;
@@ -260,14 +248,14 @@ pub async fn update_group(
     if let Some(subjects) = subjects {
         // Eliminar las materias del grupo si existian
         sqlx::query("DELETE FROM groups_subjects WHERE group_id = ?1")
-            .bind(id)
+            .bind(g.id)
             .execute(&pool.db)
             .await
             .map_err(|e| format!("Failed to delete group subject: {}", e))?;
         for subject in subjects {
             // Agrega materia al grupo
             sqlx::query("INSERT INTO groups_subjects (group_id, subject_id) VALUES (?1, ?2)")
-                .bind(id)
+                .bind(g.id)
                 .bind(subject.id)
                 .fetch_optional(&pool.db)
                 .await
