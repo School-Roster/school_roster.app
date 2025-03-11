@@ -12,33 +12,33 @@ pub struct Classroom {
     pub building_number: i16, // Numero de aula, lo que sigue despues del building_id (ejemplo: 303)
     pub building_type: Option<String>,
     pub capacity: Option<i16>,
+    pub availability: bool,
 }
 
 /// Funcion para crear un nuevo elemento
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `building_id` - *Identificador del edificio puede ser letra o numero
-/// * `building_numer` - *Numero del aula en el edificio
-/// * `building_type` - Tipo especifico del edificio (ej: Ciencias)
-/// * `capacity` - Capacidad de personas en el salon
+/// * `cr` - Clase del aula
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command(rename_all = "snake_case")]
 pub async fn create_classroom(
     pool: tauri::State<'_, AppState>,
-    building_id: Option<String>,
-    building_number: i16,
-    building_type: Option<String>,
-    capacity: Option<i16>,
+    cr: Classroom,
 ) -> Result<(), String> {
-    sqlx::query("INSERT INTO classroom (building_number, building_id, building_type, capacity) VALUES (?1, ?2, ?3, ?4)")
-        .bind(building_number)
-        .bind(building_id)
-        .bind(building_type)
-        .bind(capacity)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to create building_id, error: {}", e))?;
+    sqlx::query(
+        "
+        INSERT INTO classroom (building_number, building_id, building_type, capacity, availability)
+        VALUES (?1, ?2, ?3, ?4, ?5)",
+    )
+    .bind(cr.building_number)
+    .bind(cr.building_id)
+    .bind(cr.building_type)
+    .bind(cr.capacity)
+    .bind(cr.availability)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to create building_id, error: {}", e))?;
 
     println!("building_id created successfully");
     Ok(())
@@ -63,12 +63,13 @@ pub async fn create_classrooms(
     for c in classroom {
         println!("Aula: {:?}", c);
         sqlx::query(
-            r#"INSERT INTO classroom (building_id, building_number, building_type, capacity) VALUES (?1, ?2, ?3, ?4)"#,
+            r#"INSERT INTO classroom (building_id, building_number, building_type, capacity, availability) VALUES (?1, ?2, ?3, ?4, ?5)"#,
         )
         .bind(c.building_id)
         .bind(c.building_number)
         .bind(c.building_type)
         .bind(c.capacity)
+        .bind(c.availability)
         .execute(&mut tx)
         .await
         .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
@@ -137,32 +138,33 @@ pub async fn delete_classrooms(
 /// Funcion para actualizar un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `id` - ID del grupo
-/// * `building_id` - *Identificador del edificio puede ser letra o numero
-/// * `building_numer` - *Numero del aula en el edificio
-/// * `building_type` - Tipo especifico del edificio (ej: Ciencias)
-/// * `capacity` - Capacidad de personas en el salon
+/// * `classroom` - Clase del aula
 /// Retorna un resultado vacio si la operacion fue exitosa
 /// Se llama desde la interfaz de usuario para actualizar un grupo
 #[allow(dead_code, unused)]
 #[tauri::command(rename_all = "snake_case")]
 pub async fn update_classroom(
     pool: tauri::State<'_, AppState>,
-    id: i16,
-    building_number: i16,
-    building_id: String,
-    building_type: Option<String>,
-    capacity: Option<i16>,
+    classroom: Classroom,
 ) -> Result<(), String> {
-    sqlx::query("UPDATE classroom SET building_number = ?1, building_id = ?2, building_type = ?3, capacity= ?4 WHERE id = ?5")
-        .bind(building_number)
-        .bind(building_id)
-        .bind(building_type)
-        .bind(capacity)
-        .bind(id)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to update classroom: {}", e))?;
+    sqlx::query(
+        "UPDATE classroom SET
+            building_number = ?1,
+            building_id = ?2,
+            building_type = ?3,
+            capacity = ?4,
+            availability = ?5
+        WHERE id = ?6",
+    )
+    .bind(classroom.building_number)
+    .bind(classroom.building_id)
+    .bind(classroom.building_type)
+    .bind(classroom.capacity)
+    .bind(classroom.availability)
+    .bind(classroom.id)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to update classroom: {}", e))?;
 
     Ok(())
 }
