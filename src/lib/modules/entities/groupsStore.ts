@@ -10,14 +10,16 @@ import type { SubjectItem } from "./subjectsStore";
   * @property {string} group - Grupo (A,B,C,...)
   * @property {string} career - Carrera (si aplica)
   * @property {number} students - Numero de alumnos (si aplica)
+  * @property {number} max_modules_per_day - Modulos al dia (si aplica)
   * @property {SubjectItem} preAssignedSubjects - Materias asignadas (si aplica)
   */
 export interface GroupItem {
-  id: number;
-  grade: number;
+  id?: number,
+  grade: number | null ,
   group: string,
   career: string,
-  students: number,
+  students: number | null,
+  max_modules_per_day?: number | null,
   preAssignedSubjects?: SubjectItem[]
 }
 
@@ -44,40 +46,25 @@ export async function loadGroups() {
 
 /**
   * Funcion para agregar un nuevo grupo a la base de datos
-  * @param {number} grade
-  * @param {string} group
-  * @param {string} career
-  * @param {number} students
+  * @param {GroupItem} group
   * @param {SubjectItem} subjects
   */
 export async function addGroup(
-  grade: number,
-  group: string,
-  career: string | null,
-  students: number | null,
+  group: GroupItem,
   subjects: SubjectItem[]
 ): Promise<void> {
-  if (!grade || !group) {
+  if (!group.grade || !group) {
     alert("Por favor, rellene todos los campos");
     return;
   }
 
   await invoke("create_group", {
-    grade,
-    group,
-    career: career || null,
-    students: students || null,
+    g: group,
     subjects:
       subjects.length > 0 ? subjects.map((s) => s) : null,
   });
   await loadGroups(); // Recarga las vistas
   await emit("groups_updated"); // Emite un evento para actualizar la vista de materias
-
-  // Limpiamos los campos
-  grade = 0;
-  group = "";
-  career = "";
-  students = 0;
 }
 
 /**
