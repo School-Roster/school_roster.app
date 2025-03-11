@@ -9,13 +9,15 @@ import { emit } from "@tauri-apps/api/event";
   * @property {number} building_number - Numero del aula
   * @property {string} building_type - Tipo de aula (ej: Laboratorio) (si aplica)
   * @property {number} capacity - Capacidad del aula (si aplica)
+  * @property {boolean} available - Disponibilidad del aula
   */
 export interface ClassroomItem {
-  id: number;
+  id?: number;
   building_id: string,
-  building_number: number;
+  building_number: number | null,
   building_type: string,
-  capacity: number
+  capacity: number | null,
+  available: boolean,
 }
 
 /**
@@ -33,31 +35,17 @@ export async function loadClassrooms() {
 
 /**
   * Funcion para agregar un nuevo grupo a la base de datos
-  * @param {string} building_id
-  * @param {number} building_number
-  * @param {string} building_type
-  * @param {number} capacity
+  * @param {ClassroomItem} classroom: Clase del aula
   */
-export async function addClassroom(building_id: string, building_number: number, building_type: string, capacity: number): Promise<void> {
-  if (!building_number || !building_id) {
+export async function addClassroom(classroom: ClassroomItem): Promise<void> {
+  if (!classroom.building_number || !classroom.building_id) {
     alert("Por favor, rellene todos los campos");
     return;
   }
 
-  await invoke("create_classroom", {
-    building_id,
-    building_number,
-    building_type: building_type || null,
-    capacity: capacity || null,
-  });
+  await invoke("create_classroom", { classroom });
   await loadClassrooms(); // Recarga las vistas
   await emit("classrooms_updated"); // Emite un evento para actualizar la vista de materias
-
-  // Limpiamos los campos
-  building_number = 0;
-  building_id = "";
-  building_type = "";
-  capacity = 0;
 }
 
 /**
