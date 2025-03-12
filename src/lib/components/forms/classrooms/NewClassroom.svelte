@@ -11,7 +11,6 @@
     building_number: null,
     building_type: "",
     capacity: null,
-    available: false,
   };
 
   // Para editar se le pasa el item
@@ -23,6 +22,7 @@
 
   function initForm(item: ClassroomItem | null): void {
     if (item) {
+      cr.id = item.id;
       cr.building_id = item.building_id;
       cr.building_number = item.building_number;
       cr.building_type = item.building_type;

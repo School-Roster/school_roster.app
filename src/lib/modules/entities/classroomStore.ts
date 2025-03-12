@@ -9,7 +9,7 @@ import { emit } from "@tauri-apps/api/event";
   * @property {number} building_number - Numero del aula
   * @property {string} building_type - Tipo de aula (ej: Laboratorio) (si aplica)
   * @property {number} capacity - Capacidad del aula (si aplica)
-  * @property {boolean} available - Disponibilidad del aula
+  * @property {Array<[string, number]>} available - Disponibilidad del aula
   */
 export interface ClassroomItem {
   id?: number;
@@ -17,7 +17,7 @@ export interface ClassroomItem {
   building_number: number | null,
   building_type: string,
   capacity: number | null,
-  available: boolean,
+  available?: Array<[string, number]>, // Opcional porque no se registra
 }
 
 /**
@@ -43,7 +43,7 @@ export async function addClassroom(classroom: ClassroomItem): Promise<void> {
     return;
   }
 
-  await invoke("create_classroom", { classroom });
+  await invoke("create_classroom", { cr: classroom });
   await loadClassrooms(); // Recarga las vistas
   await emit("classrooms_updated"); // Emite un evento para actualizar la vista de materias
 }
@@ -59,13 +59,7 @@ export async function editClassroom(item: ClassroomItem): Promise<void> {
     return;
   }
   // TODO: Pasar el item directamente en vez de sus propiedades (mas limpio)
-  await invoke("update_classroom", {
-    id: item.id,
-    building_id: item.building_id,
-    building_number: item.building_number,
-    building_type: item.building_type,
-    capacity: item.capacity,
-  });
+  await invoke("update_classroom", { classroom: item });
   await loadClassrooms();
   await emit("classrooms_updated");
 }
