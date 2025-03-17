@@ -73,18 +73,18 @@
       editTeacher(t, selectedSubjects);
     } else {
       addTeacher(t, selectedSubjects);
+      // Limpiamos los campos
+      t.name = "";
+      t.father_lastname = "";
+      t.mother_lastname = "";
+      t.email = "";
+      t.phone = "";
+      t.degree = "";
+      t.commissioned_hours = 0;
+      t.active_hours = 0;
+      t.performance = 0;
+      selectedSubjects = [];
     }
-    // Limpiamos los campos
-    t.name = "";
-    t.father_lastname = "";
-    t.mother_lastname = "";
-    t.email = "";
-    t.phone = "";
-    t.degree = "";
-    t.commissioned_hours = 0;
-    t.active_hours = 0;
-    t.performance = 0;
-    selectedSubjects = [];
   };
 
   // Cambia el estado de la materia seleccionada
