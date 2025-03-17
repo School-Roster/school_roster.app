@@ -30,18 +30,14 @@
     { name: "Grupo", key: "group" },
     { name: "Carrera", key: "career" },
     { name: "Cantidad de estudiantes", key: "students" },
-    { name: "Materias pre-asignadas", key: "preAssignedSubjects" },
+    { name: "Modulos a la semana", key: "max_modules_per_day" },
+    { name: "Materias pre-asignadas", key: "required_subjects" },
   ];
 
   let importShown: boolean = false;
 
   let editShown: boolean = false;
   let editItem: GroupItem | null = null;
-  const handleEdit: (item: GroupItem) => void = (item: GroupItem) => {
-    editShown = true;
-    editItem = item;
-    if (newShown) newShown = false;
-  };
 
   let showModal: boolean = false;
   // Manejamos eliminar por medio de un diccionario si hay varios seleccionados
@@ -92,6 +88,11 @@
   const handleNew = () => {
     newShown = !newShown;
     if (editShown) editShown = false;
+  };
+  const handleEdit: (item: GroupItem) => void = (item: GroupItem) => {
+    editShown = !editShown;
+    editItem = item;
+    if (newShown) newShown = false;
   };
   const importToggle = (): void => {
     importShown = !importShown;

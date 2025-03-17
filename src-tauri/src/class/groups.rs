@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::error::Error as SqlxError;
 use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
-use crate::class::subjects::Subject;
-// use crate::class::subjects::SubjectWithTeacher;
+use crate::class::subjects::SubjectWithTeacher;
 
 /// Estructura de un grupo
 /// Se utiliza para mapear los datos del grupo de la base de datos a un objeto en Rust
@@ -16,23 +15,17 @@ pub struct Group {
     pub group: String,
     pub career: Option<String>,
     pub students: Option<i16>,
-    // pub required_subjects: Vec<SubjectWithTeacher>,
     pub max_modules_per_day: Option<i16>,
 }
 
 impl<'r> FromRow<'r, SqliteRow> for Group {
     fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
-        // let required_subjects_str: String = row.try_get("required_subjects")?;
-        // let required_subjects: Vec<SubjectWithTeacher> =
-        //     serde_json::from_str(&required_subjects_str).unwrap_or_default();
-
         Ok(Group {
             id: row.try_get("id")?,
             grade: row.try_get("grade")?,
             group: row.try_get("group")?,
             career: row.try_get("career")?,
             students: row.try_get("students")?,
-            // required_subjects,
             max_modules_per_day: row.try_get("max_modules_per_day")?,
         })
     }
@@ -48,7 +41,7 @@ impl<'r> FromRow<'r, SqliteRow> for Group {
 pub async fn create_group(
     pool: tauri::State<'_, AppState>,
     g: Group,
-    subjects: Option<Vec<Subject>>,
+    subjects: Option<Vec<SubjectWithTeacher>>,
 ) -> Result<(), String> {
     let group_id: i16 = sqlx::query_scalar(
         r#"
@@ -141,41 +134,64 @@ pub async fn create_groups(
 #[tauri::command]
 pub async fn get_groups(
     pool: tauri::State<'_, AppState>,
-) -> Result<Vec<(Group, Vec<Subject>)>, String> {
+) -> Result<Vec<(Group, Vec<SubjectWithTeacher>)>, String> {
     let groups: Vec<Group> = sqlx::query_as::<_, Group>("SELECT * FROM groups")
         .fetch_all(&pool.db)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            println!("Failed to fetch groups: {}", e);
+            e.to_string()
+        })?;
 
-    // Checar si hay alguna materia asignada al grupo
-    let mut groups_subjects: Vec<(Group, Vec<Subject>)> = Vec::new();
+    let mut groups_with_subjects: Vec<(Group, Vec<SubjectWithTeacher>)> = Vec::new();
+
     for group in groups {
-        // Obtener materias
-        let subject_id: Vec<i16> =
+        let subject_ids: Vec<i16> =
             sqlx::query("SELECT subject_id FROM groups_subjects WHERE group_id = ?1")
                 .bind(group.id)
                 .fetch(&pool.db)
-                .map_ok(|row| row.get::<i16, _>(0)) // Obtener el/los ID de la materia
+                .map_ok(|row| row.get::<i16, _>(0))
                 .try_collect()
                 .await
-                .map_err(|e| format!("Failed to get subject id from database: {}", e))?;
+                .map_err(|e| format!("Failed to get subject IDs: {}", e))?;
 
-        let mut subjects: Vec<Subject> = Vec::new();
-        for id in subject_id {
-            let subject: Subject =
-                sqlx::query_as::<_, Subject>("SELECT * FROM subjects WHERE id = ?1")
-                    .bind(id)
-                    .fetch_one(&pool.db)
-                    .await
-                    .map_err(|e| format!("Failed to get subject class: {}", e))?;
+        let mut required_subjects: Vec<SubjectWithTeacher> = Vec::new();
 
-            subjects.push(subject);
+        for subject_id in subject_ids {
+            let subject_with_teacher: Option<SubjectWithTeacher> =
+                sqlx::query_as::<_, SubjectWithTeacher>(
+                    r#"
+                SELECT
+                    s.id,
+                    s.name,
+                    s.shorten,
+                    s.color,
+                    s.spec,
+                    s.required_modules,
+                    s.priority,
+                    t.id as teacher_id,
+                    t.name as teacher_name,
+                    t.father_lastname as teacher_father_lastname
+                FROM subjects s
+                LEFT JOIN teacher_subjects ts ON s.id = ts.subject_id
+                LEFT JOIN teachers t ON ts.teacher_id = t.id
+                WHERE s.id = ?1
+                "#,
+                )
+                .bind(subject_id)
+                .fetch_optional(&pool.db)
+                .await
+                .map_err(|e| format!("Failed to fetch subject with teacher: {}", e))?;
+
+            if let Some(subject) = subject_with_teacher {
+                required_subjects.push(subject);
+            }
         }
 
-        groups_subjects.push((group, subjects));
+        groups_with_subjects.push((group, required_subjects));
     }
 
-    Ok(groups_subjects)
+    Ok(groups_with_subjects)
 }
 
 /// Funcion para eliminar un grupo
@@ -230,7 +246,7 @@ pub async fn delete_groups(pool: tauri::State<'_, AppState>, ids: Vec<i16>) -> R
 pub async fn update_group(
     pool: tauri::State<'_, AppState>,
     g: Group,
-    subjects: Option<Vec<Subject>>,
+    subjects: Option<Vec<SubjectWithTeacher>>,
 ) -> Result<(), String> {
     sqlx::query(
         r#"UPDATE groups SET grade = ?1, "group" = ?2, career = ?3, students = ?4, max_modules_per_day = ?5 WHERE id = ?6"#,
