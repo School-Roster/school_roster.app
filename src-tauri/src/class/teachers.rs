@@ -23,11 +23,11 @@ pub struct Teacher {
     pub email: Option<String>,
     pub phone: Option<String>,
     pub degree: Option<String>,
-    pub commisioned_hours: Option<i16>, // Total de horas
-    pub active_hours: Option<i16>,      // Horas activas en el programa
-    pub performance: Option<i16>,       // Desempeño
-    pub preferred_days: Vec<String>,    // Dias preferidos del profesor
-    pub preferred_modules: Vec<i16>,    // Modulos preferidos del profesor
+    pub commisioned_hours: Option<i16>,      // Total de horas
+    pub active_hours: Option<i16>,           // Horas activas en el programa
+    pub performance: Option<i16>,            // Desempeño
+    pub preferred_days: Option<Vec<String>>, // Dias preferidos del profesor
+    pub preferred_modules: Option<Vec<i16>>, // Modulos preferidos del profesor (eg: |1, 2, 3])
 }
 
 // Implement FromRow for Teacher
@@ -53,8 +53,8 @@ impl<'r> FromRow<'r, SqliteRow> for Teacher {
             commisioned_hours: row.try_get("commisioned_hours")?,
             active_hours: row.try_get("active_hours")?,
             performance: row.try_get("performance")?,
-            preferred_days,
-            preferred_modules,
+            preferred_days: Some(preferred_days),
+            preferred_modules: Some(preferred_modules),
         })
     }
 }

@@ -1,46 +1,69 @@
 use crate::db::AppState;
-use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
+use sqlx::error::Error as SqlxError;
+use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 /// Estructural salon
 /// Se utiliza para mapear los datos de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Classroom {
     pub id: Option<i16>,
     pub building_id: Option<String>, // Puede ser una letra o numero entonces lo dejaremos como String
     pub building_number: i16, // Numero de aula, lo que sigue despues del building_id (ejemplo: 303)
     pub building_type: Option<String>,
     pub capacity: Option<i16>,
+    pub availability: Option<Vec<(String, i16)>>, // Lista con (dias, modulos)
+}
+
+impl<'r> FromRow<'r, SqliteRow> for Classroom {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        let availability_str: String = row.try_get("availability")?;
+        let availability: Vec<(String, i16)> =
+            serde_json::from_str(&availability_str).unwrap_or_default();
+
+        Ok(Classroom {
+            id: row.try_get("id")?,
+            building_id: row.try_get("building_id")?,
+            building_number: row.try_get("building_number")?,
+            building_type: row.try_get("building_type")?,
+            capacity: row.try_get("capacity")?,
+            availability: Some(availability),
+        })
+    }
 }
 
 /// Funcion para crear un nuevo elemento
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `building_id` - *Identificador del edificio puede ser letra o numero
-/// * `building_numer` - *Numero del aula en el edificio
-/// * `building_type` - Tipo especifico del edificio (ej: Ciencias)
-/// * `capacity` - Capacidad de personas en el salon
+/// * `cr` - Clase del aula
 /// Retorna un resultado vacio si la operacion fue exitosa
 #[allow(dead_code, unused)]
 #[tauri::command(rename_all = "snake_case")]
 pub async fn create_classroom(
     pool: tauri::State<'_, AppState>,
-    building_id: Option<String>,
-    building_number: i16,
-    building_type: Option<String>,
-    capacity: Option<i16>,
+    cr: Classroom,
 ) -> Result<(), String> {
-    sqlx::query("INSERT INTO classroom (building_number, building_id, building_type, capacity) VALUES (?1, ?2, ?3, ?4)")
-        .bind(building_number)
-        .bind(building_id)
-        .bind(building_type)
-        .bind(capacity)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to create building_id, error: {}", e))?;
+    let availability_json = serde_json::to_string(&cr.availability)
+        .map_err(|e| format!("Failed to serialize availability: {}", e))?;
+    sqlx::query(
+        "
+        INSERT INTO classroom (
+            building_number,
+            building_id,
+            building_type,
+            capacity,
+            availability
+        ) VALUES (?1, ?2, ?3, ?4, ?5)",
+    )
+    .bind(cr.building_number)
+    .bind(cr.building_id)
+    .bind(cr.building_type)
+    .bind(cr.capacity)
+    .bind(availability_json)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to create building_id, error: {}", e))?;
 
-    println!("building_id created successfully");
     Ok(())
 }
 
@@ -62,13 +85,16 @@ pub async fn create_classrooms(
 
     for c in classroom {
         println!("Aula: {:?}", c);
+        let availability_json = serde_json::to_string(&c.availability)
+            .map_err(|e| format!("Failed to serialize availability: {}", e))?;
         sqlx::query(
-            r#"INSERT INTO classroom (building_id, building_number, building_type, capacity) VALUES (?1, ?2, ?3, ?4)"#,
+            r#"INSERT INTO classroom (building_id, building_number, building_type, capacity, availability) VALUES (?1, ?2, ?3, ?4, ?5)"#,
         )
         .bind(c.building_id)
         .bind(c.building_number)
         .bind(c.building_type)
         .bind(c.capacity)
+        .bind(availability_json)
         .execute(&mut tx)
         .await
         .map_err(|e| format!("Error creating the classroom, error: {}", e))?;
@@ -90,8 +116,7 @@ pub async fn create_classrooms(
 #[tauri::command]
 pub async fn get_classrooms(pool: tauri::State<'_, AppState>) -> Result<Vec<Classroom>, String> {
     let classrooms: Vec<Classroom> = sqlx::query_as::<_, Classroom>("SELECT * FROM classroom")
-        .fetch(&pool.db)
-        .try_collect()
+        .fetch_all(&pool.db)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -137,32 +162,36 @@ pub async fn delete_classrooms(
 /// Funcion para actualizar un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
-/// * `id` - ID del grupo
-/// * `building_id` - *Identificador del edificio puede ser letra o numero
-/// * `building_numer` - *Numero del aula en el edificio
-/// * `building_type` - Tipo especifico del edificio (ej: Ciencias)
-/// * `capacity` - Capacidad de personas en el salon
+/// * `classroom` - Clase del aula
 /// Retorna un resultado vacio si la operacion fue exitosa
 /// Se llama desde la interfaz de usuario para actualizar un grupo
 #[allow(dead_code, unused)]
 #[tauri::command(rename_all = "snake_case")]
 pub async fn update_classroom(
     pool: tauri::State<'_, AppState>,
-    id: i16,
-    building_number: i16,
-    building_id: String,
-    building_type: Option<String>,
-    capacity: Option<i16>,
+    classroom: Classroom,
 ) -> Result<(), String> {
-    sqlx::query("UPDATE classroom SET building_number = ?1, building_id = ?2, building_type = ?3, capacity= ?4 WHERE id = ?5")
-        .bind(building_number)
-        .bind(building_id)
-        .bind(building_type)
-        .bind(capacity)
-        .bind(id)
-        .execute(&pool.db)
-        .await
-        .map_err(|e| format!("Failed to update classroom: {}", e))?;
+    let availability_json = serde_json::to_string(&classroom.availability)
+        .map_err(|e| format!("Failed to serialize availability: {}", e))?;
+    println!("{:?}", classroom);
+    sqlx::query(
+        "UPDATE classroom SET
+            building_number = ?1,
+            building_id = ?2,
+            building_type = ?3,
+            capacity = ?4,
+            availability = ?5
+        WHERE id = ?6",
+    )
+    .bind(classroom.building_number)
+    .bind(classroom.building_id)
+    .bind(classroom.building_type)
+    .bind(classroom.capacity)
+    .bind(availability_json)
+    .bind(classroom.id)
+    .execute(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to update classroom: {}", e))?;
 
     Ok(())
 }

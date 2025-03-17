@@ -10,15 +10,17 @@ import type { SubjectItem } from "./subjectsStore";
   * @property {string} group - Grupo (A,B,C,...)
   * @property {string} career - Carrera (si aplica)
   * @property {number} students - Numero de alumnos (si aplica)
-  * @property {SubjectItem} preAssignedSubjects - Materias asignadas (si aplica)
+  * @property {number} max_modules_per_day - Modulos al dia (si aplica)
+  * @property {SubjectItem} required_subjects - Materias asignadas (si aplica)
   */
 export interface GroupItem {
-  id: number;
-  grade: number;
+  id?: number,
+  grade: number | null ,
   group: string,
   career: string,
-  students: number,
-  preAssignedSubjects?: SubjectItem[]
+  students: number | null,
+  max_modules_per_day?: number | null,
+  required_subjects?: SubjectItem[]
 }
 
 /**
@@ -29,55 +31,47 @@ export const groups = writable<GroupItem[]>([]);
 /**
  * Carga los grupos desde la base de datos
  */
-export async function loadGroups() {
-  // Tuple para obtener las materias asignadas y los grupos
+export async function loadGroups(): Promise<void> {
+  // Fetch groups with their required subjects
   const response: [GroupItem, SubjectItem[]][] = await invoke<[GroupItem, SubjectItem[]][]>('get_groups');
 
+  // Format the response to match the GroupItem interface
   const formattedGroups: GroupItem[] = response.map(([group, subjects]) => ({
     ...group,
-    preAssignedSubjects: subjects, // Assign subjects to the group
+    required_subjects: subjects, // Assign subjects to the group
   }));
 
+  // Update the groups store
   groups.set(formattedGroups);
-  console.log(formattedGroups);
 }
 
 /**
   * Funcion para agregar un nuevo grupo a la base de datos
-  * @param {number} grade
-  * @param {string} group
-  * @param {string} career
-  * @param {number} students
+  * @param {GroupItem} group
   * @param {SubjectItem} subjects
   */
 export async function addGroup(
-  grade: number,
-  group: string,
-  career: string | null,
-  students: number | null,
+  group: GroupItem,
   subjects: SubjectItem[]
 ): Promise<void> {
-  if (!grade || !group) {
+  if (!group.grade || !group) {
     alert("Por favor, rellene todos los campos");
     return;
   }
 
   await invoke("create_group", {
-    grade,
-    group,
-    career: career || null,
-    students: students || null,
+    g: {
+      grade: group.grade,
+      group: group.group,
+      career: group.career,
+      students: group.students,
+      max_modules_per_day: group.max_modules_per_day,
+    },
     subjects:
       subjects.length > 0 ? subjects.map((s) => s) : null,
   });
   await loadGroups(); // Recarga las vistas
   await emit("groups_updated"); // Emite un evento para actualizar la vista de materias
-
-  // Limpiamos los campos
-  grade = 0;
-  group = "";
-  career = "";
-  students = 0;
 }
 
 /**
@@ -93,11 +87,7 @@ export async function editGroup(item: GroupItem, subjects: SubjectItem[]): Promi
   }
   // TODO: Pasar el item directamente en vez de sus propiedades (mas limpio)
   await invoke("update_group", {
-    id: item.id,
-    grade: item.grade,
-    group: item.group,
-    career: item.career,
-    students: item.students,
+    g: item,
     subjects:
       subjects.length > 0 ? subjects.map((s) => s) : null,
   });
