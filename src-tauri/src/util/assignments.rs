@@ -30,7 +30,6 @@ pub async fn save_assignment(
     subject_id: i32,
     teacher_id: i32,
 ) -> Result<(), String> {
-    println!("{}", teacher_id);
     sqlx::query(
         "
         INSERT INTO assignments (group_id, day, module_index, subject_id, teacher_id)
