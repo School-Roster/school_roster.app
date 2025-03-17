@@ -40,9 +40,24 @@ pub struct SubjectWithTeacher {
     pub shorten: String,
     pub color: String,
     pub spec: String,
-    pub required_modules: i16,
-    pub priority: i16,
+    pub required_modules: Option<i16>,
+    pub priority: Option<i16>,
     pub assigned_teacher: Option<SimpleTeacher>,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for SubjectWithTeacher {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        Ok(SubjectWithTeacher {
+            id: row.try_get("id")?,
+            name: row.try_get("name")?,
+            shorten: row.try_get("shorten")?,
+            color: row.try_get("color")?,
+            spec: row.try_get("spec")?,
+            required_modules: row.try_get("required_modules")?,
+            priority: row.try_get("priority")?,
+            assigned_teacher: None,
+        })
+    }
 }
 
 /// Funcion para crear una materia

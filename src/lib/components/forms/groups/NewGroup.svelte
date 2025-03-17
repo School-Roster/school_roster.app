@@ -40,11 +40,7 @@
       g.career = item.career;
       g.students = item.students;
       g.max_modules_per_day = item.max_modules_per_day;
-      // Map assigned_subjects names to the SubjectItem objects
-      selectedSubjects = item.preAssignedSubjects?.map((subjectName: string) => {
-        const subject = $subjects.find((s) => s.name === subjectName);
-        return subject ? subject : { id: -1, name: subjectName }; // Return a default if not found
-      });
+      selectedSubjects = item.required_subjects;
     } else {
       selectedSubjects = [];
     }
@@ -62,13 +58,13 @@
       editGroup(g, selectedSubjects);
     } else {
       addGroup(g, selectedSubjects);
+      // Limpiamos los campos
+      // TODO: Limpiar campos solo cuado (addGroup) es satisfactorio
+      g.grade = null;
+      g.group = "";
+      g.career = "";
+      g.students = null;
     }
-
-    // Limpiamos los campos
-    g.grade = null;
-    g.group = "";
-    g.career = "";
-    g.students = null;
   };
 
   function toggleSelection(subject: SubjectItem): void {
