@@ -1,14 +1,12 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # Pin to latest
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.11"; # Queremos mantenernos actualizados, pero habra casos que necesitemos utilizar versiones estables
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs =
     {
       self,
       nixpkgs,
-      nixpkgs-stable,
       flake-utils,
     }:
     flake-utils.lib.eachDefaultSystem (

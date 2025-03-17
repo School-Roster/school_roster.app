@@ -18,8 +18,8 @@ export interface SubjectItem {
   shorten: string;
   color: string;
   spec: string;
-  required_modules: number | null,
-  priority: number | null,
+  required_modules?: number | null,
+  priority?: number | null,
   assigned_teacher?: SimpleTeacherItem | null;
 }
 

@@ -11,7 +11,7 @@ import type { SubjectItem } from "./subjectsStore";
   * @property {string} career - Carrera (si aplica)
   * @property {number} students - Numero de alumnos (si aplica)
   * @property {number} max_modules_per_day - Modulos al dia (si aplica)
-  * @property {SubjectItem} preAssignedSubjects - Materias asignadas (si aplica)
+  * @property {SubjectItem} required_subjects - Materias asignadas (si aplica)
   */
 export interface GroupItem {
   id?: number,
@@ -20,7 +20,7 @@ export interface GroupItem {
   career: string,
   students: number | null,
   max_modules_per_day?: number | null,
-  preAssignedSubjects?: SubjectItem[]
+  required_subjects?: SubjectItem[]
 }
 
 /**
@@ -31,17 +31,18 @@ export const groups = writable<GroupItem[]>([]);
 /**
  * Carga los grupos desde la base de datos
  */
-export async function loadGroups() {
-  // Tuple para obtener las materias asignadas y los grupos
+export async function loadGroups(): Promise<void> {
+  // Fetch groups with their required subjects
   const response: [GroupItem, SubjectItem[]][] = await invoke<[GroupItem, SubjectItem[]][]>('get_groups');
 
+  // Format the response to match the GroupItem interface
   const formattedGroups: GroupItem[] = response.map(([group, subjects]) => ({
     ...group,
-    preAssignedSubjects: subjects, // Assign subjects to the group
+    required_subjects: subjects, // Assign subjects to the group
   }));
 
+  // Update the groups store
   groups.set(formattedGroups);
-  console.log(formattedGroups);
 }
 
 /**
@@ -59,7 +60,13 @@ export async function addGroup(
   }
 
   await invoke("create_group", {
-    g: group,
+    g: {
+      grade: group.grade,
+      group: group.group,
+      career: group.career,
+      students: group.students,
+      max_modules_per_day: group.max_modules_per_day,
+    },
     subjects:
       subjects.length > 0 ? subjects.map((s) => s) : null,
   });
@@ -80,11 +87,7 @@ export async function editGroup(item: GroupItem, subjects: SubjectItem[]): Promi
   }
   // TODO: Pasar el item directamente en vez de sus propiedades (mas limpio)
   await invoke("update_group", {
-    id: item.id,
-    grade: item.grade,
-    group: item.group,
-    career: item.career,
-    students: item.students,
+    g: item,
     subjects:
       subjects.length > 0 ? subjects.map((s) => s) : null,
   });
