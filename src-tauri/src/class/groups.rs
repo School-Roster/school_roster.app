@@ -107,12 +107,13 @@ pub async fn create_groups(
 
     for g in groups {
         sqlx::query(
-            r#"INSERT INTO groups(grade, "group", career, students) VALUES (?1, ?2, ?3, ?4)"#,
+            r#"INSERT INTO groups(grade, "group", career, students, max_modules_per_day) VALUES (?1, ?2, ?3, ?4, ?5)"#,
         )
         .bind(g.grade)
         .bind(g.group)
         .bind(g.career)
         .bind(g.students)
+        .bind(g.max_modules_per_day)
         .execute(&mut tx)
         .await
         .map_err(|e| format!("Error creating the group, error: {}", e))?;
