@@ -48,7 +48,7 @@
     subject.name = "";
     subject.shorten = "";
     subject.color = "#a50044";
-    subject.spec = "Obligatoria";
+    subject.spec = "";
     subject.required_modules = null;
     subject.priority = null;
   };
@@ -100,11 +100,19 @@
     </div>
     <div class="form-field">
       <label for="spec">Tipo</label>
+      <input
+        type="text"
+        placeholder="Especialidad"
+        id="spec"
+        bind:value={subject.spec}
+      />
+      <!-- TODO: Agregar especializaciones desde pantalla de configuracion -->
+      <!--
       <select id="spec" bind:value={subject.spec}>
-        <!-- TODO: Agregar especializaciones desde pantalla de configuracion -->
         <option class="opt" value="Obligatoria">Obligatoria</option>
         <option class="opt" value="Optativa">Optativa</option>
       </select>
+      -->
     </div>
     <div class="form-field">
       <label for="name"><img src="/icons/text.svg" alt="Materia" /></label>

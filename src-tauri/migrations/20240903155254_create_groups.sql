@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS groups (
     grade INTEGER NOT NULL,
     "group" TEXT NOT NULL,
     career TEXT,
-    students INTEGER
+    students INTEGER,
+    max_modules_per_day INTEGER
 );

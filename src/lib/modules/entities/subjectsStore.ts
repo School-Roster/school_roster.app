@@ -18,8 +18,8 @@ export interface SubjectItem {
   shorten: string;
   color: string;
   spec: string;
-  required_modules: number | null,
-  priority: number | null,
+  required_modules?: number | null,
+  priority?: number | null,
   assigned_teacher?: SimpleTeacherItem | null;
 }
 
@@ -84,64 +84,27 @@ export async function addSubject(subject: SubjectItem): Promise<void> {
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Array} mappings
-  * @param {Array} excelData
+  * @param {Record} headerMappings
+  * @param {Array} data
   */
 export async function importSubjectsFromXlsx(
-  mappings: Array<{
-    field: { key: string, name: string };
-    range: { column: string, startRow: number, endRow: number | null };
-  }>,
-  excelData: Array<Record<string, unknown>>
+  headerMappings: Record<string, string>,
+  data: Array<Record<string, any>>
 ): Promise<void> {
-  console.log("Raw data:", excelData);
+  console.log("Raw data:", data);
 
-  // Checar por campos requeridos no importados
-  const required: string[] = ['name'];
-  const missingFields: string[] = required.filter(
-    field => !mappings.some(m => m.field.key === field)
-  );
-  if (missingFields.length > 0) {
-    throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
-  }
-
-  // Convierte la columna en el index
-  const columnLetterToIndex = (letter: string): number => {
-    letter = letter.toUpperCase();
-    return letter.split('').reduce((acc, char) =>
-      acc * 26 + (char.charCodeAt(0) - 'A'.charCodeAt(0) + 1), 0) - 1;
-  };
-
-  // Crear diccionario del mapeo
-  const columnMap = mappings.reduce((acc, mapping) => {
-    if (mapping.range.column) {
-      acc[mapping.field.key] = {
-        columnIndex: columnLetterToIndex(mapping.range.column),
-        startRow: mapping.range.startRow - 2,
-        endRow: mapping.range.endRow ? mapping.range.endRow - 1 : undefined
-      };
-    }
-    return acc;
-  }, {} as Record<string, { columnIndex: number; startRow: number; endRow?: number }>);
-
-  // Preparar los grupos que seran importados
-  const subjectToImport = excelData
-    .slice(columnMap.name.startRow, columnMap.name.endRow || undefined)
-    .map(row => {
-      console.log(row);
-      return {
-        id: null,
-        name: String(row['Materia']),
-        shorten: String(row['Abreviacion']),
-        color: columnMap.color
-          ? String(row['Color'] || '')
-          : null,
-        spec: columnMap.spec
-          ? String(row['Especializacion'] || '')
-          : null
-      };
-    })
-    .filter(subject => subject.name);
+  // Prepare the subjects to be imported
+  const subjectToImport = data.map((row) => {
+    return {
+      id: null,
+      name: String(row.name || ''),
+      shorten: row.shorten ? String(row.shorten || '') : '',
+      color: row.color ? String(row.color || '') : null,
+      spec: row.spec ? String(row.spec || '') : null,
+      required_modules: row.required_modules ? Number(row.required_modules || 0) : 0,
+      priority: row.priority ? Number(row.priority || 0) : 0
+    };
+  }).filter(subject => subject.name);
 
   if (subjectToImport.length === 0) {
     throw new Error('No hay grupos validos en el intento de importar datos');
