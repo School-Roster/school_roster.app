@@ -6,7 +6,7 @@
   import SearchAnimation from "$lib/components/buttons/SearchAnimation.svelte";
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
-  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
+  import ImportExcel from "$lib/components/utils/excel/ImportExcel.svelte";
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
   import { ClassType } from "$lib/utilities/helpers";
 

@@ -77,7 +77,7 @@
                 >
                   {item[column.key]}
                 </td>
-              {:else if column.key === "preAssignedSubjects"}
+              {:else if column.key === "required_subjects"}
                 <td>
                   {#if item[column.key] && Array.isArray(item[column.key])}
                     {#each item[column.key] as subj, i}
