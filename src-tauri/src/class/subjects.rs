@@ -12,7 +12,7 @@ pub struct Subject {
     pub name: String,
     pub shorten: String,
     pub color: String,
-    pub spec: String,
+    pub spec: Option<String>,
     pub required_modules: Option<i16>,
     pub priority: Option<i16>,
 }

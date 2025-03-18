@@ -84,21 +84,14 @@ export async function addSubject(subject: SubjectItem): Promise<void> {
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
+  * @param {Record} headerMappings
+  * @param {Array} data
   */
 export async function importSubjectsFromXlsx(
   headerMappings: Record<string, string>,
   data: Array<Record<string, any>>
 ): Promise<void> {
   console.log("Raw data:", data);
-
-  // Check for required fields
-  const required: string[] = ['name'];
-  const missingFields: string[] = required.filter(
-    field => !headerMappings.hasOwnProperty(field)
-  );
-  if (missingFields.length > 0) {
-    throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
-  }
 
   // Prepare the subjects to be imported
   const subjectToImport = data.map((row) => {

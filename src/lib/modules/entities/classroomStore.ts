@@ -67,68 +67,31 @@ export async function editClassroom(item: ClassroomItem): Promise<void> {
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
   * @param {Record} headerMappings
-  * @param {Array} excelData
+  * @param {Array} data
   */
 export async function importClassroomsFromXlsx(
   headerMappings: Record<string, string>,
-  excelData: Array<Record<string, unknown>>
+  data: Array<Record<string, any>>
 ): Promise<void> {
-  console.log("Raw data:", excelData);
+  console.log("Raw data for classrooms:", data);
 
-  // Checar por campos requeridos no importados
-  const required: string[] = ['building_id', 'building_number'];
-  const missingFields: string[] = required.filter(
-    field => !mappings.some(m => m.field.key === field)
-  );
-  if (missingFields.length > 0) {
-    throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
-  }
+  // Prepare the classrooms to be imported
+  const classroomsToImport = data.map((row) => {
+    return {
+      id: null,
+      building_id: String(row.building_id || ''),
+      building_number: row.building_number ? Number(row.building_number) : null,
+      building_type: String(row.building_type || ''),
+      capacity: row.capacity ? Number(row.capacity) : null
+    };
+  });
 
-  // Convierte la columna en el index
-  const columnLetterToIndex = (letter: string): number => {
-    letter = letter.toUpperCase();
-    return letter.split('').reduce((acc, char) =>
-      acc * 26 + (char.charCodeAt(0) - 'A'.charCodeAt(0) + 1), 0) - 1;
-  };
-
-  // Crear diccionario del mapeo
-  const columnMap = mappings.reduce((acc, mapping) => {
-    if (mapping.range.column) {
-      acc[mapping.field.key] = {
-        columnIndex: columnLetterToIndex(mapping.range.column),
-        startRow: mapping.range.startRow - 2,
-        endRow: mapping.range.endRow ? mapping.range.endRow - 1 : undefined
-      };
-    }
-    return acc;
-  }, {} as Record<string, { columnIndex: number; startRow: number; endRow?: number }>);
-  console.log("columnMap: ", columnMap);
-
-  // Preparar los grupos que seran importados
-  const classroomToImport = excelData
-    .slice(columnMap.building_id.startRow, columnMap.building_id.endRow || undefined)
-    .map(row => {
-      console.log(String(row['Edificio']));
-      return {
-        id: null,
-        building_id: String(row['Edificio']),
-        building_number: Number(row['Numero de aula']),
-        building_type: columnMap.building_number
-          ? String(row['Tipo'] || '')
-          : null,
-        capacity: columnMap.capacity
-          ? Number(row['Capacidad'] || '')
-          : null
-      };
-    })
-    .filter(classroom => classroom.building_id && classroom.building_number);
-
-  if (classroomToImport.length === 0) {
-    throw new Error('No hay grupos validos en el intento de importar datos');
+  if (classroomsToImport.length === 0) {
+    throw new Error('No hay aulas válidas en el intento de importar datos');
   }
 
   try {
-    await invoke("create_classrooms", { classroom: classroomToImport });
+    await invoke("create_classrooms", { classroom: classroomsToImport });
     await loadClassrooms();
     await emit("classrooms_updated");
   } catch (error) {
