@@ -6,6 +6,7 @@
   } from "$lib/modules/entities/groupsStore";
   import {
     loadSubjectsWithTeachers,
+    subjects,
     subjectsWithTeachers,
     type SubjectItem,
   } from "$lib/modules/entities/subjectsStore";
@@ -13,11 +14,13 @@
   import { onMount } from "svelte";
   import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
 
-  // Variables locales
-  let grade: number;
-  let group: string;
-  let career: string;
-  let students: number;
+  let g: GroupItem = {
+    grade: null,
+    group: "",
+    career: "",
+    students: null,
+    max_modules_per_day: null,
+  };
 
   let selectedSubjects: SubjectItem[] = [];
   let showSubjects: boolean = false;
@@ -25,7 +28,25 @@
   // Para editar se le pasa el item
   export let item: GroupItem | null = null;
 
-  onMount(() => {
+  $: if (item) {
+    initForm(item);
+  }
+
+  function initForm(item: any | null): void {
+    if (item) {
+      g.id = item.id;
+      g.grade = item.grade;
+      g.group = item.group;
+      g.career = item.career;
+      g.students = item.students;
+      g.max_modules_per_day = item.max_modules_per_day;
+      selectedSubjects = item.required_subjects;
+    } else {
+      selectedSubjects = [];
+    }
+  }
+
+  onMount((): void => {
     loadSubjectsWithTeachers();
     listen("subjects_updated", async () => {
       await loadSubjectsWithTeachers();
@@ -34,9 +55,15 @@
 
   const handleSubmit = (): void => {
     if (item) {
-      editGroup(item, selectedSubjects);
+      editGroup(g, selectedSubjects);
     } else {
-      addGroup(grade, group, career, students, selectedSubjects);
+      addGroup(g, selectedSubjects);
+      // Limpiamos los campos
+      // TODO: Limpiar campos solo cuado (addGroup) es satisfactorio
+      g.grade = null;
+      g.group = "";
+      g.career = "";
+      g.students = null;
     }
   };
 
@@ -57,87 +84,49 @@
 
 <section class="form-editor">
   <h1>{item ? "Editar grupo existente" : "Generar nuevo grupo"}</h1>
-  <div class="form-group">  
+  <div class="form-group">
     <div class="form-field">
       <label for="grade">
         <img src="/icons/group.svg" alt="Icon" />
       </label>
-    
-      {#if item}
-        <input
-          type="text"
-          placeholder="* Grado"
-          id="grade"
-          bind:value={item.grade}
-          
-        />
-      {:else}
-        <input
-          type="number"
-          placeholder="* Grado"
-          id="grade"
-          bind:value={grade}
-        />
-        <div class="form-information-icon">
-          <TooltipIcon description="Grado del grupo (ejemplo: 2)"/>
-        </div>
-      {/if}
 
+      <input
+        type="number"
+        placeholder="* Grado"
+        id="grade"
+        bind:value={g.grade}
+      />
+      <div class="form-information-icon">
+        <TooltipIcon description="Grado del grupo (ejemplo: 2)" />
+      </div>
     </div>
-    
+
     <div class="form-field">
       <label for="group"><img src="/icons/group.svg" alt="Icon" /></label>
-      {#if item}
-        <input
-          type="text"
-          placeholder="* Grupo"
-          id="group"
-          bind:value={item.group}
-        />
-      {:else}
-        <input
-          type="text"
-          placeholder="* Grupo"
-          id="group"
-          bind:value={group}
-        />
-      {/if}
+      <input
+        type="text"
+        placeholder="* Grupo"
+        id="group"
+        bind:value={g.group}
+      />
     </div>
     <div class="form-field">
       <label for="career"><img src="/icons/books.svg" alt="Icon" /></label>
-      {#if item}
-        <input
-          type="text"
-          placeholder="Especialidad o carrera"
-          id="career"
-          bind:value={item.career}
-        />
-      {:else}
-        <input
-          type="text"
-          placeholder="Especialidad o carrera"
-          id="career"
-          bind:value={career}
-        />
-      {/if}
+      <input
+        type="text"
+        placeholder="Especialidad o carrera"
+        id="career"
+        bind:value={g.career}
+      />
     </div>
     <div class="form-field">
       <label for="students"><img src="/icons/group.svg" alt="Icon" /></label>
-      {#if item}
-        <input
-          type="number"
-          placeholder="Cantidad de alumnos (opcional)"
-          id="career"
-          bind:value={item.students}
-        />
-      {:else}
-        <input
-          type="number"
-          placeholder="Cantidad de alumnos (opcional)"
-          id="career"
-          bind:value={students}
-        />
-      {/if}
+      <input
+        type="number"
+        placeholder="Cantidad de alumnos (opcional)"
+        id="career"
+        bind:value={g.students}
+      />
     </div>
     <!-- Aqui iran las materias que pre-asignadas a los grupos -->
     <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
@@ -179,6 +168,3 @@
     </button>
   </div>
 </section>
-  
-
-  

@@ -128,79 +128,33 @@ export async function loadTeachers(): Promise<void> {
 
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Array} headerMappings
-  * @param {Array} excelData
+  * @param {Record} headerMappings
+  * @param {Array} data
   */
 export async function importTeachersFromXlsx(
   headerMappings: Record<string, string>,
-  excelData: Array<Record<string, unknown>>
+  data: Array<Record<string, any>>
 ): Promise<void> {
-  console.log("Raw data:", excelData);
-
-  // Checar por campos requeridos no importados
-  const required: string[] = ['name', 'father_lastname'];
-  const missingFields: string[] = required.filter(
-    field => !mappings.some(m => m.field.key === field)
-  );
-  if (missingFields.length > 0) {
-    throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
-  }
-
-  // Convierte la columna en el index
-  const columnLetterToIndex = (letter: string): number => {
-    letter = letter.toUpperCase();
-    return letter.split('').reduce((acc, char) =>
-      acc * 26 + (char.charCodeAt(0) - 'A'.charCodeAt(0) + 1), 0) - 1;
-  };
-
-  // Crear diccionario del mapeo
-  const columnMap = mappings.reduce((acc, mapping) => {
-    if (mapping.range.column) {
-      acc[mapping.field.key] = {
-        columnIndex: columnLetterToIndex(mapping.range.column),
-        startRow: mapping.range.startRow - 2,
-        endRow: mapping.range.endRow ? mapping.range.endRow - 1 : undefined
-      };
-    }
-    return acc;
-  }, {} as Record<string, { columnIndex: number; startRow: number; endRow?: number }>);
-
-  // Preparar los grupos que seran importados
-  const teacherToImport = excelData
-    .slice(columnMap.name.startRow, columnMap.name.endRow || undefined)
-    .map(row => {
-      console.log(row);
-      return {
-        id: null,
-        name: String(row['Nombre']),
-        father_lastname: String(row['Apellido paterno']),
-        mother_lastname: columnMap.mother_lastname
-          ? String(row['Apellido materno'] || '')
-          : null,
-        email: columnMap.email
-          ? String(row['correo'] || '')
-          : null,
-        phone: columnMap.phone
-          ? String(row['Telefono'] || '')
-          : null,
-        degree: columnMap.degree
-          ? String(row['Titulo'] || '')
-          : null,
-        comissioned_hours: columnMap.comissioned_hours
-          ? Number(row['Horas (comision)'] || '')
-          : null,
-        active_hours: columnMap.active_hours
-          ? Number(row['Horas (activas)'] || '')
-          : null,
-        performance: columnMap.performance
-          ? Number(row['Rendimiento'] || '')
-          : null
-      };
-    })
-    .filter(teacher => teacher.name && teacher.father_lastname);
+  // Prepare the subjects to be imported
+  const teacherToImport = data.map((row) => {
+    return {
+      id: null,
+      name: String(row.name || ''),
+      father_lastname: String(row.father_lastname || ''),
+      mother_lastname: String(row.mother_lastname || ''),
+      email: String(row.email || ''),
+      phone: String(row.phone || ''),
+      degree: String(row.degree || ''),
+      commissioned_hours: Number(row.commissioned_hours || 0),
+      active_hours: Number(row.active_hours || 0),
+      performance: Number(row.performance || 0),
+      preferred_days: row.preferred_days ? JSON.parse(row.preferred_days) : [],
+      preferred_modules: row.preferred_modules ? JSON.parse(row.preferred_modules) : []
+    };
+  });
 
   if (teacherToImport.length === 0) {
-    throw new Error('No hay profesores validos en el intento de importar datos');
+    throw new Error('No hay grupos validos en el intento de importar datos');
   }
 
   try {
@@ -208,7 +162,7 @@ export async function importTeachersFromXlsx(
     await loadTeachers();
     await emit("teachers_updated");
   } catch (error) {
-    console.error('Hubo un error importando profesores:', error);
+    console.error('Hubo un error importando las materias:', error);
     throw error;
   }
 }

@@ -7,7 +7,7 @@
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
-  import ImportExcel from "$lib/components/utils/ImportExcel.svelte";
+  import ImportExcel from "$lib/components/utils/excel/ImportExcel.svelte";
   import { ClassType } from "$lib/utilities/helpers";
 
   import NewClassroom from "./NewClassroom.svelte";
