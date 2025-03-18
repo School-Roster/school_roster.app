@@ -44,7 +44,7 @@
           { name: "Group", key: "group", required: true },
           { name: "Carrera", key: "career" },
           { name: "Cantidad de estudiantes", key: "students" },
-          { name: "Materias pre-asignadas", key: "preAssignedSubjects" },
+          { name: "Maximo de horas por dia", key: "max_modules_per_day" },
         ];
         break;
       case ClassType.Teachers:
@@ -56,9 +56,10 @@
           { name: "Correo", key: "email" },
           { name: "Teléfono", key: "phone" },
           { name: "Titulo", key: "degree" },
-          { name: "Horas (comosion)", key: "comissioned_hours" },
-          { name: "Horas (activas)", key: "active_hours", type: "number" },
+          { name: "Horas en comosion", key: "comissioned_hours", type: "number" },
           { name: "Rendimiento", key: "performance" },
+          { name: "Dias preferidos", key: "preferred_days" },
+          { name: "Modulos preferidos", key: "preferred_modules" },
         ];
         break;
       case ClassType.Subjects:

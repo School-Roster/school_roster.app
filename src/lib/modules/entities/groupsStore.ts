@@ -98,45 +98,28 @@ export async function editGroup(item: GroupItem, subjects: SubjectItem[]): Promi
 /**
   * Funcion para importar varios grupos, se utiliza en ImportExcel
   * @param {Record<string, string>} headerMappings
-  * @param {Array<Record<string, unknown>>} excelData
+  * @param {Array<Record<string, any>>} data
   */
 export async function importGroupsFromXlsx(
   headerMappings: Record<string, string>,
-  excelData: Array<Record<string, unknown>>
+  data: Array<Record<string, any>>
 ): Promise<void> {
-  // Checar por campos requeridos no importados
-  const required: string[] = ['grade', 'group'];
-  const missingFields: string[] = required.filter(
-    field => !headerMappings[field]
-  );
-  if (missingFields.length > 0) {
-    throw new Error(`Faltan campos necesarios: ${missingFields.join(',')}`);
-  }
+  console.log("Raw data for groups:", data);
 
-  console.log(headerMappings);
-  console.log(excelData);
-
-  // Preparar los grupos que seran importados
-  const groupsToImport = excelData
-    .map(row => {
-      return {
-        id: null,
-        grade: Number(row[headerMappings.grade]),
-        group: String(row[headerMappings.group]),
-        career: headerMappings.career
-          ? String(row[headerMappings.career] || '')
-          : null,
-        students: headerMappings.students
-          ? Number(row[headerMappings.students] || '')
-          : null
-      };
-    })
-    .filter(group => group.grade && group.group);
-
-  console.log("Grupos: ", groupsToImport);
+  // Prepare the groups to be imported
+  const groupsToImport = data.map((row) => {
+    return {
+      id: null,
+      grade: row.grade ? Number(row.grade) : null,
+      group: String(row.group || ''),
+      career: String(row.career || ''),
+      students: row.students ? Number(row.students) : null,
+      max_modules_per_day: row.max_modules_per_day ? Number(row.max_modules_per_day) : null,
+    };
+  });
 
   if (groupsToImport.length === 0) {
-    throw new Error('No hay grupos validos en el intento de importar datos');
+    throw new Error('No hay grupos válidos en el intento de importar datos');
   }
 
   try {
