@@ -200,7 +200,10 @@ pub async fn get_groups(
 /// * `pool` - Conexion a la base de datos
 /// * `group` - Clase del grupo
 /// Retorna un vector de materias
-pub async fn get_group_subjects(group: Group) -> Vec<SubjectWithTeacher> {
+pub async fn get_group_subjects(
+    pool: tauri::State<'_, AppState>,
+    group: Group,
+) -> Vec<SubjectWithTeacher> {
     let subjects_id = sqlx::query("SELECT subject_id FROM groups_subjects WHERE group_id = ?1")
         .bind(group.id)
         .fetch(&pool.db)
@@ -211,7 +214,7 @@ pub async fn get_group_subjects(group: Group) -> Vec<SubjectWithTeacher> {
 
     let mut required_subjects: Vec<SubjectWithTeacher> = Vec::new();
 
-    for subject_id in subject_id {
+    for subject_id in subjects_id {
         let subject_with_teacher: Option<SubjectWithTeacher> =
             sqlx::query_as::<_, SubjectWithTeacher>(
                 r#"
