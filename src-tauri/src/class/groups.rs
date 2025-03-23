@@ -195,6 +195,69 @@ pub async fn get_groups(
     Ok(groups_with_subjects)
 }
 
+/// Funcion para conseguir las materias de un grupo
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `group` - Clase del grupo
+/// Retorna un vector de materias
+pub async fn get_group_subjects(group: Group) -> Vec<SubjectWithTeacher> {
+    let subjects_id = sqlx::query("SELECT subject_id FROM groups_subjects WHERE group_id = ?1")
+        .bind(group.id)
+        .fetch(&pool.db)
+        .map_ok(|row| row.get::<i16, _>(0))
+        .try_collect()
+        .await
+        .map_err(|e| format!("Failed to get subject IDs: {}", e))?;
+
+    let mut required_subjects: Vec<SubjectWithTeacher> = Vec::new();
+
+    for subject_id in subject_id {
+        let subject_with_teacher: Option<SubjectWithTeacher> =
+            sqlx::query_as::<_, SubjectWithTeacher>(
+                r#"
+                SELECT
+                    s.id,
+                    s.name,
+                    s.shorten,
+                    s.color,
+                    s.spec,
+                    s.required_modules,
+                    s.priority,
+                    t.id as teacher_id,
+                    t.name as teacher_name,
+                    t.father_lastname as teacher_father_lastname
+                FROM subjects s
+                LEFT JOIN teacher_subjects ts ON s.id = ts.subject_id
+                LEFT JOIN teachers t ON ts.teacher_id = t.id
+                WHERE s.id = ?1
+                "#,
+            )
+            .bind(subject_id)
+            .fetch_optional(&pool.db)
+            .await
+            .map_err(|e| format!("Failed to fetch subject with teacher: {}", e))?;
+
+        if let Some(subject) = subject_with_teacher {
+            required_subjects.push(subject);
+        }
+    }
+
+    required_subjects
+}
+
+pub async fn get_group_by_id(
+    pool: tauri::State<'_, AppState>,
+    group_id: i16,
+) -> Result<Group, String> {
+    let group: Group = sqlx::query_as::<_, Group>("SELECT * FROM groups WHERE id=?1")
+        .bind(group_id)
+        .fetch(&pool.db)
+        .await
+        .map_err(|e| format!("Failed to get group by id: {}", e))?;
+
+    Ok(group)
+}
+
 /// Funcion para eliminar un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
