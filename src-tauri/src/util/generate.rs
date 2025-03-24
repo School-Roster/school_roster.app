@@ -1,10 +1,12 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::error::Error;
 
 use crate::{
     class::{
-        classrooms::get_classrooms,
-        groups::{get_group_subjects, Group},
-        subjects::{get_subjects_with_teachers, Subject},
+        classrooms::{get_classrooms, Classroom},
+        groups::{get_group_by_id, get_group_subjects, get_groups, Group},
+        subjects::{get_subject_by_id, get_subjects_with_teachers, SubjectWithTeacher},
         teachers::Teacher,
     },
     db::AppState,
@@ -12,32 +14,49 @@ use crate::{
 
 use super::{assignments::Assignment, constraints::constraints_satisfied};
 
+// TODO: Cambiar a modulos registrados
+const MAX_MODULES: u8 = 9;
+// TODO: Remover esta funcion cuando tengamos dias en configuracion
+fn get_sorted_days() -> Vec<String> {
+    vec![
+        "Monday".to_string(),
+        "Tuesday".to_string(),
+        "Wednesday".to_string(),
+        "Thursday".to_string(),
+        "Friday".to_string(),
+    ]
+}
+
 #[tauri::command]
-pub fn generate_schedule(pool: tauri::State<'_, AppState>) -> Result<Vec<Assignment>, Error> {
+pub async fn generate_schedule(
+    pool: tauri::State<'_, AppState>,
+) -> Result<Vec<Assignment>, String> {
     // Inicializar un horario vacio
     let mut schedule = Vec::new();
 
     // Ordena materias por prioridad y modulos requiridos
-    let sorted_subjects = sort_subjects_by_priority(pool);
+    let sorted_subjects = sort_subjects_by_priority(&pool).await?;
 
     // Ordena grupos por grado y complejidad
-    let sorted_groups = sort_groups_by_priority(pool);
+    let sorted_groups = sort_groups_by_priority(&pool).await?;
 
     // Por cada grupo asignamos materias (backtracking)
     for group in sorted_groups {
-        if !assign_group_schedule(&mut schedule, &group, &sorted_subjects) {
-            return Err(Error::NoValidScheduleFound);
+        if !assign_group_schedule(&pool, &mut schedule, &group, &sorted_subjects).await? {
+            return Err(format!("No se encontro un horario valido"));
         }
     }
 
     // Optimizar asignacion de aulas
-    assign_classrooms(&mut schedule);
+    assign_classrooms(pool, &mut schedule);
 
     Ok(schedule)
 }
 
-fn sort_subjects_by_priority(pool: tauri::State<'_, AppState>) -> Vec<Subject> {
-    let mut subjects = get_subjects_with_teachers(pool);
+async fn sort_subjects_by_priority(
+    pool: &tauri::State<'_, AppState>,
+) -> Result<Vec<SubjectWithTeacher>, String> {
+    let mut subjects = get_subjects_with_teachers(pool.clone()).await?;
     subjects.sort_by(|a, b| {
         let priority_cmp = b.priority.cmp(&a.priority);
         if priority_cmp == Ordering::Equal {
@@ -46,29 +65,30 @@ fn sort_subjects_by_priority(pool: tauri::State<'_, AppState>) -> Vec<Subject> {
             priority_cmp
         }
     });
-    subjects
+    Ok(subjects)
 }
 
-fn sort_groups_by_priority(pool: tauri::State<'_, AppState>) -> Vec<Group> {
-    let mut groups = get_groups();
+async fn sort_groups_by_priority(pool: &tauri::State<'_, AppState>) -> Result<Vec<Group>, String> {
+    let mut groups = get_groups(pool.clone()).await?;
     groups.sort_by(|a, b| {
-        let grade_cmp = a.grade.cmp(&b.grade);
+        let grade_cmp = a.0.grade.cmp(&b.0.grade);
         if grade_cmp == Ordering::Equal {
-            a.complexity.cmp(&b.complexity)
+            a.0.group.cmp(&b.0.group)
         } else {
             grade_cmp
         }
     });
-    groups
+    Ok(groups.into_iter().map(|(group, _)| group).collect())
 }
 
-fn assign_group_schedule(
+async fn assign_group_schedule(
+    pool: &tauri::State<'_, AppState>,
     schedule: &mut Vec<Assignment>,
     group: &Group,
-    subjects: &[Subject],
-) -> bool {
+    subjects: &[SubjectWithTeacher],
+) -> Result<bool, String> {
     // Prueba todas las materias para este grupo
-    for subject in get_group_subjects(group) {
+    for subject in get_group_subjects(pool, group.clone()).await? {
         let required_modules = subject.required_modules.unwrap_or(2);
 
         // Intentar modulos de 2 horas
@@ -105,9 +125,9 @@ fn assign_group_schedule(
                         schedule,
                         group,
                         subject,
-                        day,
-                        starting_module,
-                        block_size,
+                        &day,
+                        starting_module.into(),
+                        block_size.into(),
                     );
 
                     if let Some(teacher) = teacher {
@@ -120,9 +140,9 @@ fn assign_group_schedule(
                                 id: None, // Se asigna por defecto
                                 group_id: group.id.unwrap(),
                                 day: day.to_string(),
-                                module_index: starting_module + offset,
-                                subject_id: subject.id.unwrap(),
-                                teacher_id: teacher.id.unwrap(),
+                                module_index: (starting_module + offset).into(),
+                                subject_id: subject.id,
+                                teacher_id: teacher.id.expect("1"),
                                 classroom_id: 0, // Lo asignamos despues
                                 subject_shorten: subject.shorten.clone(),
                                 subject_color: subject.color.clone(),
@@ -136,12 +156,12 @@ fn assign_group_schedule(
                             let remaining_blocks = module_blocks[1..].to_vec();
                             if assign_remaining_blocks(schedule, group, subject, &remaining_blocks)
                             {
-                                return true;
+                                return Ok(true);
                             }
                         } else {
                             // Mover a la siguiente materia
                             if assign_next_subject(schedule, group, subjects, subject) {
-                                return true;
+                                return Ok(true);
                             }
                         }
 
@@ -157,18 +177,18 @@ fn assign_group_schedule(
     }
 
     // Ninguna combinacion funciono
-    false
+    Ok(false)
 }
 
 fn find_best_teacher(
     schedule: &Vec<Assignment>,
     group: &Group,
-    subject: &Subject,
+    subject: SubjectWithTeacher,
     day: &str,
     starting_module: i16,
     block_size: i16,
 ) -> Option<Teacher> {
-    let qualified_teachers = get_teachers_for_subject(subject.id.unwrap());
+    let qualified_teachers = get_teachers_for_subject(subject.id);
 
     // Calcula el puntaje de cada profesor
     let mut teacher_scores: Vec<(Teacher, i32)> = Vec::new();
@@ -253,10 +273,10 @@ fn find_best_teacher(
     }
 }
 
-fn assign_classroom(
+async fn assign_classrooms(
     pool: tauri::State<'_, AppState>,
     schedule: &mut Vec<Assignment>,
-) -> Result<(), Error> {
+) -> Result<(), String> {
     // Agrupa las asignaciones grupales por día y módulo para procesar cada hora junta
     let mut assignments_by_time: HashMap<(String, i16), Vec<usize>> = HashMap::new();
 
@@ -269,7 +289,7 @@ fn assign_classroom(
     }
 
     // Get all available classrooms
-    let all_classrooms = get_classrooms(pool)?;
+    let all_classrooms = get_classrooms(pool.clone()).await?;
 
     // Procesa cada carga horaria
     for ((day, module), assignment_indices) in assignments_by_time {
@@ -278,8 +298,8 @@ fn assign_classroom(
             let assignment = &schedule[idx];
 
             // Obtener el grupo y materia de la asignacion
-            let group = get_group_by_id(pool, assignment.group_id)?;
-            let subject = get_subject_by_id(pool, assignment.subject_id)?;
+            let group = get_group_by_id(&pool, assignment.group_id).await?;
+            let subject = get_subject_by_id(&pool, assignment.subject_id).await?;
 
             // Filtra las aulas adecuadas
             let suitable_classrooms: Vec<&Classroom> = all_classrooms
@@ -332,12 +352,14 @@ fn assign_classroom(
 
             if suitable_classrooms.is_empty() {
                 // No se encontro un aula adecuada
-                return Err(Error::NoSuitableClassroom {
-                    group: group.grade.to_string() + &group.group,
-                    day: day.clone(),
-                    module,
-                    subject: subject.name.clone(),
-                });
+                return Err(format!("No se encontro un aula adecuada"));
+                // TODO: Implementar mejor error handling
+                // return Err(Error::NoSuitableClassroom {
+                //     group: group.grade.to_string() + &group.group,
+                //     day: day.clone(),
+                //     module,
+                //     subject: subject.name.clone(),
+                // });
             }
 
             // Sistema de puntaje para encontrar la mejor solucion

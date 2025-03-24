@@ -138,6 +138,19 @@ pub async fn get_subjects(pool: tauri::State<'_, AppState>) -> Result<Vec<Subjec
     Ok(subjects)
 }
 
+pub async fn get_subject_by_id(
+    pool: &tauri::State<'_, AppState>,
+    subject_id: i16,
+) -> Result<Subject, String> {
+    let subject: Subject = sqlx::query_as::<_, Subject>("SELECT * FROM subjects WHERE id=?1")
+        .bind(subject_id)
+        .fetch_one(&pool.db)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(subject)
+}
+
 /// Funcion para eliminar una materia
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
