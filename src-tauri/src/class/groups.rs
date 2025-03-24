@@ -8,7 +8,7 @@ use crate::class::subjects::SubjectWithTeacher;
 
 /// Estructura de un grupo
 /// Se utiliza para mapear los datos del grupo de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Group {
     pub id: Option<i16>,
     pub grade: i16,
@@ -201,16 +201,17 @@ pub async fn get_groups(
 /// * `group` - Clase del grupo
 /// Retorna un vector de materias
 pub async fn get_group_subjects(
-    pool: tauri::State<'_, AppState>,
+    pool: &tauri::State<'_, AppState>,
     group: Group,
-) -> Vec<SubjectWithTeacher> {
-    let subjects_id = sqlx::query("SELECT subject_id FROM groups_subjects WHERE group_id = ?1")
-        .bind(group.id)
-        .fetch(&pool.db)
-        .map_ok(|row| row.get::<i16, _>(0))
-        .try_collect()
-        .await
-        .map_err(|e| format!("Failed to get subject IDs: {}", e))?;
+) -> Result<Vec<SubjectWithTeacher>, String> {
+    let subjects_id: Vec<i16> =
+        sqlx::query("SELECT subject_id FROM groups_subjects WHERE group_id = ?1")
+            .bind(group.id)
+            .fetch(&pool.db)
+            .map_ok(|row| row.get::<i16, _>(0))
+            .try_collect()
+            .await
+            .map_err(|e| format!("Failed to get subject IDs: {}", e))?;
 
     let mut required_subjects: Vec<SubjectWithTeacher> = Vec::new();
 
@@ -245,16 +246,16 @@ pub async fn get_group_subjects(
         }
     }
 
-    required_subjects
+    Ok(required_subjects)
 }
 
 pub async fn get_group_by_id(
-    pool: tauri::State<'_, AppState>,
+    pool: &tauri::State<'_, AppState>,
     group_id: i16,
 ) -> Result<Group, String> {
     let group: Group = sqlx::query_as::<_, Group>("SELECT * FROM groups WHERE id=?1")
         .bind(group_id)
-        .fetch(&pool.db)
+        .fetch_one(&pool.db)
         .await
         .map_err(|e| format!("Failed to get group by id: {}", e))?;
 

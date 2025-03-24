@@ -5,7 +5,7 @@ use sqlx::error::Error as SqlxError;
 use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 /// Estructura simple de un profesor, solo contiene el ID, el nombre y el primer apellido
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SimpleTeacher {
     pub id: Option<i16>,
     pub name: String,
@@ -14,7 +14,7 @@ pub struct SimpleTeacher {
 
 /// Estructura de un profesor
 /// Se utiliza para mapear los datos de un profesor de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Teacher {
     pub id: Option<i16>,
     pub name: String,
