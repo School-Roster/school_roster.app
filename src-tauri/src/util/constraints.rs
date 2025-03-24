@@ -1,10 +1,13 @@
+use crate::class::{groups::Group, subjects::SubjectWithTeacher, teachers::Teacher};
+use crate::util::assignments::Assignment;
+
 /// Funcion que maneja las restricciones del algoritmo
 pub fn constraints_satisfied(
     schedule: &Vec<Assignment>,
     group: &Group,
     day: &str,
     module_index: i16,
-    subject: &Subject,
+    subject: SubjectWithTeacher,
     teacher: &Teacher,
     proposed_modules_count: i16, // How many consecutive modules we're trying to assign
 ) -> bool {
@@ -20,9 +23,9 @@ pub fn constraints_satisfied(
     }
 
     // Checa si la materia esta asignada al dia en este grupo
-    let subject_already_on_day = schedule.iter().any(|a| {
-        a.group_id == group.id.unwrap() && a.day == day && a.subject_id == subject.id.unwrap()
-    });
+    let subject_already_on_day = schedule
+        .iter()
+        .any(|a| a.group_id == group.id.unwrap() && a.day == day && a.subject_id == subject.id);
 
     if subject_already_on_day {
         return false; // La materia ya esta asignada al dia
