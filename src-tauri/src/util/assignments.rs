@@ -91,7 +91,7 @@ pub async fn get_all_assignments(
 ) -> Result<Vec<Assignment>, String> {
     let result: Vec<Assignment> = sqlx::query_as::<_, Assignment>(
         r#"
-        SELECT a.id, a.group_id, a.day, a.module_index, a.teacher_id, 
+        SELECT a.id, a.group_id, a.day, a.module_index, a.teacher_id, a.classroom_id,
                s.id as subject_id, s.name as subject_name, s.color as subject_color, s.shorten as subject_shorten
         FROM assignments a
         JOIN subjects s ON a.subject_id = s.id
