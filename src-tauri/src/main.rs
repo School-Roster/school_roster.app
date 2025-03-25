@@ -48,6 +48,7 @@ async fn main() {
             crate::util::assignments::get_assignment,
             crate::util::assignments::save_assignment,
             crate::util::assignments::delete_assignment,
+            crate::util::generate::generate_schedule
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())

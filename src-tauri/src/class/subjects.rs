@@ -33,7 +33,7 @@ impl<'r> FromRow<'r, SqliteRow> for Subject {
 
 /// Estructura de una materia con profesor asignado
 /// Se utiliza para mapear los datos de una materia de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SubjectWithTeacher {
     pub id: i16,
     pub name: String,
