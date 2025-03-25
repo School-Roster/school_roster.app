@@ -15,6 +15,7 @@ export interface AssignmentItem {
   module_index: number,
   subject_id: number,
   teacher_id: number,
+  classroom_id: number,
   subject_shorten: string,
   subject_color: string
 }
@@ -35,6 +36,7 @@ export async function loadAssignments(): Promise<void> {
       color: assignment.subject_color,
       teacherId: assignment.teacher_id,
       subjectId: assignment.subject_id,
+      classroomId: assignment.classroom_id,
     });
   });
 
@@ -78,6 +80,7 @@ export async function handleAssignDrop(
       module_index: moduleIndex,
       subject_id: subject.id,
       teacher_id: subject.teacherId,
+      classroom_id: null // TODO
     });
     assignmentsStore.update((currentMap) => {
       const newMap = new Map(currentMap);
