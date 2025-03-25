@@ -30,24 +30,44 @@ fn get_sorted_days() -> Vec<String> {
 pub async fn generate_schedule(
     pool: tauri::State<'_, AppState>,
 ) -> Result<Vec<Assignment>, String> {
+    println!("Starting schedule generation...");
+    
     // Inicializar un horario vacio
     let mut schedule = Vec::new();
 
     // Ordena materias por prioridad y modulos requiridos
+    println!("Sorting subjects by priority...");
     let sorted_subjects = sort_subjects_by_priority(&pool).await?;
+    println!("Found {} subjects", sorted_subjects.len());
 
     // Ordena grupos por grado y complejidad
+    println!("Sorting groups by priority...");
     let sorted_groups = sort_groups_by_priority(&pool).await?;
+    println!("Found {} groups", sorted_groups.len());
 
     // Por cada grupo asignamos materias (backtracking)
-    for group in sorted_groups {
+    for (i, group) in sorted_groups.iter().enumerate() {
+        println!("Processing group {}/{}: {} {}", i+1, sorted_groups.len(), group.grade, group.group);
+        
         if !assign_group_schedule(&pool, &mut schedule, &group, &sorted_subjects).await? {
-            return Err(format!("No se encontro un horario valido"));
+            println!("Failed to find valid schedule for group {} {}", group.grade, group.group);
+            return Err(format!("No se encontro un horario valido para el grupo {} {}", group.grade, group.group));
         }
+        
+        println!("Successfully assigned schedule for group {} {}", group.grade, group.group);
+        println!("Current schedule size: {} assignments", schedule.len());
     }
 
-    // Optimizar asignacion de aulas
-    assign_classrooms(pool, &mut schedule);
+    // Temporalmente omitimos la asignación de aulas
+    println!("Skipping classroom assignment for now...");
+    // assign_classrooms(pool, &mut schedule).await?;
+    
+    println!("Schedule generation completed successfully with {} assignments", schedule.len());
+
+    // Guardar el horario en la base de datos
+    println!("Saving schedule to database...");
+    save_schedule_to_database(&pool, &schedule).await?;
+    println!("Schedule saved successfully!");
 
     Ok(schedule)
 }
@@ -86,19 +106,26 @@ async fn assign_group_schedule(
     group: &Group,
     subjects: &[SubjectWithTeacher],
 ) -> Result<bool, String> {
+    println!("  Getting subjects for group {} {}", group.grade, group.group);
+    
     // Obtiene las materias para este grupo
     let group_subjects = get_group_subjects(pool, group.clone()).await?;
+    println!("  Group has {} subjects", group_subjects.len());
     
     // Crea un mapa de profesores por materia para evitar múltiples consultas
     let mut teachers_by_subject: HashMap<i16, Vec<Teacher>> = HashMap::new();
     for subject in &group_subjects {
+        println!("  Getting teachers for subject: {}", subject.name);
         let teachers = get_teachers_for_subject(pool, subject.id).await?;
+        println!("    Found {} qualified teachers", teachers.len());
         teachers_by_subject.insert(subject.id, teachers);
     }
     
     // Prueba todas las materias para este grupo
     for subject in group_subjects {
+        println!("  Trying to assign subject: {}", subject.name);
         let required_modules = subject.required_modules.unwrap_or(2);
+        println!("    Required modules: {}", required_modules);
 
         // Determina cómo dividir los módulos
         let module_blocks = if required_modules <= 2 {
@@ -122,9 +149,12 @@ async fn assign_group_schedule(
             }
             blocks
         };
+        println!("    Module blocks: {:?}", module_blocks);
 
         // Pruebe cada tamaño de bloque
         for &block_size in &module_blocks {
+            println!("    Trying block size: {}", block_size);
+            
             // Prueba cada combinacion de dia/modulo
             for day in get_sorted_days() {
                 // Ubica los dias para preferir el inicio de semana
@@ -133,6 +163,11 @@ async fn assign_group_schedule(
                     // Obtiene los profesores para esta materia
                     let empty_teachers = Vec::new();
                     let qualified_teachers = teachers_by_subject.get(&subject.id).unwrap_or(&empty_teachers);
+                    
+                    if qualified_teachers.is_empty() {
+                        println!("    No qualified teachers for subject {}", subject.name);
+                        continue;
+                    }
                     
                     // Encuentra el mejor profesor
                     let teacher = find_best_teacher_from_list(
@@ -146,6 +181,9 @@ async fn assign_group_schedule(
                     );
 
                     if let Some(teacher) = teacher {
+                        println!("    Found teacher {} for day {} module {}", 
+                                teacher.name, day, starting_module);
+                        
                         // Crea la asignacion para el bloque
                         let original_schedule_size = schedule.len();
 
@@ -169,6 +207,7 @@ async fn assign_group_schedule(
                         if module_blocks.len() > 1 {
                             // let remaining_blocks = module_blocks[1..].to_vec();
                             let remaining_blocks: Vec<i16> = module_blocks[1..].iter().map(|&x| x as i16).collect();
+                            println!("    Trying to assign remaining blocks: {:?}", remaining_blocks);
                             if assign_remaining_blocks(
                                 pool, 
                                 schedule, 
@@ -177,10 +216,12 @@ async fn assign_group_schedule(
                                 &remaining_blocks, 
                                 &teachers_by_subject
                             ).await? {
+                                println!("    Successfully assigned all blocks for subject {}", subject.name);
                                 return Ok(true);
                             }
                         } else {
                             // Mover a la siguiente materia
+                            println!("    Moving to next subject after {}", subject.name);
                             if assign_next_subject(
                                 pool, 
                                 schedule, 
@@ -189,12 +230,14 @@ async fn assign_group_schedule(
                                 &subject, 
                                 &teachers_by_subject
                             ).await? {
+                                println!("    Successfully assigned all subjects for group");
                                 return Ok(true);
                             }
                         }
 
                         // Si el programa llega a este punto, la asignacion no se realizo
                         // Elimina posibles errores
+                        println!("    Assignment failed, backtracking...");
                         while schedule.len() > original_schedule_size {
                             schedule.pop();
                         }
@@ -205,6 +248,7 @@ async fn assign_group_schedule(
     }
 
     // Ninguna combinacion funciono
+    println!("  Could not find valid schedule for group {} {}", group.grade, group.group);
     Ok(false)
 }
 
@@ -330,10 +374,12 @@ async fn assign_remaining_blocks(
     teachers_by_subject: &HashMap<i16, Vec<Teacher>>,
 ) -> Result<bool, String> {
     if remaining_blocks.is_empty() {
+        println!("      No more remaining blocks to assign");
         return Ok(true); // No hay más bloques que asignar
     }
 
     let block_size = remaining_blocks[0];
+    println!("      Assigning remaining block of size {}", block_size);
     let next_blocks = if remaining_blocks.len() > 1 {
         &remaining_blocks[1..]
     } else {
@@ -343,6 +389,11 @@ async fn assign_remaining_blocks(
     // Obtiene los profesores para esta materia
     let empty_teachers = Vec::new();
     let qualified_teachers = teachers_by_subject.get(&subject.id).unwrap_or(&empty_teachers);
+
+    if qualified_teachers.is_empty() {
+        println!("      No qualified teachers for remaining block");
+        return Ok(false);
+    }
 
     // Prueba cada combinación de día/módulo para el bloque actual
     for day in get_sorted_days() {
@@ -358,6 +409,9 @@ async fn assign_remaining_blocks(
             );
 
             if let Some(teacher) = teacher {
+                println!("      Found teacher {} for remaining block on day {} module {}", 
+                        teacher.name, day, starting_module);
+                
                 // Crea la asignación para el bloque
                 let original_schedule_size = schedule.len();
 
@@ -378,17 +432,8 @@ async fn assign_remaining_blocks(
                 }
 
                 // Intenta asignar el resto de bloques
-                /*
-                if !next_blocks.is_empty() {
-                    if assign_remaining_blocks(pool, schedule, group, subject, next_blocks, teachers_by_subject).await? {
-                        return Ok(true);
-                    }
-                } else {
-                    // No hay más bloques, pasamos a la siguiente materia
-                    return Ok(true);
-                }
-                */
                 let recursive_result = if !next_blocks.is_empty() {
+                    println!("      Recursively assigning next blocks: {:?}", next_blocks);
                     Box::pin(assign_remaining_blocks(
                         pool, 
                         schedule, 
@@ -398,6 +443,7 @@ async fn assign_remaining_blocks(
                         teachers_by_subject
                     )).await?
                 } else {
+                    println!("      All blocks assigned successfully");
                     true
                 };
 
@@ -405,8 +451,8 @@ async fn assign_remaining_blocks(
                     return Ok(true);
                 }
 
-
                 // Si llegamos aquí, la asignación no funcionó
+                println!("      Failed to assign remaining blocks, backtracking...");
                 // Elimina las asignaciones que hicimos
                 while schedule.len() > original_schedule_size {
                     schedule.pop();
@@ -416,6 +462,7 @@ async fn assign_remaining_blocks(
     }
 
     // No se pudo asignar este bloque
+    println!("      Could not assign remaining block of size {}", block_size);
     Ok(false)
 }
 
@@ -428,6 +475,8 @@ async fn assign_next_subject(
     current_subject: &SubjectWithTeacher,
     teachers_by_subject: &HashMap<i16, Vec<Teacher>>,
 ) -> Result<bool, String> {
+    println!("      Finding next subject after {}", current_subject.name);
+    
     // Obtiene las materias del grupo que aún no se han asignado
     let group_subjects = get_group_subjects(pool, group.clone()).await?;
     
@@ -455,13 +504,12 @@ async fn assign_next_subject(
         let required_modules = subject.required_modules.unwrap_or(2);
         let assigned_modules = *assigned_modules_count.get(&subject.id).unwrap_or(&0);
         
+        println!("      Subject {} has {}/{} modules assigned", 
+                subject.name, assigned_modules, required_modules);
+        
         if assigned_modules < required_modules {
             // Esta materia necesita más módulos
-            /*
-            if assign_group_subject(pool, schedule, group, &subject, all_subjects, teachers_by_subject).await? {
-                return Ok(true);
-            }
-            */
+            println!("      Trying to assign subject: {}", subject.name);
             let assignment_result = Box::pin(assign_group_subject(
                 pool, 
                 schedule, 
@@ -472,6 +520,7 @@ async fn assign_next_subject(
             )).await?;
 
             if assignment_result {
+                println!("      Successfully assigned subject {}", subject.name);
                 return Ok(true);
             }
         }
@@ -483,6 +532,12 @@ async fn assign_next_subject(
         let assigned_modules = *assigned_modules_count.get(&subject.id).unwrap_or(&0);
         assigned_modules >= required_modules
     });
+    
+    if all_subjects_assigned {
+        println!("      All subjects assigned for group {} {}", group.grade, group.group);
+    } else {
+        println!("      Failed to assign all subjects for group {} {}", group.grade, group.group);
+    }
     
     Ok(all_subjects_assigned)
 }
@@ -496,7 +551,11 @@ async fn assign_group_subject(
     all_subjects: &[SubjectWithTeacher],
     teachers_by_subject: &HashMap<i16, Vec<Teacher>>,
 ) -> Result<bool, String> {
+    println!("        Assigning subject {} to group {} {}", 
+            subject.name, group.grade, group.group);
+    
     let required_modules = subject.required_modules.unwrap_or(2);
+    println!("        Required modules: {}", required_modules);
     
     // Determina cómo dividir los módulos
     let module_blocks = if required_modules <= 2 {
@@ -519,13 +578,21 @@ async fn assign_group_subject(
         }
         blocks
     };
+    println!("        Module blocks: {:?}", module_blocks);
     
     // Obtiene los profesores para esta materia
     let empty_teachers = Vec::new();
     let qualified_teachers = teachers_by_subject.get(&subject.id).unwrap_or(&empty_teachers);
     
+    if qualified_teachers.is_empty() {
+        println!("        No qualified teachers for subject {}", subject.name);
+        return Ok(false);
+    }
+    
     // Intenta asignar el primer bloque
     for &block_size in &module_blocks {
+        println!("        Trying block size: {}", block_size);
+        
         for day in get_sorted_days() {
             for starting_module in 1..=(MAX_MODULES - block_size + 1) {
                 let teacher = find_best_teacher_from_list(
@@ -539,6 +606,9 @@ async fn assign_group_subject(
                 );
                 
                 if let Some(teacher) = teacher {
+                    println!("        Found teacher {} for day {} module {}", 
+                            teacher.name, day, starting_module);
+                    
                     // Crea la asignación para el bloque
                     let original_schedule_size = schedule.len();
                     
@@ -562,17 +632,22 @@ async fn assign_group_subject(
                     if module_blocks.len() > 1 {
                         // let remaining_blocks = module_blocks[1..].to_vec();
                         let remaining_blocks: Vec<i16> = module_blocks[1..].iter().map(|&x| x as i16).collect();
+                        println!("        Trying to assign remaining blocks: {:?}", remaining_blocks);
                         if assign_remaining_blocks(pool, schedule, group, subject, &remaining_blocks, teachers_by_subject).await? {
+                            println!("        Successfully assigned all blocks for subject {}", subject.name);
                             return Ok(true);
                         }
                     } else {
                         // No hay más bloques, pasamos a la siguiente materia
+                        println!("        Moving to next subject after {}", subject.name);
                         if assign_next_subject(pool, schedule, group, all_subjects, subject, teachers_by_subject).await? {
+                            println!("        Successfully assigned all subjects for group");
                             return Ok(true);
                         }
                     }
                     
                     // Si llegamos aquí, la asignación no funcionó
+                    println!("        Assignment failed, backtracking...");
                     // Elimina las asignaciones que hicimos
                     while schedule.len() > original_schedule_size {
                         schedule.pop();
@@ -583,6 +658,7 @@ async fn assign_group_subject(
     }
     
     // No se pudo asignar esta materia
+    println!("        Could not assign subject {}", subject.name);
     Ok(false)
 }
 
@@ -748,6 +824,41 @@ async fn assign_classrooms(
         }
     }
 
+    Ok(())
+}
+
+// Función para guardar el horario en la base de datos
+async fn save_schedule_to_database(
+    pool: &tauri::State<'_, AppState>,
+    schedule: &[Assignment],
+) -> Result<(), String> {
+    // Primero, eliminar todas las asignaciones existentes
+    println!("Clearing existing assignments...");
+    sqlx::query("DELETE FROM assignments")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error clearing existing assignments: {}", e))?;
+    
+    println!("Inserting {} new assignments...", schedule.len());
+    
+    // Insertar las nuevas asignaciones
+    for assignment in schedule {
+        sqlx::query(
+            "INSERT INTO assignments (group_id, day, module_index, subject_id, teacher_id, classroom_id) 
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)"
+        )
+        .bind(assignment.group_id)
+        .bind(&assignment.day)
+        .bind(assignment.module_index)
+        .bind(assignment.subject_id)
+        .bind(assignment.teacher_id)
+        .bind(assignment.classroom_id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error inserting assignment: {}", e))?;
+    }
+    
+    println!("All assignments saved successfully");
     Ok(())
 }
 
