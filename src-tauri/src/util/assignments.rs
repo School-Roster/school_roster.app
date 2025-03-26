@@ -5,7 +5,7 @@ use sqlx::{prelude::FromRow, Row};
 
 /// Estructura de la asignacion
 /// Se utiliza para mapear los datos que van y vienen de la base de datos
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow, Clone)]
 pub struct Assignment {
     pub id: Option<i16>,
     pub group_id: i16,
