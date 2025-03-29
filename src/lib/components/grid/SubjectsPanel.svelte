@@ -7,14 +7,19 @@
   } from "$lib/modules/entities/subjectsStore";
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
+  import { saveAssignment } from "$lib/modules/entities/assignments";
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
+  
+  // Variables for custom drag and drop
+  let isDragging = false;
+  let draggedSubject: SubjectItem | null = null;
+  let ghostElement: HTMLElement | null = null;
 
   onMount(() => {
-    loadSubjectsWithTeachers(); // Carga las materias desde la base de datos en rust
+    loadSubjectsWithTeachers();
 
-    // Escucha el evento para actualizar la vista de materias
     (async () => {
       const listenerCleanup = await listen(
         "subjects_with_teachers_updated",
@@ -25,83 +30,125 @@
       cleanup = listenerCleanup;
     })();
 
-    // Windows compatibility: Add fallback manual drag handling
-    const subjects = document.querySelectorAll('.subject');
-    subjects.forEach(subject => {
-      subject.addEventListener('mousedown', (e) => {
-        if (!e.target.draggable) return;
-        
-        // Force draggable state
-        const evt = document.createEvent("HTMLEvents");
-        evt.initEvent("dragstart", true, true);
-        e.target.dispatchEvent(evt);
-      });
-    });
+    // Setup global mouse move and mouse up handlers for dragging
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       cleanup?.();
+      // Clean up event listeners
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      removeGhostElement();
     };
   });
 
-  // Manejamos cuando el usuario agarra la materia
-  function handleDragStart(e: DragEvent, subject: SubjectItem) {
-    // First, create the dragData object
-    const dragData = {
-      id: subject.id,
-      shorten: subject.shorten,
-      color: subject.color,
-      teacherId: subject.assigned_teacher?.id,
-    };
+  // Start dragging
+  function handleMouseDown(e: MouseEvent, subject: SubjectItem) {
+    // Only start drag with left mouse button
+    if (e.button !== 0) return;
     
-    // Force cursor style (helps on Windows)
-    document.body.style.cursor = 'grabbing';
+    // Prevent default behavior and text selection
+    e.preventDefault();
     
-    // Use a more universally supported approach for drag effect
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'copy';
+    // Set dragging state
+    isDragging = true;
+    draggedSubject = subject;
+    
+    // Create ghost element
+    createGhostElement(e, subject);
+  }
+
+  // Handle mouse movement during drag
+  function handleMouseMove(e: MouseEvent) {
+    if (!isDragging || !ghostElement) return;
+    
+    // Move ghost element with cursor
+    ghostElement.style.left = `${e.clientX + 10}px`;
+    ghostElement.style.top = `${e.clientY + 10}px`;
+  }
+
+  // End dragging and handle drop
+  function handleMouseUp(e: MouseEvent) {
+    if (!isDragging || !draggedSubject) return;
+    
+    // Find if we're over a valid drop target
+    const dropTarget = findDropTarget(e);
+    
+    if (dropTarget && draggedSubject) {
+      // Get drop target information
+      const groupId = dropTarget.getAttribute('data-group-id');
+      const day = dropTarget.getAttribute('data-day');
+      const moduleIndex = dropTarget.getAttribute('data-module-index');
       
-      // Windows compatibility: Try both MIME types
-      e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
-      e.dataTransfer.setData("application/json", JSON.stringify(dragData));
-      
-      // For Windows desktop apps, setting a small image sometimes helps
-      try {
-        const ghostElement = document.createElement('div');
-        ghostElement.innerHTML = subject.shorten;
-        ghostElement.style.backgroundColor = subject.color;
-        ghostElement.style.color = getContrastColor(subject.color);
-        ghostElement.style.padding = '10px';
-        ghostElement.style.borderRadius = '4px';
-        ghostElement.style.position = 'absolute';
-        ghostElement.style.top = '-1000px';
-        document.body.appendChild(ghostElement);
+      // Call saveAssignment directly
+      if (groupId && day && moduleIndex) {
+        saveAssignment(
+          parseInt(groupId, 10),
+          day,
+          parseInt(moduleIndex, 10),
+          draggedSubject.id,
+          draggedSubject.assigned_teacher?.id
+        );
         
-        e.dataTransfer.setDragImage(ghostElement, 10, 10);
-        
-        // Clean up after the drag operation
+        // Provide visual feedback
+        dropTarget.classList.add('flash-highlight');
         setTimeout(() => {
-          document.body.removeChild(ghostElement);
-        }, 0);
-      } catch (err) {
-        console.error('Error setting drag image:', err);
+          dropTarget.classList.remove('flash-highlight');
+        }, 300);
       }
     }
     
-    // Add a class to indicate dragging state
-    const elem = e.currentTarget as HTMLElement;
-    if (elem) {
-      elem.classList.add('dragging');
-    }
+    // Reset drag state
+    isDragging = false;
+    draggedSubject = null;
+    removeGhostElement();
   }
 
-  function handleDragEnd(e: DragEvent) {
-    // Reset cursor
-    document.body.style.cursor = '';
+  // Find valid drop target under cursor
+  function findDropTarget(e: MouseEvent): HTMLElement | null {
+    // Get all elements at the current mouse position
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
     
-    // Clean up any visual state
-    const elem = e.currentTarget as HTMLElement;
-    if (elem) {
-      elem.classList.remove('dragging');
+    // Find the first element with class 'module-cell'
+    for (const el of elements) {
+      if (el.classList.contains('module-cell')) {
+        return el as HTMLElement;
+      }
+    }
+    
+    return null;
+  }
+
+  // Create visual ghost element
+  function createGhostElement(e: MouseEvent, subject: SubjectItem) {
+    removeGhostElement(); // Remove any existing ghost
+    
+    ghostElement = document.createElement('div');
+    ghostElement.className = 'subject-ghost';
+    ghostElement.textContent = subject.shorten;
+    ghostElement.style.backgroundColor = subject.color;
+    ghostElement.style.color = getContrastColor(subject.color);
+    ghostElement.style.position = 'fixed';
+    ghostElement.style.pointerEvents = 'none';
+    ghostElement.style.padding = '8px';
+    ghostElement.style.borderRadius = '4px';
+    ghostElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    ghostElement.style.zIndex = '9999';
+    ghostElement.style.opacity = '0.8';
+    
+    // Position at cursor
+    ghostElement.style.left = `${e.clientX + 10}px`;
+    ghostElement.style.top = `${e.clientY + 10}px`;
+    
+    document.body.appendChild(ghostElement);
+  }
+
+  // Remove ghost element
+  function removeGhostElement() {
+    if (ghostElement && ghostElement.parentNode) {
+      ghostElement.parentNode.removeChild(ghostElement);
+      ghostElement = null;
     }
   }
 
@@ -118,14 +165,13 @@
         class="subject"
         role="button"
         tabindex="0"
-        draggable="true"
         style="background-color: {item.color}; color: {getContrastColor(
           item.color,
         )}"
-        on:dragstart={(e) => handleDragStart(e, item)}
-        on:dragend={handleDragEnd}
+        on:mousedown={(e) => handleMouseDown(e, item)}
         on:click={() => (selectedSubject = item)}
         on:keydown={(e) => e.key === "Enter" && (selectedSubject = item)}
+        class:dragging={isDragging && draggedSubject?.id === item.id}
       >
         {item.shorten}
       </div>
