@@ -40,16 +40,16 @@
     });
   });
 
-  // Function to handle our custom drop event
-  function handleCustomDrop(e: CustomEvent) {
+  // Maneja el evento fuera de HTML5 como custom event
+  function handleCustomDrop(e: CustomEvent): void {
     const { subject, groupId, day, moduleIndex } = e.detail;
     
-    // Call the existing drop handler with the necessary data
+    // Llama el handler existente con los datos necesarios
     handleAssignDrop(
       { 
         preventDefault: () => {}, 
-        subject: subject,   // Pass the subject directly
-        data: subject       // Also provide as data for flexibility
+        subject: subject,   // Pasa la materia directamente
+        data: subject       // Pasamos 'data' para mayor flexibilidad en el codigo
       }, 
       groupId, 
       day, 
@@ -57,18 +57,15 @@
     );
   }
 
-  // Highlight drop target
-  function handleDragOver(target: HTMLElement) {
+  function handleDragOver(target: HTMLElement): void{
     target.classList.add("drag-over");
   }
 
-  // Remove highlight
-  function handleDragLeave(target: HTMLElement) {
+  function handleDragLeave(target: HTMLElement): void {
     target.classList.remove("drag-over");
   }
 
   onMount(() => {
-    // Listen for custom drop events
     document.addEventListener('custom:drop', handleCustomDrop as EventListener);
     
     return () => {
