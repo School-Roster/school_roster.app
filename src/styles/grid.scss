@@ -52,8 +52,8 @@
     }
 
     &.dragging {
-      opacity: 0.6;
-      cursor: grabbing !important;
+      opacity: 0.3;
+      box-shadow: none;
     }
 
     &:active {
@@ -249,7 +249,8 @@
             background-color: $blue !important;
             border: 2px dashed $other-color !important;
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
-            outline: none;
+            transform: scale(1.05);
+            transition: all 0.15s ease;
           }
 
           .subject-pill {
@@ -266,4 +267,18 @@
       }
     }
   }
+}
+
+// Style for ghost element during drag (update if needed)
+.subject-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 10px;
+  font-weight: bold;
+  transition: none;
+  cursor: grabbing;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }

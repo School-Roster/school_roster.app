@@ -54,41 +54,35 @@ export function getLocalAssignment(groupId: number, day: string, moduleIndex: nu
 }
 
 // Funcion para cuando se suelta una materia en el modulo
-export async function handleAssignDrop(
-  e: DragEvent,
-  groupId: number,
-  day: string,
-  moduleIndex: number,
-): Promise<void> {
-  e.preventDefault();
-  const target = e.target as HTMLElement;
-  target.classList.remove("drag-over");
-
-  // Para evitar llamadas a la base de datos actualizamos local
-  const subjectData: string | undefined =
-    e.dataTransfer?.getData("application/json");
-  if (!subjectData) return;
-
-  const subject: any = JSON.parse(subjectData);
-  // Creamos una llave unica para el assign
-  const key = `${groupId}-${day}-${moduleIndex}`;
-
-  try {
-    await invoke("save_assignment", {
-      group_id: groupId,
-      day,
-      module_index: moduleIndex,
-      subject_id: subject.id,
-      teacher_id: subject.teacherId,
-      classroom_id: null // TODO
-    });
-    assignmentsStore.update((currentMap) => {
-      const newMap = new Map(currentMap);
-      newMap.set(key, subject);
-      return newMap;
-    });
-  } catch (error) {
-    console.error("Failed to save assignment:", error);
+export function handleAssignDrop(e: DragEvent | any, groupId: number, day: string, moduleIndex: number) {
+  e.preventDefault?.(); // Make preventDefault optional
+  
+  // Handle both regular drag events and our custom events
+  let data;
+  
+  if (e.dataTransfer) {
+    // Regular drag event
+    try {
+      const jsonData = e.dataTransfer.getData("application/json");
+      data = JSON.parse(jsonData);
+    } catch (error) {
+      console.error("Error parsing drag data:", error);
+      return;
+    }
+    
+    // Clean up UI
+    const target = e.target as HTMLElement;
+    if (target && target.classList) {
+      target.classList.remove("drag-over");
+    }
+  } else {
+    // Our custom event
+    data = e.subject || e.data;
+  }
+  
+  // Continue with the assignment logic
+  if (data) {
+    saveAssignment(groupId, day, moduleIndex, data.id, data.teacherId);
   }
 }
 
@@ -104,6 +98,43 @@ export async function handleAssignClick(
     } catch (e) {
       console.log(e);
     }
+  }
+}
+
+export async function saveAssignment(
+  groupId: number,
+  day: string,
+  moduleIndex: number,
+  subjectId: number,
+  teacherId: number
+): Promise<void> {
+  try {
+    await invoke("save_assignment", {
+      group_id: groupId,
+      day,
+      module_index: moduleIndex,
+      subject_id: subjectId,
+      teacher_id: teacherId
+    });
+    
+    // Update local store
+    const key = `${groupId}-${day}-${moduleIndex}`;
+    assignmentsStore.update((currentMap) => {
+      const newMap = new Map(currentMap);
+      newMap.set(key, {
+        id: null, // This will be set by the database
+        shorten: "", // We don't have this info here
+        color: "", // We don't have this info here
+        teacherId: teacherId,
+        subjectId: subjectId,
+      });
+      return newMap;
+    });
+    
+    // Reload assignments to get the full data with subject details
+    await loadAssignments();
+  } catch (error) {
+    console.error("Failed to save assignment:", error);
   }
 }
 
