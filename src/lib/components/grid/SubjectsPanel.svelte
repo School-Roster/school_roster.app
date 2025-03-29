@@ -30,28 +30,24 @@
       cleanup = listenerCleanup;
     })();
 
-    // Setup global mouse move and mouse up handlers for dragging
+    // Agrega el evento global para los handlers
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
-    return () => {
+    return (): void => {
       cleanup?.();
-      // Clean up event listeners
+      // Limpia las funciones
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       removeGhostElement();
     };
   });
 
-  // Start dragging
   function handleMouseDown(e: MouseEvent, subject: SubjectItem) {
-    // Only start drag with left mouse button
     if (e.button !== 0) return;
     
-    // Prevent default behavior and text selection
     e.preventDefault();
     
-    // Set dragging state
     isDragging = true;
     draggedSubject = subject;
     
