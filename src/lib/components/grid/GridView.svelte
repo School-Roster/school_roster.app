@@ -43,6 +43,11 @@
   // Funcion para cuando una materia entra en un modulo
   function handleDragOver(e: DragEvent): void {
     e.preventDefault();
+    // Explicitly set dropEffect to show valid drop target
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
+    
     const target = e.target as HTMLElement;
     if (target.classList.contains("module-cell")) {
       target.classList.add("drag-over");
