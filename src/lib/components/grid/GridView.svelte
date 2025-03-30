@@ -11,7 +11,7 @@
     handleAssignDrop,
     handleAssignClick,
   } from "$lib/modules/entities/assignments";
-    import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
+  import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -40,23 +40,38 @@
     });
   });
 
-  // Funcion para cuando una materia entra en un modulo
-  function handleDragOver(e: DragEvent): void {
-    e.preventDefault();
-    const target = e.target as HTMLElement;
-    if (target.classList.contains("module-cell")) {
-      target.classList.add("drag-over");
-    }
+  // Maneja el evento fuera de HTML5 como custom event
+  function handleCustomDrop(e: CustomEvent): void {
+    const { subject, groupId, day, moduleIndex } = e.detail;
+    
+    // Llama el handler existente con los datos necesarios
+    handleAssignDrop(
+      { 
+        preventDefault: () => {}, 
+        subject: subject,   // Pasa la materia directamente
+        data: subject       // Pasamos 'data' para mayor flexibilidad en el codigo
+      }, 
+      groupId, 
+      day, 
+      moduleIndex
+    );
   }
 
-  // Funcion para cuando una materia abandona el modulo
-  function handleDragLeave(e: DragEvent): void {
-    e.preventDefault();
-    const target = e.target as HTMLElement;
-    if (target.classList.contains("module-cell")) {
-      target.classList.remove("drag-over");
-    }
+  function handleDragOver(target: HTMLElement): void{
+    target.classList.add("drag-over");
   }
+
+  function handleDragLeave(target: HTMLElement): void {
+    target.classList.remove("drag-over");
+  }
+
+  onMount(() => {
+    document.addEventListener('custom:drop', handleCustomDrop as EventListener);
+    
+    return () => {
+      document.removeEventListener('custom:drop', handleCustomDrop as EventListener);
+    };
+  });
 </script>
 
 <section class="schedule-grid">
@@ -90,14 +105,15 @@
                     day,
                     moduleIndex,
                   )}
-                  <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
+                  <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div
                     class="module-cell"
                     class:has-subject={assignment}
-                    on:dragover={handleDragOver}
-                    on:dragleave={handleDragLeave}
-                    on:drop={(e) =>
-                      handleAssignDrop(e, group.id, day, moduleIndex)}
+                    data-group-id={group.id}
+                    data-day={day}
+                    data-module-index={moduleIndex}
+                    on:mouseenter={(e) => handleDragOver(e.currentTarget)}
+                    on:mouseleave={(e) => handleDragLeave(e.currentTarget)}
                   >
                     {#if assignment}
                       <div
