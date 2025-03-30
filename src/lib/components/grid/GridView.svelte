@@ -10,6 +10,7 @@
     getLocalAssignment,
     handleAssignDrop,
     handleAssignClick,
+    exportScheduleToJSON,
   } from "$lib/modules/entities/assignments";
   import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
 
@@ -136,3 +137,7 @@
     {/each}
   </div>
 </section>
+
+<button on:click={exportScheduleToJSON}>
+Exportar
+</button>

@@ -56,10 +56,10 @@ export function getLocalAssignment(groupId: number, day: string, moduleIndex: nu
 // Funcion para cuando se suelta una materia en el modulo
 export function handleAssignDrop(e: DragEvent | any, groupId: number, day: string, moduleIndex: number) {
   e.preventDefault?.(); // Make preventDefault optional
-  
+
   // Handle both regular drag events and our custom events
   let data;
-  
+
   if (e.dataTransfer) {
     // Regular drag event
     try {
@@ -69,7 +69,7 @@ export function handleAssignDrop(e: DragEvent | any, groupId: number, day: strin
       console.error("Error parsing drag data:", error);
       return;
     }
-    
+
     // Clean up UI
     const target = e.target as HTMLElement;
     if (target && target.classList) {
@@ -79,7 +79,7 @@ export function handleAssignDrop(e: DragEvent | any, groupId: number, day: strin
     // Our custom event
     data = e.subject || e.data;
   }
-  
+
   // Continue with the assignment logic
   if (data) {
     saveAssignment(groupId, day, moduleIndex, data.id, data.teacherId);
@@ -101,6 +101,32 @@ export async function handleAssignClick(
   }
 }
 
+
+export async function exportScheduleToJSON(): Promise<void> {
+  let scheduleArray: AssignmentItem[] = [];
+
+  assignmentsStore.subscribe((map) => {
+    map.forEach((assignment, key) => {
+      const [group_id, day, module_index] = key.split("-");
+
+      scheduleArray.push({
+        id: assignment.id || 0, // En caso de que no tenga ID aún
+        group_id: Number(group_id),
+        day,
+        module_index: Number(module_index),
+        subject_id: assignment.subjectId,
+        teacher_id: assignment.teacherId,
+        classroom_id: assignment.classroomId,
+        subject_shorten: assignment.shorten,
+        subject_color: assignment.color,
+      });
+    });
+  })();
+
+  const jsonString = JSON.stringify( scheduleArray, null, 2 );
+  console.log("Exporting schedule to JSON:", jsonString);
+}
+
 export async function saveAssignment(
   groupId: number,
   day: string,
@@ -116,7 +142,7 @@ export async function saveAssignment(
       subject_id: subjectId,
       teacher_id: teacherId
     });
-    
+
     // Update local store
     const key = `${groupId}-${day}-${moduleIndex}`;
     assignmentsStore.update((currentMap) => {
@@ -130,7 +156,7 @@ export async function saveAssignment(
       });
       return newMap;
     });
-    
+
     // Reload assignments to get the full data with subject details
     await loadAssignments();
   } catch (error) {
