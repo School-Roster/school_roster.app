@@ -1,0 +1,43 @@
+.subject-item {
+  display: flex;
+  align-items: center;
+  gap: 200px;
+}
+
+.form-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #007bff;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+
+  .tooltiptext {
+    visibility: hidden;
+    width: 100px;
+    background-color: #d8dee9;
+    color: #2d374c;
+    text-align: center;
+    border-radius: 4px;
+    padding: 6px 10px;
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 115%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s, left 0.2s ease-in-out;
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+
+  &:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+    left: 120%;
+  }
+}
