@@ -5,8 +5,9 @@ simplemente llama a la vista deseada.
 ---------------------->
 
 <script lang="ts">
-	import type { PageData } from './$types';
-	export let data: PageData;
+	// import type { PageData } from './$types';
+	// export let data: PageData;
+	export let data: string;
 
   /* Formularios */
   import SubjectsView from '$lib/components/forms/subjects/SubjectsView.svelte';
