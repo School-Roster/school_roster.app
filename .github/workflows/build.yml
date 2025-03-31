@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-    needs: lint-and-test
     strategy:
       fail-fast: false
       matrix:
