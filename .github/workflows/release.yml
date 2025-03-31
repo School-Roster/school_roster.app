@@ -57,18 +57,6 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      # # Update bundle identifier before building
-      # - name: Update bundle identifier
-      #   run: |
-      #     if [ -f "src-tauri/tauri.conf.json" ]; then
-      #       # For macOS and Linux
-      #       sed -i.bak 's/"identifier": "school_roster.app"/"identifier": "com.victor-rodriguez.school-roster"/g' src-tauri/tauri.conf.json
-      #     else
-      #       # For Windows
-      #       powershell -Command "(Get-Content src-tauri/tauri.conf.json) -replace '\"identifier\": \"school_roster.app\"', '\"identifier\": \"com.victor-rodriguez.school-roster\"' | Set-Content src-tauri/tauri.conf.json"
-      #     fi
-      #   shell: bash
-
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
