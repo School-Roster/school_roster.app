@@ -100,6 +100,10 @@ jobs:
       - name: Generate SvelteKit types
         run: pnpm svelte-kit sync
 
+      # Compile TypeScript
+      - name: Compile TypeScript
+        run: pnpm run build-ts
+
       # Build the app
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
