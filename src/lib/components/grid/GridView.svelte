@@ -12,52 +12,51 @@
     handleAssignClick,
   } from "$lib/modules/entities/assignments";
   import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
+  import { selectedGroup } from "$lib/modules/entities/selectedGroup";
 
-  // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
     "Lunes",
     "Martes",
-    "Miercoles",
+    "Miércoles",
     "Jueves",
     "Viernes",
   ];
-
-  // TODO: Por ahora los modulos viven aqui, despues los sacamos de la informacion
-  //       registrada en configuracion
   export let modulesPerDay: number = 9;
 
+  // Cargar datos iniciales cuando el componente se monta
   onMount(async (): Promise<void> => {
     await loadGroups();
-    await loadAssignments(); // Llama a base de datos cuando se inicia el programa
-    // Carga los grupos de nuevo en caso de actualizados
+    await loadAssignments();
     listen("groups_updated", async () => {
       await loadGroups();
     });
-    // Carga si las materias son actualizadas (con profesores)
     listen("teachers_updated", async () => {
       await loadSubjectsWithTeachers();
-      await loadAssignments(); // Llama a base de datos cuando se inicia el programa
+      await loadAssignments();
     });
   });
 
-  // Maneja el evento fuera de HTML5 como custom event
+  // Al hacer clic en un grupo, actualizamos el estado seleccionado
+  function handleGroupClick(groupId: number): void {
+    selectedGroup.set(groupId);
+  }
+
+  // Manejo de eventos personalizados de drop
   function handleCustomDrop(e: CustomEvent): void {
     const { subject, groupId, day, moduleIndex } = e.detail;
-    
-    // Llama el handler existente con los datos necesarios
     handleAssignDrop(
-      { 
-        preventDefault: () => {}, 
-        subject: subject,   // Pasa la materia directamente
-        data: subject       // Pasamos 'data' para mayor flexibilidad en el codigo
-      }, 
-      groupId, 
-      day, 
+      {
+        preventDefault: () => {},
+        subject,
+        data: subject,
+      },
+      groupId,
+      day,
       moduleIndex
     );
   }
 
-  function handleDragOver(target: HTMLElement): void{
+  function handleDragOver(target: HTMLElement): void {
     target.classList.add("drag-over");
   }
 
@@ -65,17 +64,19 @@
     target.classList.remove("drag-over");
   }
 
+  // Se asegura de agregar y eliminar el listener para el evento 'custom:drop'
   onMount(() => {
-    document.addEventListener('custom:drop', handleCustomDrop as EventListener);
-    
+    const handleDrop = (e: Event) => handleCustomDrop(e as CustomEvent);
+    document.addEventListener("custom:drop", handleDrop);
+
     return () => {
-      document.removeEventListener('custom:drop', handleCustomDrop as EventListener);
+      document.removeEventListener("custom:drop", handleDrop);
     };
   });
 </script>
 
 <section class="schedule-grid">
-  <!-- Header con los dias y los modulos -->
+  <!-- Header con los días y los módulos -->
   <div class="header-row">
     <div class="corner-cell">Grupos</div>
     {#each days as day}
@@ -90,11 +91,19 @@
     {/each}
   </div>
 
-  <!-- Grupos y los modulos -->
+  <!-- Grupos y módulos -->
   <div class="grid-content">
     {#each $groups as group}
       <div class="group-row">
-        <div class="group-cell">{group.grade}{group.group}</div>
+        <div
+          class="group-cell"
+          style="cursor: pointer"
+          on:click={() => handleGroupClick(group.id)}
+          class:selected={group.id === $selectedGroup}
+        >
+          {group.grade}{group.group}
+        </div>
+
         {#each days as day}
           <div class="day-modules">
             {#each Array(modulesPerDay) as _, moduleIndex}
@@ -103,9 +112,8 @@
                   {@const assignment = getLocalAssignment(
                     group.id,
                     day,
-                    moduleIndex,
+                    moduleIndex
                   )}
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div
                     class="module-cell"
                     class:has-subject={assignment}
@@ -118,10 +126,12 @@
                     {#if assignment}
                       <div
                         class="subject-pill"
-                        style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
-                          assignment.color || 'black',
+                        style="background-color: {assignment.color ||
+                          'black'}; color: {getContrastColor(
+                          assignment.color || 'black'
                         )}"
-                        on:mousedown={(e) => handleAssignClick(e, assignment.id)}
+                        on:mousedown={(e) =>
+                          handleAssignClick(e, assignment.id)}
                       >
                         {assignment.shorten}
                       </div>
