@@ -86,13 +86,11 @@ main {
   font-style: normal;
 }
 
-
-
 /* Variables de tema */
 :root {
-  --background: #E5E9F0;
+  --background: #e5e9f0;
   --text-color: #333;
-  --section-background: #D8DEE9;
+  --section-background: #d8dee9;
   --item-background: #fff;
 }
 
@@ -100,7 +98,6 @@ main {
 .dark {
   --background: $dark-theme;
   --text-color: #f5f5f5;
-  --section-background: #2D374C;
-  --item-background: #5E81AC;
+  --section-background: #2d374c;
+  --item-background: #5e81ac;
 }
-

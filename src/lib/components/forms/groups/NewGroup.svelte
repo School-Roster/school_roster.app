@@ -69,7 +69,7 @@
 
   function toggleSelection(subject: SubjectItem): void {
     const index: number = selectedSubjects.findIndex(
-      (s) => s.id === subject.id,
+      (s) => s.id === subject.id
     );
     if (index >= 0) {
       // Si la materia ya esta seleccionada la quitamos
@@ -157,7 +157,16 @@
               checked={selectedSubjects.some((s) => s.id === subject.id)}
               on:change={() => toggleSelection(subject)}
             />
-            <label for={subject.id.toString()}>{subject.name}</label>
+            <label for={subject.id.toString()} class="tooltip">
+              {subject.name}
+              <span class="tooltiptext">
+                {subject.assigned_teacher
+                  ? subject.assigned_teacher.name +
+                    " " +
+                    subject.assigned_teacher.father_lastname
+                  : "Sin maestro asignado"}
+              </span>
+            </label>
           </div>
         {/each}
       </div>
@@ -168,3 +177,7 @@
     </button>
   </div>
 </section>
+
+<style lang="scss">
+  @import "/src/styles/tooltip.scss";
+</style>
