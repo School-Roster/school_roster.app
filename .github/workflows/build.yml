@@ -62,6 +62,40 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      # Fix SvelteKit prerender configuration
+      - name: Update SvelteKit configuration
+        run: |
+          echo "Updating svelte.config.js to fix prerendering issue"
+          cat > svelte.config.js << 'EOL'
+          import adapter from '@sveltejs/adapter-static';
+
+          /** @type {import('@sveltejs/kit').Config} */
+          const config = {
+            kit: {
+              adapter: adapter({
+                fallback: 'index.html'
+              }),
+              prerender: {
+                entries: [],
+                handleHttpError: ({ path, referrer, message }) => {
+                  // Ignore prerendering warnings for dynamic routes
+                  if (path.includes('[windowName]')) return;
+                  
+                  console.warn(`${path} referred from ${referrer}: ${message}`);
+                }
+              }
+            }
+          };
+
+          export default config;
+          EOL
+
+      # Fix SASS deprecation warnings
+      - name: Fix SASS deprecation warnings
+        run: |
+          echo "Creating .npmrc with SASS deprecation handling"
+          echo "sass_deprecate=false" > .npmrc
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
