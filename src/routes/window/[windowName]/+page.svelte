@@ -4,10 +4,10 @@ y crea una nueva ventana, este componente
 simplemente llama a la vista deseada.
 ---------------------->
 
-<script lang="ts">
+<script>
 	// import type { PageData } from './$types';
 	// export let data: PageData;
-	export let data: string;
+	export let data;
 
   /* Formularios */
   import SubjectsView from '$lib/components/forms/subjects/SubjectsView.svelte';
@@ -20,7 +20,7 @@ simplemente llama a la vista deseada.
   import SettingsView from '$lib/components/utils/Settings.svelte';
   import NotFoundView from '$lib/components/utils/NotFound.svelte';
  
-  let view: any;
+  let view;
   switch (data.page) {
     case 'subjects':
       view = SubjectsView;
