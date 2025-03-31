@@ -96,6 +96,35 @@ jobs:
           echo "Creating .npmrc with SASS deprecation handling"
           echo "sass_deprecate=false" > .npmrc
 
+      # Fix dynamic route TypeScript issue
+      - name: Fix dynamic route TypeScript issue
+        run: |
+          mkdir -p src/routes/window/[windowName]
+          cat > src/routes/window/[windowName]/+page.svelte << 'EOL'
+          <script lang="ts">
+          // Simple type definition without importing from ./$types
+          export let data: any;
+          </script>
+
+          <div>
+            Window: {data?.windowName || 'Unknown'}
+          </div>
+          EOL
+
+          cat > src/routes/window/[windowName]/+page.ts << 'EOL'
+          import type { PageLoad } from './$types';
+
+          export const load: PageLoad = ({ params }) => {
+            return {
+              windowName: params.windowName
+            };
+          };
+          EOL
+
+      # Generate types before building
+      - name: Generate SvelteKit types
+        run: pnpm svelte-kit sync
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
