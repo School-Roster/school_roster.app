@@ -42,11 +42,32 @@ jobs:
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
+          # Add Ubuntu 22.04 (Jammy) repository to get libwebkit2gtk-4.0-dev
+          echo "deb http://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee -a /etc/apt/sources.list
+  
+          # Update package lists
           sudo apt-get update
+  
+          # Install dependencies (using libwebkit2gtk-4.0-dev from Jammy)
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+  
+          # Remove the Jammy repository to avoid potential issues in the future
+          sudo sed -i '/jammy main universe/d' /etc/apt/sources.list
 
       - name: Install frontend dependencies
         run: pnpm install
+
+      # # Update bundle identifier before building
+      # - name: Update bundle identifier
+      #   run: |
+      #     if [ -f "src-tauri/tauri.conf.json" ]; then
+      #       # For macOS and Linux
+      #       sed -i.bak 's/"identifier": "school_roster.app"/"identifier": "com.victor-rodriguez.school-roster"/g' src-tauri/tauri.conf.json
+      #     else
+      #       # For Windows
+      #       powershell -Command "(Get-Content src-tauri/tauri.conf.json) -replace '\"identifier\": \"school_roster.app\"', '\"identifier\": \"com.victor-rodriguez.school-roster\"' | Set-Content src-tauri/tauri.conf.json"
+      #     fi
+      #   shell: bash
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0

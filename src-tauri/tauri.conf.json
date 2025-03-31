@@ -85,7 +85,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "school_roster.app",
+      "identifier": "school-roster",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
