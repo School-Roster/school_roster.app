@@ -18,6 +18,7 @@ simplemente llama a la vista deseada.
   /* Utilidad */
   import SettingsView from '$lib/components/utils/Settings.svelte';
   import NotFoundView from '$lib/components/utils/NotFound.svelte';
+  import MappingView from '$lib/components/utils/Mapping.svelte';
  
   let view: any;
   switch (data.page) {
@@ -35,6 +36,9 @@ simplemente llama a la vista deseada.
       break;
     case 'classroom':
       view = ClassroomView;
+      break;
+    case 'mapping':
+      view = MappingView;
       break;
     default:
       view = NotFoundView;
