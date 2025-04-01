@@ -31,6 +31,28 @@ impl<'r> FromRow<'r, SqliteRow> for Group {
     }
 }
 
+/// Estructura de un estudiante
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Student {
+    pub id: Option<i16>,
+    pub name: String,
+    pub father_lastname: String,
+    pub mother_lastname: Option<String>,
+    pub group_id: Option<i16>,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for Student {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        Ok(Student {
+            id: row.try_get("id")?,
+            name: row.try_get("name")?,
+            father_lastname: row.try_get("father_lastname")?,
+            mother_lastname: row.try_get("mother_lastname")?,
+            group_id: row.try_get("group_id")?,
+        })
+    }
+}
+
 /// Funcion para crear un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
@@ -346,6 +368,44 @@ pub async fn update_group(
                 .map_err(|e| format!("Failed to assign the subject to existed group: {}", e))?;
         }
     }
+
+    Ok(())
+}
+
+/// Funcion para crear estudiantes
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `students` - Vector de estudiantes
+/// * `group_id` - ID del grupo al que pertenecen los estudiantes
+/// Retorna Ok() si todo sale exitoso de lo contrario manda un mensaje con el error
+#[tauri::command]
+pub async fn create_students(
+    pool: tauri::State<'_, AppState>,
+    students: Vec<Student>,
+    group_id: i16,
+) -> Result<(), String> {
+    let mut tx = pool
+        .db
+        .begin()
+        .await
+        .map_err(|e| format!("Failed to start transaction! {}", e))?;
+
+    for student in students {
+        sqlx::query(
+            "INSERT INTO students (name, father_lastname, mother_lastname, group_id) VALUES (?1, ?2, ?3, ?4)",
+        )
+        .bind(student.name)
+        .bind(student.father_lastname)
+        .bind(student.mother_lastname)
+        .bind(group_id)
+        .execute(&mut tx)
+        .await
+        .map_err(|e| format!("Error creating student, error: {}", e))?;
+    }
+
+    tx.commit()
+        .await
+        .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     Ok(())
 }
