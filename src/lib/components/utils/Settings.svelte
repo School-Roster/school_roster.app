@@ -1,8 +1,23 @@
 <script lang="ts">
   import ToggleDarkTheme from "../buttons/ToggleDarkTheme.svelte";
+  import { WebviewWindow } from "@tauri-apps/api/window";
 
   let dias = ["..."];
   let modulos = ["..."];
+
+  async function createWindow(windowName: string) {
+    const win = new WebviewWindow(`${windowName}`, {
+      url: `/window/${windowName}`,
+      title: "School Roster",
+      width: 1000,
+      height: 800,
+      resizable: true,
+      focus: true,
+      visible: true,
+    });
+    await win.show();
+  }
+
 </script>
 
 <section class="config-card">
@@ -33,6 +48,11 @@
       <ToggleDarkTheme />
     </div>
   </div>
+
+  <div class="config-section">
+    <h3>Mapear Escuela</h3>
+    <button on:click={() => createWindow('mapping')} class="btn-mapping">Mapear escuela</button>
+  </div>
 </section>
 
 
@@ -47,7 +67,7 @@
     max-width: 400px;
     margin: auto;
     text-align: center;
-    margin-top: 110px;
+    margin-top: 45px;
 
     
 
@@ -77,6 +97,14 @@
           margin: 5px 0;
           border-radius: 6px;
         }
+      }
+
+      .btn-mapping {
+        background: var(--item-background);
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 6px;
+        color: white;
       }
     }
 
