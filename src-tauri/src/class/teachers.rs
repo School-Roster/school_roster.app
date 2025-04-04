@@ -5,7 +5,7 @@ use sqlx::error::Error as SqlxError;
 use sqlx::{sqlite::SqliteRow, FromRow, Row};
 
 /// Estructura simple de un profesor, solo contiene el ID, el nombre y el primer apellido
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SimpleTeacher {
     pub id: Option<i16>,
     pub name: String,
@@ -14,7 +14,7 @@ pub struct SimpleTeacher {
 
 /// Estructura de un profesor
 /// Se utiliza para mapear los datos de un profesor de la base de datos a un objeto en Rust
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Teacher {
     pub id: Option<i16>,
     pub name: String,
@@ -315,6 +315,23 @@ pub async fn get_all_teachers(
     }
 
     Ok(teachers_with_subjects)
+}
+
+/// Funcion para obtener los profesores que pueden impartir una materia
+/// # Argumentos
+/// * `pool` - Conexion a la base de datos
+/// * `subject_id` - ID de la materia
+/// Retorna un vector con los profesores que pueden impartir la materia
+pub async fn get_teachers_for_subject(pool: &tauri::State<'_, AppState>, subject_id: i16) -> Result<Vec<Teacher>, String> {
+    let teachers = sqlx::query_as::<_, Teacher>(
+        "SELECT t.* FROM teachers t JOIN teacher_subjects ts ON t.id = ts.teacher_id WHERE ts.subject_id = ?1"
+    )
+    .bind(subject_id)
+    .fetch_all(&pool.db)
+    .await
+    .map_err(|e| format!("Error al obtener profesores para la materia {}: {}", subject_id, e))?;
+
+    Ok(teachers)
 }
 
 /// Funcion para eliminar a un profesor (y todas sus materias asignadas)
