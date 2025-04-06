@@ -13,6 +13,9 @@
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
+  import ImportExcel from "$lib/components/utils/excel/ImportExcel.svelte";
+  import { importStudentsFromXlsx } from "$lib/modules/entities/groupsStore";
+    import { ClassType } from "$lib/utilities/helpers";
 
   let g: GroupItem = {
     grade: null,
@@ -27,6 +30,9 @@
 
   // Para editar se le pasa el item
   export let item: GroupItem | null = null;
+
+  let showStudentImport = false;
+  let lastNamesCombined = false;
 
   $: if (item) {
     initForm(item);
@@ -80,6 +86,14 @@
     }
   }
   const showSelectedSubjects = () => (showSubjects = !showSubjects);
+
+  const handleStudentImport = async (event: CustomEvent) => {
+    const { headerMappings, data } = event.detail;
+    if (item?.id) {
+      await importStudentsFromXlsx(headerMappings, data, item.id, lastNamesCombined);
+      showStudentImport = false;
+    }
+  };
 </script>
 
 <section class="form-editor">
@@ -176,8 +190,71 @@
       {item ? "Editar grupo" : "Agregar grupo"}
     </button>
   </div>
+
+  {#if item?.id}
+    <div class="form-field">
+      <button class="import-students-btn" on:click={() => showStudentImport = true}>
+        Importar estudiantes
+      </button>
+    </div>
+
+    {#if showStudentImport}
+      <div class="student-import-section">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            bind:checked={lastNamesCombined}
+          >
+          Los apellidos están en la misma columna
+        </label>
+        
+        <ImportExcel
+          defaultClass={ClassType.Students}
+          availableData={
+          [
+            { name: "Nombre", key: "name", required: true },
+            { name: "Apellido paterno", key: "father_lastname", required: true },
+            { name: !lastNamesCombined ? "Apellido materno" : "Apellidos", key: "mother_lastname" }
+          ]}
+        />
+      </div>
+    {/if}
+  {/if}
 </section>
 
 <style lang="scss">
+  .import-students-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    
+    &:hover {
+      background-color: darken(#4CAF50, 10%);
+    }
+  }
+
+  .student-import-section {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+  }
   @import "/src/styles/tooltip.scss";
 </style>
