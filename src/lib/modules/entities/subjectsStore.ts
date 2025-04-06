@@ -4,22 +4,22 @@ import { emit } from "@tauri-apps/api/event";
 import { type SimpleTeacherItem } from "./teachersStore";
 
 /**
-  * Interfaz para los datos de las materias
-  * @property {number} id - Identificador único
-  * @property {string} name - Nombre de la materia
-  * @property {string} shorten - Nombre corto
-  * @property {string} color - Color de la materia
-  * @property {string} spec - Especialidad a la que pertenece
-  * @property {SimpleTeacherItem} assigned_teacher - Profesor asign
-  */
+ * Interfaz para los datos de las materias
+ * @property {number} id - Identificador único
+ * @property {string} name - Nombre de la materia
+ * @property {string} shorten - Nombre corto
+ * @property {string} color - Color de la materia
+ * @property {string} spec - Especialidad a la que pertenece
+ * @property {SimpleTeacherItem} assigned_teacher - Profesor asign
+ */
 export interface SubjectItem {
   id?: number;
   name: string;
   shorten: string;
   color: string;
   spec: string;
-  required_modules?: number | null,
-  priority?: number | null,
+  required_modules?: number | null;
+  priority?: number | null;
   assigned_teacher?: SimpleTeacherItem | null;
 }
 
@@ -69,7 +69,8 @@ export async function addSubject(subject: SubjectItem): Promise<void> {
     alert("Por favor, rellene todos los campos");
     return;
   }
-  if (!subject.shorten) { // Crea una abreviacion si no se proporciono alguna
+  if (!subject.shorten) {
+    // Crea una abreviacion si no se proporciono alguna
     subject.shorten = subject.name.substring(0, 3).toUpperCase();
   }
 
@@ -83,10 +84,10 @@ export async function addSubject(subject: SubjectItem): Promise<void> {
 }
 
 /**
-  * Funcion para importar varios grupos, se utiliza en ImportExcel
-  * @param {Record} headerMappings
-  * @param {Array} data
-  */
+ * Funcion para importar varios grupos, se utiliza en ImportExcel
+ * @param {Record} headerMappings
+ * @param {Array} data
+ */
 export async function importSubjectsFromXlsx(
   headerMappings: Record<string, string>,
   data: Array<Record<string, any>>
@@ -94,20 +95,24 @@ export async function importSubjectsFromXlsx(
   console.log("Raw data:", data);
 
   // Prepare the subjects to be imported
-  const subjectToImport = data.map((row) => {
-    return {
-      id: null,
-      name: String(row.name || ''),
-      shorten: row.shorten ? String(row.shorten || '') : '',
-      color: row.color ? String(row.color || '') : null,
-      spec: row.spec ? String(row.spec || '') : null,
-      required_modules: row.required_modules ? Number(row.required_modules || 0) : 0,
-      priority: row.priority ? Number(row.priority || 0) : 0
-    };
-  }).filter(subject => subject.name);
+  const subjectToImport = data
+    .map((row) => {
+      return {
+        id: null,
+        name: String(row.name || ""),
+        shorten: row.shorten ? String(row.shorten || "") : "",
+        color: row.color ? String(row.color || "") : null,
+        spec: row.spec ? String(row.spec || "") : null,
+        required_modules: row.required_modules
+          ? Number(row.required_modules || 0)
+          : 0,
+        priority: row.priority ? Number(row.priority || 0) : 0,
+      };
+    })
+    .filter((subject) => subject.name);
 
   if (subjectToImport.length === 0) {
-    throw new Error('No hay grupos validos en el intento de importar datos');
+    throw new Error("No hay grupos validos en el intento de importar datos");
   }
 
   try {
@@ -115,7 +120,7 @@ export async function importSubjectsFromXlsx(
     await loadSubjects();
     await emit("subjects_updated");
   } catch (error) {
-    console.error('Hubo un error importando las materias:', error);
+    console.error("Hubo un error importando las materias:", error);
     throw error;
   }
 }
