@@ -12,6 +12,31 @@
     handleAssignClick,
   } from "$lib/modules/entities/assignments";
   import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
+  import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
+
+  // Tutorial menu state
+  let showTutorialMenu = false;
+  let showNavbarTutorial = false;
+
+  // Close tutorial menu when clicking outside
+  function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.tutorial-menu-container')) {
+      showTutorialMenu = false;
+    }
+  }
+
+  // Handle tutorial completion
+  function handleTutorialComplete() {
+    showNavbarTutorial = false;
+  }
+
+  onMount(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  });
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -73,6 +98,41 @@
     };
   });
 </script>
+
+<div class="tutorial-menu-container">
+  <button 
+    class="tutorial-menu-button" 
+    on:click={() => showTutorialMenu = !showTutorialMenu}
+    aria-label="Tutoriales disponibles"
+  >
+    <img src="/icons/circle-question-solid.svg" alt="Tutoriales">
+  </button>
+  
+  {#if showTutorialMenu}
+    <div class="tutorial-menu-dropdown">
+      <div class="tutorial-menu-header">
+        <h3>Tutoriales disponibles</h3>
+      </div>
+      <div class="tutorial-menu-items">
+        <button 
+          class="tutorial-menu-item" 
+          on:click={() => {
+            showNavbarTutorial = true;
+            showTutorialMenu = false;
+          }}
+        >
+          <img src="/icons/navbar.svg" alt="Navbar">
+          <span>Tutorial de navegación</span>
+        </button>
+        <!-- Add more tutorial options here as they become available -->
+      </div>
+    </div>
+  {/if}
+</div>
+
+{#if showNavbarTutorial}
+  <NavbarTutorial on:complete={handleTutorialComplete} />
+{/if}
 
 <section class="schedule-grid">
   <!-- Header con los dias y los modulos -->
@@ -136,3 +196,89 @@
     {/each}
   </div>
 </section>
+
+<style>
+  .tutorial-menu-container {
+    position: relative;
+    display: flex;
+    flex-direction: row-reverse;
+    margin-bottom: 1rem;
+    margin-right: 1rem;
+  }
+  
+  .tutorial-menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .tutorial-menu-button:hover {
+    transform: scale(1.1);
+  }
+  
+  .tutorial-menu-button img {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .tutorial-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 250px;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  
+  .tutorial-menu-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .tutorial-menu-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .tutorial-menu-items {
+    padding: 8px 0;
+  }
+  
+  .tutorial-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s ease;
+  }
+  
+  .tutorial-menu-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .tutorial-menu-item img {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+  }
+  
+  .tutorial-menu-item span {
+    font-size: 14px;
+    color: #333;
+  }
+</style>
