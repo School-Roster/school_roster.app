@@ -5,7 +5,7 @@
   export let targetSelector: string; // CSS selector for the element to highlight
   export let description: string; // Description text to show next to the highlighted element
   export let position: 'top' | 'right' | 'bottom' | 'left' = 'right'; // Position of the description
-  export let zoomLevel = 1.05; // How much to zoom the target element (1.05 = 5% zoom)
+  export let zoomLevel = 1.01; // How much to zoom the target element (1.05 = 5% zoom)
   export let blurAmount = 5; // Blur amount in pixels for non-target elements
   export let onClose: () => void; // Callback function when tutorial is closed
   
