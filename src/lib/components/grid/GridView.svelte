@@ -1,5 +1,6 @@
 <script lang="ts">
   import "$styles/grid.scss";
+  import "$styles/tutorial.scss";
   import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
   import { getContrastColor } from "$lib/utilities/helpers";
   import { onMount } from "svelte";
@@ -13,28 +14,34 @@
   } from "$lib/modules/entities/assignments";
   import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
   import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
+  import GridTutorial from "../utils/tutorials/GridTutorial.svelte";
 
   // Tutorial menu state
   let showTutorialMenu = false;
-  let showNavbarTutorial = false;
+
+  let show = {
+    navbar: false,
+    grid: false,
+  };
 
   // Close tutorial menu when clicking outside
   function handleClickOutside(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.tutorial-menu-container')) {
+    if (!target.closest(".tutorial-menu-container")) {
       showTutorialMenu = false;
     }
   }
 
   // Handle tutorial completion
   function handleTutorialComplete() {
-    showNavbarTutorial = false;
+    show.navbar = false;
+    show.grid = false;
   }
 
   onMount(() => {
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   });
 
@@ -68,21 +75,21 @@
   // Maneja el evento fuera de HTML5 como custom event
   function handleCustomDrop(e: CustomEvent): void {
     const { subject, groupId, day, moduleIndex } = e.detail;
-    
+
     // Llama el handler existente con los datos necesarios
     handleAssignDrop(
-      { 
-        preventDefault: () => {}, 
-        subject: subject,   // Pasa la materia directamente
-        data: subject       // Pasamos 'data' para mayor flexibilidad en el codigo
-      }, 
-      groupId, 
-      day, 
-      moduleIndex
+      {
+        preventDefault: () => {},
+        subject: subject, // Pasa la materia directamente
+        data: subject, // Pasamos 'data' para mayor flexibilidad en el codigo
+      },
+      groupId,
+      day,
+      moduleIndex,
     );
   }
 
-  function handleDragOver(target: HTMLElement): void{
+  function handleDragOver(target: HTMLElement): void {
     target.classList.add("drag-over");
   }
 
@@ -91,47 +98,62 @@
   }
 
   onMount(() => {
-    document.addEventListener('custom:drop', handleCustomDrop as EventListener);
-    
+    document.addEventListener("custom:drop", handleCustomDrop as EventListener);
+
     return () => {
-      document.removeEventListener('custom:drop', handleCustomDrop as EventListener);
+      document.removeEventListener(
+        "custom:drop",
+        handleCustomDrop as EventListener,
+      );
     };
   });
 </script>
 
 <div class="tutorial-menu-container">
-  <button 
-    class="tutorial-menu-button" 
-    on:click={() => showTutorialMenu = !showTutorialMenu}
+  <button
+    class="tutorial-menu-button"
+    on:click={() => (showTutorialMenu = !showTutorialMenu)}
     aria-label="Tutoriales disponibles"
   >
-    <img src="/icons/circle-question-solid.svg" alt="Tutoriales">
+    <img src="/icons/circle-question-solid.svg" alt="Tutoriales" />
   </button>
-  
+
   {#if showTutorialMenu}
     <div class="tutorial-menu-dropdown">
       <div class="tutorial-menu-header">
         <h3>Tutoriales disponibles</h3>
       </div>
       <div class="tutorial-menu-items">
-        <button 
-          class="tutorial-menu-item" 
+        <button
+          class="tutorial-menu-item"
           on:click={() => {
-            showNavbarTutorial = true;
+            show.navbar = true;
             showTutorialMenu = false;
           }}
         >
-          <img src="/icons/navbar.svg" alt="Navbar">
+          <img src="/icons/save.svg" alt="Navbar" />
           <span>Tutorial de navegación</span>
         </button>
-        <!-- Add more tutorial options here as they become available -->
+        <button
+          class="tutorial-menu-item"
+          on:click={() => {
+            show.grid = true;
+            showTutorialMenu = false;
+          }}
+        >
+          <img src="/icons/preview.svg" alt="Navbar" />
+          <span>Tutorial de horarios</span>
+        </button>
       </div>
     </div>
   {/if}
 </div>
 
-{#if showNavbarTutorial}
+{#if show.navbar}
   <NavbarTutorial on:complete={handleTutorialComplete} />
+{/if}
+{#if show.grid}
+  <GridTutorial on:complete={handleTutorialComplete} />
 {/if}
 
 <section class="schedule-grid">
@@ -178,10 +200,12 @@
                     {#if assignment}
                       <div
                         class="subject-pill"
-                        style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
+                        style="background-color: {assignment.color ||
+                          'black'}; color: {getContrastColor(
                           assignment.color || 'black',
                         )}"
-                        on:mousedown={(e) => handleAssignClick(e, assignment.id)}
+                        on:mousedown={(e) =>
+                          handleAssignClick(e, assignment.id)}
                       >
                         {assignment.shorten}
                       </div>
@@ -196,89 +220,3 @@
     {/each}
   </div>
 </section>
-
-<style>
-  .tutorial-menu-container {
-    position: relative;
-    display: flex;
-    flex-direction: row-reverse;
-    margin-bottom: 1rem;
-    margin-right: 1rem;
-  }
-  
-  .tutorial-menu-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.65rem;
-    height: 1.65rem;
-    transition: transform 0.2s ease;
-  }
-  
-  .tutorial-menu-button:hover {
-    transform: scale(1.1);
-  }
-  
-  .tutorial-menu-button img {
-    width: 100%;
-    height: 100%;
-  }
-  
-  .tutorial-menu-dropdown {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    width: 250px;
-    z-index: 1000;
-    overflow: hidden;
-  }
-  
-  .tutorial-menu-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .tutorial-menu-header h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
-  }
-  
-  .tutorial-menu-items {
-    padding: 8px 0;
-  }
-  
-  .tutorial-menu-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 16px;
-    width: 100%;
-    border: none;
-    background: none;
-    cursor: pointer;
-    text-align: left;
-    transition: background-color 0.2s ease;
-  }
-  
-  .tutorial-menu-item:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .tutorial-menu-item img {
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-  }
-  
-  .tutorial-menu-item span {
-    font-size: 14px;
-    color: #333;
-  }
-</style>
