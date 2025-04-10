@@ -3,6 +3,7 @@
     import { teachers, loadTeachers } from "$lib/modules/entities/teachersStore";
     import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
     import { onMount } from 'svelte';
+    import jsPDF from "jspdf";
 
     let selectedTeacherId: number | null = null;
     
@@ -52,6 +53,34 @@
             );
         });
     }
+
+    function generatePDF() {
+        const horarioElement = document.querySelector('.grid-container') as HTMLElement;
+
+        const selectedTeacher = teachersList.find(teacher => teacher.id === selectedTeacherId);
+
+        if (horarioElement && selectedTeacher) {
+            const doc = new jsPDF({
+                orientation: 'landscape', 
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            doc.text(`Profesor: ${selectedTeacher.name} ${selectedTeacher.father_lastname}`, 10, 5);
+
+            doc.html(horarioElement, {
+                callback: (doc) => {
+                    doc.save('horario.pdf');
+                },
+                x: 10,
+                y: 10,
+                html2canvas: {
+                    scale: 0.2, 
+                }
+            });
+        }
+    }
+
 </script>
 
 <div class="select-container">
@@ -62,6 +91,7 @@
             <option value={teacher.id}>{teacher.name} {teacher.father_lastname}</option>
         {/each}
     </select>
+    <button class="custom-select" on:click={generatePDF}>Descargar PDF</button>
 </div>
 
 <div class="grid-container">
@@ -120,6 +150,7 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
       text-align: center;
+      margin-left: 0.5rem;
     }
   
     .custom-select:hover {
