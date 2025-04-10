@@ -19,6 +19,9 @@ simplemente llama a la vista deseada.
   import SettingsView from '$lib/components/utils/Settings.svelte';
   import NotFoundView from '$lib/components/utils/NotFound.svelte';
   import MappingView from '$lib/components/utils/Mapping.svelte';
+
+  /* Vistas previas */
+  import TeacherSchedule from '$lib/components/utils/schedules/TeacherSchedule.svelte';
  
   let view: any;
   switch (data.page) {
@@ -39,6 +42,9 @@ simplemente llama a la vista deseada.
       break;
     case 'mapping':
       view = MappingView;
+      break;
+    case 'teacherSchedule':
+      view = TeacherSchedule;
       break;
     default:
       view = NotFoundView;
