@@ -4,7 +4,7 @@
   import { onMount, createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
-  
+
   let showTutorial = false;
   let currentStep = 0;
 
@@ -25,26 +25,24 @@
     },
     {
       selector: ".import-button",
-      description:
-        "Tambien podemos importar todos los datos de " + formName ? formName : "" + " desde un archivo xlsx (Microsoft Excel).",
+      description: `También podemos importar todos los datos de ${formName ? formName : ""} desde un archivo xlsx (Microsoft Excel).`,
       position: "top",
     },
     {
-      selector: '.search',
+      selector: ".search",
       description:
-        "Aqui podemos buscar cualquier " + formName ? formName : "" + " en cualquiera de sus secciones registradas.",
-      position: "bottom",
+        `Aqui podemos buscar cualquier ${formName ? formName : ""} en cualquiera de sus categorias registradas.`,
+      position: "left",
     },
     {
-      selector: '.table-container',
+      selector: ".table-container",
       description:
-        "Aqui se guardaran todos los datos importados o registrados.",
+        "Aqui se guardaran todos los datos registrados.",
       position: "top",
     },
     {
-      selector: '.btn',
-      description:
-        "Estos son tus botones para editar o eliminar un elemento.",
+      selector: ".btn",
+      description: "Estos son tus botones para editar o eliminar un elemento.",
       position: "left",
     },
   ];
@@ -71,14 +69,13 @@
     }
   }
 
-
   function endTutorial() {
     showTutorial = false;
     // Dispatch an event to notify the parent component
-    dispatch('complete');
+    dispatch("complete");
   }
 
-  onMount(() => { 
+  onMount(() => {
     startTutorial();
   });
 </script>
@@ -104,5 +101,3 @@
     </div>
   {/if}
 </div>
-
-
