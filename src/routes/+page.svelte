@@ -34,6 +34,17 @@
 
   onMount(() => {
     applyTheme();
+    
+    // Listen for the custom event to close the welcome screen
+    const handleCloseWelcomeScreen = () => {
+      showWelcomeScreen = false;
+    };
+    
+    window.addEventListener('closeWelcomeScreen', handleCloseWelcomeScreen);
+    
+    return () => {
+      window.removeEventListener('closeWelcomeScreen', handleCloseWelcomeScreen);
+    };
   });
 </script>
 
