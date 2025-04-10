@@ -37,6 +37,9 @@ export async function loadAssignments(): Promise<void> {
       teacherId: assignment.teacher_id,
       subjectId: assignment.subject_id,
       classroomId: assignment.classroom_id,
+      day: assignment.day,
+      moduleIndex: assignment.module_index,
+      groupId: assignment.group_id
     });
   });
 

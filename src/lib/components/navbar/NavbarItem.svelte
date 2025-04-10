@@ -49,11 +49,30 @@
       <ul class="submenu">
         {#each item.submenu as subitem}
           <li>
-            <img src={subitem.icon} alt={subitem.name} />
-            <span>{subitem.name}</span>
+            <button
+              class="submenu-item"
+              on:click={() => createWindow(subitem.menu)}
+            >
+              <img src={subitem.icon} alt={subitem.name} />
+              <span>{subitem.name}</span>
+            </button>
           </li>
         {/each}
       </ul>
     {/if}
   </div>
 {/each}
+
+<style>
+  .submenu-item {
+    background: none;
+    border: none;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-align: left;
+    color: white;
+  }
+</style>

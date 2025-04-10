@@ -18,6 +18,11 @@ simplemente llama a la vista deseada.
   /* Utilidad */
   import SettingsView from '$lib/components/utils/Settings.svelte';
   import NotFoundView from '$lib/components/utils/NotFound.svelte';
+  import MappingView from '$lib/components/utils/Mapping.svelte';
+
+  /* Vistas previas */
+  import TeacherSchedule from '$lib/components/utils/schedules/TeacherSchedule.svelte';
+  import GroupSchedule from '$lib/components/utils/schedules/GroupSchedule.svelte';
  
   let view: any;
   switch (data.page) {
@@ -35,6 +40,15 @@ simplemente llama a la vista deseada.
       break;
     case 'classroom':
       view = ClassroomView;
+      break;
+    case 'mapping':
+      view = MappingView;
+      break;
+    case 'teacherSchedule':
+      view = TeacherSchedule;
+      break;
+    case 'groupSchedule':
+      view = GroupSchedule;
       break;
     default:
       view = NotFoundView;
