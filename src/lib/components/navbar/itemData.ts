@@ -19,7 +19,7 @@ export const itemData = [
     it: 0, name: "Vista previa", icon: "/icons/eye.svg", menu: "todo",
     submenu: [
       { name: "Vista previa profesor", icon: "/icons/preview.svg", menu: "teacherSchedule", submenu: []},
-      { name: "Vista previa grupo", icon: "/icons/preview.svg", menu: "todo"},
+      { name: "Vista previa grupo", icon: "/icons/preview.svg", menu: "groupSchedule", submenu: []},
       { name: "Vista previa materia", icon: "/icons/preview.svg", menu: "todo"},
       { name: "Vista previa aula", icon: "/icons/preview.svg", menu: "todo"},
     ],
