@@ -75,6 +75,7 @@
       description={tutorialSteps[currentStep].description}
       position={tutorialSteps[currentStep].position}
       onClose={endTutorial}
+      zoomLevel={currentStep === 2 ? 1.05 : 1.01}
     />
 
     <div class="tutorial-controls">
