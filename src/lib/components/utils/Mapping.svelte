@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { classrooms } from "$lib/modules/entities/classroomStore";
+  import { onMount } from "svelte";
+  import { classrooms, loadClassrooms } from "$lib/modules/entities/classroomStore";
+  let assigningLetter = false;
   let drawing = false;
   let startX = 0;
   let startY = 0;
@@ -12,9 +14,17 @@
   let selectedColor = "black";
   let activeButton = "square";
 
-  const buildingLabels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"];
+  let showLetterModal = false;
+  let shapeToAssign: Shape | null = null;
+  let selectedLetter = "";
 
-  type Shape = | { type: "square"; x: number; y: number; width: number; height: number; color: string } | { type: "circle"; cx: number; cy: number; r: number; color: string };
+  $: buildingOptions = $classrooms.map(c => c.building_id);
+
+  onMount(() => {
+    loadClassrooms();
+  });
+
+  type Shape = | { type: "square"; x: number; y: number; width: number; height: number; color: string; letter?: string } | { type: "circle"; cx: number; cy: number; r: number; color: string; letter?: string };
 
   let shapes: Shape[] = [];
   let shapeType: "square" | "circle" | "" = "square";
@@ -22,7 +32,7 @@
   let currentShape: Shape | null = null;
 
   function startDraw(event: MouseEvent): void {
-    if (deleting || grouping) return;
+    if (deleting || grouping || assigningLetter) return;
     drawing = true;
     const { offsetX, offsetY } = event;
     startX = offsetX;
@@ -46,7 +56,7 @@
           "x:", currentShape.x, 
           "y:", currentShape.y, 
           "width:", currentShape.width, 
-          "height:", currentShape.height
+          "height:", currentShape.height,
         );
       } else if (currentShape.type === "circle") {
         console.log("Círculo terminado:", 
@@ -80,6 +90,7 @@
   function toggleDeleteMode() {
     deleting = !deleting;
     grouping = false;
+    assigningLetter = false;
     shapeType = "";
     activeButton = deleting ? "delete" : "";
   }
@@ -87,6 +98,7 @@
   function toggleGroupingMode() {
     grouping = !grouping;
     deleting = false;
+    assigningLetter = false;
     selectedShapes = [];
     showAcceptButton = false;
     shapeType = "";
@@ -103,12 +115,33 @@
     } else if (grouping) {
       selectedShapes = [...selectedShapes, shape];
       showAcceptButton = selectedShapes.length >= 2;
+    } else if (assigningLetter) {
+      shapeToAssign = shape;
+      selectedLetter = "";
+      showLetterModal = true;
     }
   }
 
   function acceptGrouping() {
     grouping = false;
     showAcceptButton = false;
+  }
+
+  function toggleAssignLetterMode() {
+    assigningLetter = !assigningLetter;
+    deleting = false;
+    grouping = false;
+    shapeType = "";
+    activeButton = assigningLetter ? "assign" : "";
+  }
+
+  function assignLetterToShape() {
+    if (!selectedLetter || !shapeToAssign) return;
+    shapeToAssign.letter = selectedLetter;
+    shapes = [...shapes];
+    showLetterModal = false;
+    shapeToAssign = null;
+    console.log("Shapes actuales:", shapes);
   }
 </script>
 
@@ -119,6 +152,12 @@
     background-color: #f0f0f0;
     border: 1px solid #ccc;
     margin-left: 2%;
+  }
+
+  select {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
   }
 
   .toolbar {
@@ -179,10 +218,11 @@
 
 <div class="toolbar">
   <div class="container">
-    <button class:selected={activeButton === "square"} on:click={() => {shapeType = "square"; deleting = false; grouping = false; activeButton = "square"}}>Cuadrado</button>
-    <button class:selected={activeButton === "circle"} on:click={() => {shapeType = "circle"; deleting = false; grouping = false; activeButton = "circle"}}>Círculo</button>
+    <button class:selected={activeButton === "square"} on:click={() => {shapeType = "square"; deleting = false; grouping = false; assigningLetter = false; activeButton = "square"}}>Cuadrado</button>
+    <button class:selected={activeButton === "circle"} on:click={() => {shapeType = "circle"; deleting = false; grouping = false; assigningLetter = false; activeButton = "circle"}}>Círculo</button>
     <button class:selected={activeButton === "delete"} on:click={toggleDeleteMode}>Eliminar</button>
     <button class:selected={activeButton === "group"} on:click={toggleGroupingMode}>Agrupar</button>
+    <button class:selected={activeButton === "assign"} on:click={toggleAssignLetterMode}>Asignar Letra</button>
     {#if showAcceptButton}
       <button on:click={acceptGrouping} class="aceptar">Aceptar</button>
     {/if}
@@ -192,6 +232,25 @@
     <input type="color" bind:value={selectedColor}/>
   </div>
 </div>
+
+{#if showLetterModal}
+  <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+              background-color: rgba(0, 0, 0, 0.5); display: flex;
+              justify-content: center; align-items: center; z-index: 1000;">
+    <div style="background: white; padding: 20px; border-radius: 10px; width: 300px; text-align: center;">
+      <h3>Asignar Letra</h3>
+      <select bind:value={selectedLetter}>
+        <option value="" disabled selected>Selecciona una letra</option>
+        {#each buildingOptions as letra}
+          <option value={letra}>{letra}</option>
+        {/each}
+      </select>
+      <br><br>
+      <button on:click={assignLetterToShape}>Aceptar</button>
+      <button on:click={() => { showLetterModal = false; shapeToAssign = null; }}>Cancelar</button>
+    </div>
+  </div>
+{/if}
 
 <svg
 class="canvas"
@@ -217,8 +276,14 @@ on:mousemove={mouseMove}
 {#each shapes as shape}
   {#if shape.type === "square"}
     <rect x={shape.x} y={shape.y} width={shape.width} height={shape.height} fill={shape.color} class:selected={selectedShapes.includes(shape) && grouping} on:click={() => handleShapeClick(shape)} />
+    {#if shape.letter}
+      <text x={shape.x + shape.width / 2} y={shape.y + shape.height / 2} text-anchor="middle" dominant-baseline="middle" font-size="16" fill="white">{shape.letter}</text>
+    {/if}
   {:else if shape.type === "circle"}
     <circle cx={shape.cx} cy={shape.cy} r={shape.r} fill={shape.color} class:selected={selectedShapes.includes(shape) && grouping} on:click={() => handleShapeClick(shape)} />
+    {#if shape.letter}
+      <text x={shape.cx} y={shape.cy} text-anchor="middle" dominant-baseline="middle" font-size="16" fill="white">{shape.letter}</text>
+    {/if}
   {/if}
 {/each}
 </svg>
