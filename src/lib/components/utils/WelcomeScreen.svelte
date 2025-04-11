@@ -392,8 +392,8 @@
                     step="5"
                   />
                   <select bind:value={durationUnit}>
-                    <option value="minutes">minutos</option>
-                    <option value="hours">horas</option>
+                    <option value="minutes">min</option>
+                    <option value="hours">hr</option>
                   </select>
                 </div>
               </div>
