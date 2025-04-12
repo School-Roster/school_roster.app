@@ -10,7 +10,6 @@
     getLocalAssignment,
     handleAssignDrop,
     handleAssignClick,
-    saveState,
   } from "$lib/modules/entities/assignments";
   import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
 
@@ -137,7 +136,3 @@
     {/each}
   </div>
 </section>
-
-<button on:click={ saveState }>
-Exportar
-</button>
