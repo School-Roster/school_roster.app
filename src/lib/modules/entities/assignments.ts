@@ -1,5 +1,3 @@
-import { BaseDirectory, writeFile, writeTextFile } from "@tauri-apps/api/fs";
-import { get } from "svelte/store";
 import { invoke } from "@tauri-apps/api";
 import { writable, type Writable } from "svelte/store";
 
@@ -100,45 +98,6 @@ export async function handleAssignClick(
     } catch (e) {
       console.log(e);
     }
-  }
-}
-
-
-async function ToJSON(): Promise<string> {
-  const scheduleArray: AssignmentItem[] = [];
-  const map = get(assignmentsStore); // Obtiene una instantánea de los datos
-
-  map.forEach((assignment, key) => {
-    const [group_id, day, module_index] = key.split("-");
-
-    scheduleArray.push({
-      id: assignment.id || 0,
-      group_id: Number(group_id),
-      day,
-      module_index: Number(module_index),
-      subject_id: assignment.subjectId,
-      teacher_id: assignment.teacherId,
-      classroom_id: assignment.classroomId,
-      subject_shorten: assignment.shorten,
-      subject_color: assignment.color,
-    });
-  });
-
-  return JSON.stringify(scheduleArray, null, 2);
-}
-
-export async function saveState() {
-  const json = await ToJSON()
-  try {
-    await writeTextFile({
-      path: "schedule.json",
-      contents: json,
-    }, {
-      dir: BaseDirectory.Desktop
-    })
-    console.log("Schedule saved to schedule.rs"); 
-  } catch (error) {
-    console.error("Error saving schedule:", error);    
   }
 }
 
