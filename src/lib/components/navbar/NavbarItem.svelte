@@ -2,6 +2,7 @@
   import "$styles/nav.scss";
   import { itemData } from "./itemData";
   import { generateSchedule } from "$lib/utilities/generateAlgorithm";
+  import { exportFile } from "$lib/utilities/fileHandler";
   export let isCollapsed: boolean;
   export let createWindow: (windowName: string) => void;
 </script>
@@ -25,7 +26,7 @@
       on:click={() => {
         if (item.menu == "generate") {
           generateSchedule();
-        } else {
+        } else if (item.menu != "submenu") {
           createWindow(item.menu);
         }
       }}
@@ -49,8 +50,19 @@
       <ul class="submenu">
         {#each item.submenu as subitem}
           <li>
-            <img src={subitem.icon} alt={subitem.name} />
-            <span>{subitem.name}</span>
+            <button
+              class="submenu-item"
+              on:click={() => {
+                if (subitem.menu == "export") {
+                  exportFile();
+                } else {
+                  console.log (subitem.menu);
+                }
+              }}
+            >
+              <img src={subitem.icon} alt={subitem.name} />
+              <span>{subitem.name}</span>
+            </button>
           </li>
         {/each}
       </ul>
