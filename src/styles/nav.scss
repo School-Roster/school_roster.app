@@ -227,6 +227,17 @@ nav {
       opacity: 0;
       transition: opacity 0.3s ease;
     }
+    .submenu-item {
+      background: none;
+      border: none;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      text-align: left;
+      color: white;
+    }
   }
 
   .arrow-container {
