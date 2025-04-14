@@ -2,7 +2,7 @@
   import "$styles/nav.scss";
   import { itemData } from "./itemData";
   import { generateSchedule } from "$lib/utilities/generateAlgorithm";
-  import { exportFile } from "$lib/utilities/fileHandler";
+  import { exportFile, importFile } from "$lib/utilities/fileHandler";
   export let isCollapsed: boolean;
   export let createWindow: (windowName: string) => void;
 </script>
@@ -55,6 +55,8 @@
               on:click={() => {
                 if (subitem.menu == "export") {
                   exportFile();
+                } else if (subitem.menu == "import") {
+                  importFile();
                 } else {
                   console.log (subitem.menu);
                 }
