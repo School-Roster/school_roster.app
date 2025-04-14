@@ -36,11 +36,11 @@ simplemente llama a la vista deseada.
     case 'classroom':
       view = ClassroomView;
       break;
-    default:
-      view = NotFoundView;
-      break;
     case 'login':
       view = loginView;
+      break;
+    default:
+      view = NotFoundView;
       break;
     
   }

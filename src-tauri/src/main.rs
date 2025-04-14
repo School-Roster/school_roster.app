@@ -43,13 +43,13 @@ async fn main() {
             crate::class::classrooms::delete_classrooms,
             crate::class::classrooms::update_classroom,
             // Utils
-            // crate::util::xlsx::read_xlsx,
             crate::util::assignments::get_all_assignments,
             crate::util::assignments::get_assignment,
             crate::util::assignments::save_assignment,
             crate::util::assignments::delete_assignment,
             crate::util::generate::generate_schedule,
-            crate::util::file_handler::export_database
+            crate::util::file_handler::export_file,
+            crate::util::file_handler::import_file
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())
