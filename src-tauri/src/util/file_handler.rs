@@ -1,15 +1,18 @@
 use crate::{
     class::{
-        classrooms::{get_classrooms, Classroom},
-        groups::{get_groups, Group, GroupSubjects},
-        subjects::{get_subjects, get_subjects_with_teachers, Subject, SubjectWithTeacher},
-        teachers::{get_all_teachers, Teacher},
+        classrooms::{create_classrooms, get_classrooms, Classroom},
+        groups::{create_groups, get_groups, Group, GroupSubjects},
+        subjects::{
+            create_subjects, get_subjects, get_subjects_with_teachers, link_subject_to_teacher,
+            Subject, SubjectWithTeacher,
+        },
+        teachers::{create_teachers, get_all_teachers, Teacher},
     },
-    db::AppState,
-    db::DB_NAME,
+    db::{AppState, DB_NAME},
+    util::assignments::save_assignment,
 };
 use bincode;
-use futures::FutureExt;
+use futures::{FutureExt, TryFutureExt};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
@@ -272,10 +275,76 @@ async fn import_file_impl(
     fs::copy(db_path, backup_path)?;
 
     // Importar los datos en la base de datos
-    // TODO: Aqui empieza a importar los datos
+    clear_data(pool.clone()).await;
 
-    // DEBUG
-    println!("{:?}", data.subjects);
+    create_subjects(pool.clone(), data.subjects).await;
+    create_teachers(pool.clone(), data.teachers).await;
+    link_subject_to_teacher(pool.clone(), data.teacher_subjects).await;
+    create_groups(pool.clone(), data.groups).await;
+    create_classrooms(pool.clone(), data.classrooms).await;
+    for assignment in data.assignments {
+        save_assignment(
+            pool.clone(),
+            assignment.group_id.into(),
+            assignment.day.as_str(),
+            assignment.module_index.into(),
+            assignment.subject_id.into(),
+            assignment.teacher_id.into(),
+        )
+        .await;
+    }
 
+    Ok(())
+}
+
+// WARNING
+/// Funcion para eliminar todos los datos registrados en el programa
+#[tauri::command]
+pub async fn delete_all_data(pool: tauri::State<'_, AppState>) -> Result<(), String> {
+    clear_data(pool).await;
+    Ok(())
+}
+
+/// Funcion que limpia todos los datos previamente guardados (solo las tablas usadas en el importe)
+// BUG: Por alguna razon no se puede utilizar '?', entonces los mensajes de WARNING en el compilador no se pueden arreglar.
+async fn clear_data(pool: tauri::State<'_, AppState>) -> Result<(), String> {
+    println!("Clearing previous data...");
+
+    sqlx::query("DELETE FROM group_subjects")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting group_subjects: {}", e));
+
+    sqlx::query("DELETE FROM teacher_subjects")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting teacher_subjects: {}", e));
+
+    sqlx::query("DELETE FROM subjects")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting subjects: {}", e));
+
+    sqlx::query("DELETE FROM teachers")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting teachers: {}", e));
+
+    sqlx::query("DELETE FROM groups")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting groups: {}", e));
+
+    sqlx::query("DELETE FROM classrooms")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting classrooms: {}", e));
+
+    sqlx::query("DELETE FROM assignments")
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error while deleting assignments: {}", e));
+
+    println!("Done!");
     Ok(())
 }

@@ -12,7 +12,7 @@ export const itemData = [
       { name: "Abrir", icon: "/icons/open.svg", menu: "import"},
       { name: "Guardar", icon: "/icons/save.svg", menu: "todo"},
       { name: "Guardar como", icon: "/icons/saveas.svg", menu: "export"},
-      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "todo"},
+      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "deleteAll"},
     ],
   },
   {
