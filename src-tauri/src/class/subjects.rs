@@ -138,6 +138,7 @@ pub async fn get_subjects(pool: tauri::State<'_, AppState>) -> Result<Vec<Subjec
     Ok(subjects)
 }
 
+#[allow(unused)]
 pub async fn get_subject_by_id(
     pool: &tauri::State<'_, AppState>,
     subject_id: i16,
@@ -292,4 +293,25 @@ pub async fn get_subjects_with_teachers(
     }
 
     Ok(subjects_with_teachers)
+}
+
+/// Funcion para vincular materias con profesores
+pub async fn link_subject_to_teacher(
+    pool: tauri::State<'_, AppState>,
+    data: Vec<SubjectWithTeacher>,
+) -> Result<(), String> {
+    for subject in data {
+        let teacher: SimpleTeacher = match &subject.assigned_teacher {
+            Some(teacher) => teacher.clone(),
+            None => return Err(String::from("Cannot find teacher module")),
+        };
+
+        sqlx::query("INSERT into teacher_subjects (teacher_id, subject_id) VALUES (?1, ?2)")
+            .bind(teacher.id)
+            .bind(subject.id)
+            .execute(&pool.db)
+            .await
+            .map_err(|e| format!("Error linking to table teacer_subjects: {}", e));
+    }
+    Ok(())
 }
