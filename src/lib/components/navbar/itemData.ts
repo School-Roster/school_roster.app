@@ -3,16 +3,22 @@
   muestran en el menú de la aplicación. Cada item tiene un
   nombre, un icono y un menú al que pertenece. Además, cada
   item puede tener un submenu con otros items.
+
+  * it: Posicion
+  * name: Nombre que se muestra
+  * icon: Icono que muestra
+  * menu: Nombre de funcion que despliega
+  * submenu: Arreglo para items que aparecen en hover
 */
 
 export const itemData = [
   {
-    it: 1, name: "Archivo", icon: "/icons/file.svg", menu: "todo",
+    it: 1, name: "Archivo", icon: "/icons/file.svg", menu: "submenu",
     submenu: [ { name: "Nuevo", icon: "/icons/new.svg", menu: "todo"},
-      { name: "Abrir", icon: "/icons/open.svg", menu: "todo"},
+      { name: "Abrir", icon: "/icons/open.svg", menu: "import"},
       { name: "Guardar", icon: "/icons/save.svg", menu: "todo"},
-      { name: "Guardar como", icon: "/icons/saveas.svg", menu: "todo"},
-      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "todo"},
+      { name: "Guardar como", icon: "/icons/saveas.svg", menu: "export"},
+      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "deleteAll"},
     ],
   },
   {
@@ -40,7 +46,7 @@ export const itemData = [
   { it: 0, name: "Profesores", icon: "/icons/teacher.svg", menu: "teachers", submenu: [] },
   { it: 0, name: "Aulas", icon: "/icons/door.svg", menu: "classroom", submenu: [] },
 
-  { it: 3, name: "IA", icon: "/icons/robot.svg", menu: "todo", submenu: [] },
+  { it: 3, name: "IA", icon: "/icons/robot.svg", menu: "ai", submenu: [] },
   { it: 0, name: "Historial", icon: "/icons/clock.svg", menu: "todo", submenu: [] },
 
   { it: 0, name: "Configuracion", icon: "/icons/school.svg", menu: "settings", submenu: [] },

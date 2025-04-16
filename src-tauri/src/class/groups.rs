@@ -31,6 +31,21 @@ impl<'r> FromRow<'r, SqliteRow> for Group {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GroupSubjects {
+    pub group_id: i16,
+    pub subject_id: i16,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for GroupSubjects {
+    fn from_row(row: &'r SqliteRow) -> Result<Self, SqlxError> {
+        Ok(GroupSubjects {
+            group_id: row.try_get("group_id")?,
+            subject_id: row.try_get("subject_id")?,
+        })
+    }
+}
+
 /// Estructura de un estudiante
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Student {
@@ -116,6 +131,7 @@ pub async fn create_group(
 /// * `pool` - Conexion a la base de datos
 /// * `groups` - Vector de grupos
 /// Retorna Ok() si todo sale exitoso de lo contrario manda un mensaje con el error
+#[allow(unused)]
 #[tauri::command]
 pub async fn create_groups(
     pool: tauri::State<'_, AppState>,
@@ -217,6 +233,21 @@ pub async fn get_groups(
     Ok(groups_with_subjects)
 }
 
+/// Funcion para conseguir las materias de todos los grupos (backend function)
+/// # Argumentos
+/// * `pool` - Conexion con la base datos
+/// Retorna un vector GroupSubjects
+// pub async fn get_all_group_subjects(
+//     pool: &tauri::State<'_, AppState>,
+// ) -> Result<Vec<GroupSubjects>, String> {
+//     let query: Vec<GroupSubjects> = sqlx::query("SELECT group_id, subject_id FROM groups_subjects")
+//         .fetch(&pool.db)
+//         .await
+//         .map_err(|e| format!("An error occurred while getting the assignments: {}", e))?;
+
+//     Ok(query)
+// }
+
 /// Funcion para conseguir las materias de un grupo
 /// # Argumentos
 /// * `pool` - Conexion a la base de datos
@@ -271,6 +302,7 @@ pub async fn get_group_subjects(
     Ok(required_subjects)
 }
 
+#[allow(unused)]
 pub async fn get_group_by_id(
     pool: &tauri::State<'_, AppState>,
     group_id: i16,
@@ -378,6 +410,7 @@ pub async fn update_group(
 /// * `students` - Vector de estudiantes
 /// * `group_id` - ID del grupo al que pertenecen los estudiantes
 /// Retorna Ok() si todo sale exitoso de lo contrario manda un mensaje con el error
+#[allow(unused)]
 #[tauri::command]
 pub async fn create_students(
     pool: tauri::State<'_, AppState>,

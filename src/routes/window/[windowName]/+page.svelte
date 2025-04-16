@@ -14,6 +14,7 @@ simplemente llama a la vista deseada.
   import GroupsView from '$lib/components/forms/groups/GroupsView.svelte';
   import ClassroomView from '$lib/components/forms/classrooms/ClassroomView.svelte';
   import loginView from'$lib/components/forms/login/login-view.svelte';
+  import AiScheduler from '$lib/components/utils/AIScheduler.svelte';
 
   /* Utilidad */
   import SettingsView from '$lib/components/utils/Settings.svelte';
@@ -36,11 +37,14 @@ simplemente llama a la vista deseada.
     case 'classroom':
       view = ClassroomView;
       break;
-    default:
-      view = NotFoundView;
-      break;
     case 'login':
       view = loginView;
+      break;
+    case 'ai':
+      view = AiScheduler;
+      break;
+    default:
+      view = NotFoundView;
       break;
     
   }
