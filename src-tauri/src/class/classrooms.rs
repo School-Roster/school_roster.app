@@ -84,7 +84,6 @@ pub async fn create_classrooms(
         .map_err(|e| format!("Failed to start transaction! {}", e))?;
 
     for c in classroom {
-        println!("Aula: {:?}", c);
         let availability_json = serde_json::to_string(&c.availability)
             .map_err(|e| format!("Failed to serialize availability: {}", e))?;
         sqlx::query(
@@ -173,7 +172,6 @@ pub async fn update_classroom(
 ) -> Result<(), String> {
     let availability_json = serde_json::to_string(&classroom.availability)
         .map_err(|e| format!("Failed to serialize availability: {}", e))?;
-    println!("{:?}", classroom);
     sqlx::query(
         "UPDATE classroom SET
             building_number = ?1,
