@@ -3,6 +3,12 @@
   muestran en el menú de la aplicación. Cada item tiene un
   nombre, un icono y un menú al que pertenece. Además, cada
   item puede tener un submenu con otros items.
+
+  * it: Posicion
+  * name: Nombre que se muestra
+  * icon: Icono que muestra
+  * menu: Nombre de funcion que despliega
+  * submenu: Arreglo para items que aparecen en hover
 */
 
 export const itemData = [
@@ -40,7 +46,7 @@ export const itemData = [
   { it: 0, name: "Profesores", icon: "/icons/teacher.svg", menu: "teachers", submenu: [] },
   { it: 0, name: "Aulas", icon: "/icons/door.svg", menu: "classroom", submenu: [] },
 
-  { it: 3, name: "IA", icon: "/icons/robot.svg", menu: "todo", submenu: [] },
+  { it: 3, name: "IA", icon: "/icons/robot.svg", menu: "ai", submenu: [] },
   { it: 0, name: "Historial", icon: "/icons/clock.svg", menu: "todo", submenu: [] },
 
   { it: 0, name: "Configuracion", icon: "/icons/school.svg", menu: "settings", submenu: [] },
