@@ -23,6 +23,7 @@ simplemente llama a la vista deseada.
   /* Vistas previas */
   import TeacherSchedule from '$lib/components/utils/schedules/TeacherSchedule.svelte';
   import GroupSchedule from '$lib/components/utils/schedules/GroupSchedule.svelte';
+  import SubjectSchedule from '$lib/components/utils/schedules/SubjectSchedule.svelte';
  
   let view: any;
   switch (data.page) {
@@ -49,6 +50,9 @@ simplemente llama a la vista deseada.
       break;
     case 'groupSchedule':
       view = GroupSchedule;
+      break;
+    case 'subjectSchedule':
+      view = SubjectSchedule;
       break;
     default:
       view = NotFoundView;
