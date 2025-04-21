@@ -8,7 +8,10 @@
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
-  import { UndoRedoStore } from "$lib/stores/StackUndoRedo";
+  import {
+    commitChange,
+    type actionType,
+  } from "$lib/stores/AssignmentUndoRedo";
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -84,21 +87,18 @@
           parseInt(groupId, 10),
           day,
           parseInt(moduleIndex, 10),
-          draggedSubject.id,
+          draggedSubject.id!,
           draggedSubject.assigned_teacher?.id,
         );
 
-        UndoRedoStore.commitChanges([
-          {
-            groupId: parseInt(groupId, 10),
-            day: day,
-            moduleIndex: parseInt(moduleIndex, 10),
-            subjectId: draggedSubject?.id,
-            teacherId: draggedSubject?.assigned_teacher?.id,
-          },
-        ]);
-
-        console.log(JSON.stringify($UndoRedoStore, null, 2));
+        commitChange({
+          action: "create",
+          day,
+          groupId: parseInt(groupId, 10),
+          moduleIndex: parseInt(moduleIndex, 10),
+          subjectId: draggedSubject.id,
+          teacherId: draggedSubject.assigned_teacher?.id,
+        });
 
         // Provide visual feedback
         dropTarget.classList.add("flash-highlight");
@@ -209,6 +209,5 @@
       </div>
     </div>
   {/if}
-  <button on:click={() => UndoRedoStore.undo()}> Undo </button>
-  <button on:click={() => UndoRedoStore.redo()}> Redo </button>
+  <!-- <button on:click={() => UndoRedoStore.undo()}> Undo </button> -->
 </div>
