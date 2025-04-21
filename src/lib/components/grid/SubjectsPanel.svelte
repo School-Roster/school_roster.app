@@ -9,8 +9,9 @@
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
   import {
-    commitChange,
-    type actionType,
+    commitChange,findDropTarget,
+    redoChange,
+    undoChange
   } from "$lib/stores/AssignmentUndoRedo";
 
   let selectedSubject: SubjectItem | null = null;
@@ -88,7 +89,7 @@
           day,
           parseInt(moduleIndex, 10),
           draggedSubject.id!,
-          draggedSubject.assigned_teacher?.id,
+          draggedSubject.assigned_teacher?.id!,
         );
 
         commitChange({
@@ -96,8 +97,8 @@
           day,
           groupId: parseInt(groupId, 10),
           moduleIndex: parseInt(moduleIndex, 10),
-          subjectId: draggedSubject.id,
-          teacherId: draggedSubject.assigned_teacher?.id,
+          subjectId: draggedSubject.id!,
+          teacherId: draggedSubject.assigned_teacher?.id!,
         });
 
         // Provide visual feedback
@@ -112,21 +113,6 @@
     isDragging = false;
     draggedSubject = null;
     removeGhostElement();
-  }
-
-  // Find valid drop target under cursor
-  function findDropTarget(e: MouseEvent): HTMLElement | null {
-    // Get all elements at the current mouse position
-    const elements = document.elementsFromPoint(e.clientX, e.clientY);
-
-    // Find the first element with class 'module-cell'
-    for (const el of elements) {
-      if (el.classList.contains("module-cell")) {
-        return el as HTMLElement;
-      }
-    }
-
-    return null;
   }
 
   // Create visual ghost element
@@ -209,5 +195,6 @@
       </div>
     </div>
   {/if}
-  <!-- <button on:click={() => UndoRedoStore.undo()}> Undo </button> -->
+  <button on:click={async() => await undoChange()}> Undo </button>
+  <button on:click={async() => await redoChange()}> Redo </button>
 </div>
