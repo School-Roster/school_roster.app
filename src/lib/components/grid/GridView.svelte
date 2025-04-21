@@ -11,7 +11,8 @@
     handleAssignDrop,
     handleAssignClick,
   } from "$lib/modules/entities/assignments";
-  import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
+  import { subjectsWithTeachers, loadSubjectsWithTeachers, type SubjectItem } from "$lib/modules/entities/subjectsStore";
+  import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -57,6 +58,30 @@
     );
   }
 
+  function handleMiddleClick(e: MouseEvent, assignment: undefined, subject: SubjectItem): void {
+   
+    const dropTarget = findDropTarget(e)
+    const groupId = dropTarget?.getAttribute("data-group-id");
+    const day = dropTarget?.getAttribute("data-day");
+    const moduleIndex = dropTarget?.getAttribute("data-module-index")
+
+    if (!groupId || !day || !moduleIndex) return
+
+    if (groupId && day && moduleIndex) {
+      handleAssignClick(e, assignment);
+      commitChange(
+        {
+          action: "delete",
+          day,
+          groupId: parseInt(groupId, 10),
+          moduleIndex: parseInt(moduleIndex, 10),
+          subjectId: subject.id!,
+          teacherId: subject.assigned_teacher?.id!
+        }
+      )
+    }
+  }
+
   function handleDragOver(target: HTMLElement): void{
     target.classList.add("drag-over");
   }
@@ -72,6 +97,11 @@
       document.removeEventListener('custom:drop', handleCustomDrop as EventListener);
     };
   });
+
+  $: assignedSubjects = $subjectsWithTeachers.filter(
+    (item) => item.assigned_teacher,
+  );
+
 </script>
 
 <section class="schedule-grid">
@@ -98,37 +128,39 @@
         {#each days as day}
           <div class="day-modules">
             {#each Array(modulesPerDay) as _, moduleIndex}
-              {#key $assignmentsStore}
-                {#if true}
-                  {@const assignment = getLocalAssignment(
-                    group.id,
-                    day,
-                    moduleIndex,
-                  )}
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  <div
-                    class="module-cell"
-                    class:has-subject={assignment}
-                    data-group-id={group.id}
-                    data-day={day}
-                    data-module-index={moduleIndex}
-                    on:mouseenter={(e) => handleDragOver(e.currentTarget)}
-                    on:mouseleave={(e) => handleDragLeave(e.currentTarget)}
-                  >
-                    {#if assignment}
-                      <div
-                        class="subject-pill"
-                        style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
-                          assignment.color || 'black',
-                        )}"
-                        on:mousedown={(e) => handleAssignClick(e, assignment.id)}
-                      >
-                        {assignment.shorten}
-                      </div>
-                    {/if}
-                  </div>
-                {/if}
-              {/key}
+              {#each assignedSubjects as subject}
+                {#key $assignmentsStore}
+                  {#if true}
+                    {@const assignment = getLocalAssignment(
+                      group.id,
+                      day,
+                      moduleIndex,
+                    )}
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <div
+                      class="module-cell"
+                      class:has-subject={assignment}
+                      data-group-id={group.id}
+                      data-day={day}
+                      data-module-index={moduleIndex}
+                      on:mouseenter={(e) => handleDragOver(e.currentTarget)}
+                      on:mouseleave={(e) => handleDragLeave(e.currentTarget)}
+                    >
+                      {#if assignment}
+                        <div
+                          class="subject-pill"
+                          style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
+                            assignment.color || 'black',
+                          )}"
+                          on:mousedown={(e) => handleMiddleClick(e, assignment.id, subject)}
+                        >
+                          {assignment.shorten}
+                        </div>
+                      {/if}
+                    </div>
+                  {/if}
+                {/key}
+              {/each}
             {/each}
           </div>
         {/each}
