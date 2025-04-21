@@ -59,3 +59,43 @@ pub async fn query_ai(message: String, state: tauri::State<'_, AIState>) -> Resu
         Err(e) => Err(format!("Inference error: {}", e)),
     }
 }
+
+#[tauri::command]
+pub async fn download_model(handle: tauri::AppHandle) -> Result<String, String> {
+    // Directorio en el que se guardara
+    let app_dir = handle.path_resolver().app_dir().unwrap();
+    let models_dir = app_dir.join("models");
+    let model_path = models_dir.join("tinyllama-1.1b-chat-v1.0.gguf");
+
+    // Create models directory if it doesn't exist
+    if !models_dir.exists() {
+        std::fs::create_dir_all(&models_dir).map_err(|e| e.to_string())?;
+    }
+
+    // Salta el proceso
+    if model_path.exists() {
+        return Ok("Modelo ya existe".to_string());
+    }
+
+    // Download model
+    let model_url = "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+
+    let client = reqwest::Client::new();
+    let response = client
+        .get(model_url)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "No se pudo cargar el modelo, error: {}",
+            response.status()
+        ));
+    }
+
+    let bytes = response.bytes().await.map_err(|e| e.to_string())?;
+    std::fs::write(&model_path, bytes).map_err(|e| e.to_string())?;
+
+    Ok("Modelo descargado con exito".to_string())
+}
