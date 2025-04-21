@@ -101,12 +101,11 @@ export async function handleAssignClick(
   }
 }
 
-export async function deleteAssignment(
-  assign_id: unknown
-): Promise<void> {
+export async function deleteAssignment(assign_id: unknown): Promise<void> {
   try {
     await invoke("delete_assignment", {assign_id})
-    loadAssignments()
+    await loadAssignments()
+    console.log("Deleted assignment with id:", assign_id);
   } catch (e) {
     console.log(e)
   }
