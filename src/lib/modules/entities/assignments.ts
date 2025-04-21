@@ -101,6 +101,17 @@ export async function handleAssignClick(
   }
 }
 
+export async function deleteAssignment(
+  assign_id: unknown
+): Promise<void> {
+  try {
+    await invoke("delete_assignment", {assign_id})
+    loadAssignments()
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 export async function saveAssignment(
   groupId: number,
   day: string,
