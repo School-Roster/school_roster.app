@@ -51,8 +51,6 @@ async fn main() {
             crate::util::file_handler::export_file,
             crate::util::file_handler::import_file,
             crate::util::file_handler::delete_all_data,
-            crate::util::ai::init_model,
-            crate::util::ai::query_ai,
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
         .build(tauri::generate_context!())

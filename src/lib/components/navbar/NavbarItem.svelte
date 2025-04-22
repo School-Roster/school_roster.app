@@ -3,7 +3,6 @@
   import { itemData } from "./itemData";
   import { generateSchedule } from "$lib/utilities/generateAlgorithm";
   import { deleteAll, exportFile, importFile } from "$lib/utilities/fileHandler";
-  import AiScheduler from "../utils/AIScheduler.svelte";
   export let isCollapsed: boolean;
   export let createWindow: (windowName: string) => void;
 </script>
@@ -27,9 +26,6 @@
       on:click={() => {
         if (item.menu == "generate") {
           generateSchedule();
-        } else if (item.menu == "ai") {
-          <AiScheduler />
-        }
         } else if (item.menu != "submenu") {
           createWindow(item.menu);
         }

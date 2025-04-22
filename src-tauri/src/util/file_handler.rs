@@ -307,6 +307,7 @@ pub async fn delete_all_data(pool: tauri::State<'_, AppState>) -> Result<(), Str
 
 /// Funcion que limpia todos los datos previamente guardados (solo las tablas usadas en el importe)
 // BUG: Por alguna razon no se puede utilizar '?', entonces los mensajes de WARNING en el compilador no se pueden arreglar.
+#[allow(unused_must_use)]
 async fn clear_data(pool: tauri::State<'_, AppState>) -> Result<(), String> {
     println!("Clearing previous data...");
 
