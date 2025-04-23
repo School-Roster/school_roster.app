@@ -1,101 +1,159 @@
-use llama_rs::{InterfaceParameters, InterfaceResponse, Model, ModelParameters};
+// src-tauri/src/ai_model.rs
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tauri::{Manager, State};
+use tauri::AppHandle;
+use tokenizers::Tokenizer;
+use tract_onnx::prelude::*;
 
-/// Estructura de datos para almacenar el estado de la inteligencia
-pub struct AIState {
-    model: Arc<Mutex<Model>>,
-    conversation_history: Arc<Mutex<Vec<String>>>,
+// Define type for model session
+type ModelSession = Arc<
+    Mutex<
+        Option<(
+            tract_onnx::prelude::TypedRunnableModel<Graph<TypedFact, Box<dyn TypedOp>>>,
+            Tokenizer,
+        )>,
+    >,
+>;
+
+// Status response
+#[derive(Serialize, Deserialize)]
+pub struct StatusResponse {
+    loaded: bool,
+    message: String,
 }
 
-/// Funcion para inicializar el modelo AI
-// TODO: Verificar los usuarios
-#[tauri::command]
-pub async fn init_model(handle: tauri::AppHandle) -> Result<String, String> {
-    let app_dir = handle.path_resolver().app_dir().unwrap();
-    println!("{:?}", app_dir);
-    let path = app_dir.join("models/llama-3-8b-q4.gguf");
-
-    let params = ModelParameters {
-        path: path.to_str().unwrap().to_string(),
-        ..Default::default()
-    };
-
-    match Model::load(params) {
-        Ok(model) => {
-            handle.manage(AIState {
-                model: Arc::new(Mutex::new(model)),
-                conversation_history: Arc::new(Mutex::new(Vec::new())),
-            });
-            Ok(String::from("Model loaded successfully"))
-        }
-        Err(e) => Err(format!("Failed to load model: {}", e)),
-    }
+#[derive(Serialize, Deserialize)]
+pub struct GenerateRequest {
+    prompt: String,
+    max_length: Option<usize>,
 }
 
-#[tauri::command]
-pub async fn query_ai(message: String, state: tauri::State<'_, AIState>) -> Result<String, String> {
-    let mut history = state.conversation_history.lock().unwrap();
-    history.push(format!("User: {}", message));
-
-    // Crea el prompt
-    let system_prompt = "You are an AI assistant helping with school scheduling. You can modify class schedules, suggest optimal arrangements, and answer questions about the schedule.";
-
-    // Crea un prompt completo, con el historial y el prompt por defecto
-    let full_prompt = format!("{}\n\n{}\n\nAssistant:", system_prompt, history.join("\n"));
-
-    let model = state.model.lock().unwrap();
-    let params = InterfaceParameters {
-        max_tokens: 512, // DEBUG
-        temperature: 0.7,
-        ..Default::default()
-    };
-
-    match model.inference(&full_prompt, &params) {
-        Ok(response) => {
-            history.push(format!("Assistant: {}", response.text));
-            Ok(response.text)
-        }
-        Err(e) => Err(format!("Inference error: {}", e)),
-    }
+// Load the model and tokenizer
+pub fn create_model_session() -> ModelSession {
+    Arc::new(Mutex::new(None))
 }
 
 #[tauri::command]
-pub async fn download_model(handle: tauri::AppHandle) -> Result<String, String> {
-    // Directorio en el que se guardara
-    let app_dir = handle.path_resolver().app_dir().unwrap();
-    let models_dir = app_dir.join("models");
-    let model_path = models_dir.join("tinyllama-1.1b-chat-v1.0.gguf");
-
-    // Create models directory if it doesn't exist
-    if !models_dir.exists() {
-        std::fs::create_dir_all(&models_dir).map_err(|e| e.to_string())?;
+pub async fn load_model(
+    app_handle: AppHandle,
+    model_session: tauri::State<'_, ModelSession>,
+) -> Result<StatusResponse, String> {
+    // Check if model is already loaded
+    if model_session.lock().unwrap().is_some() {
+        return Ok(StatusResponse {
+            loaded: true,
+            message: "Model already loaded".to_string(),
+        });
     }
 
-    // Salta el proceso
-    if model_path.exists() {
-        return Ok("Modelo ya existe".to_string());
-    }
+    // Get paths
+    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let model_path = app_data_dir.join("models").join("model.onnx");
 
-    // Download model
-    let model_url = "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+    let resource_path = app_handle
+        .path_resolver()
+        .resolve_resource("models/tokenizer.json")
+        .ok_or_else(|| "Could not resolve tokenizer path".to_string())?;
 
-    let client = reqwest::Client::new();
-    let response = client
-        .get(model_url)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    // Load tokenizer
+    let tokenizer = Tokenizer::from_file(resource_path)
+        .map_err(|e| format!("Failed to load tokenizer: {}", e))?;
 
-    if !response.status().is_success() {
-        return Err(format!(
-            "No se pudo cargar el modelo, error: {}",
-            response.status()
-        ));
-    }
+    // Load model
+    let model = load_onnx_model(&model_path).map_err(|e| format!("Failed to load model: {}", e))?;
 
-    let bytes = response.bytes().await.map_err(|e| e.to_string())?;
-    std::fs::write(&model_path, bytes).map_err(|e| e.to_string())?;
+    // Store model and tokenizer
+    *model_session.lock().unwrap() = Some((model, tokenizer));
 
-    Ok("Modelo descargado con exito".to_string())
+    Ok(StatusResponse {
+        loaded: true,
+        message: "Model loaded successfully".to_string(),
+    })
+}
+
+fn load_onnx_model(
+    path: &PathBuf,
+) -> Result<
+    tract_onnx::prelude::TypedRunnableModel<Graph<TypedFact, Box<dyn TypedOp>>>,
+    Box<dyn std::error::Error>,
+> {
+    // Load the model
+    let model = tract_onnx::onnx()
+        .model_for_path(path)?
+        .into_optimized()?
+        .into_runnable()?;
+
+    Ok(model)
+}
+
+#[tauri::command]
+pub async fn generate_text(
+    model_session: tauri::State<'_, ModelSession>,
+    request: GenerateRequest,
+) -> Result<String, String> {
+    let max_length = request.max_length.unwrap_or(50);
+    let prompt = request.prompt;
+
+    // Get locked model session
+    let session_guard = model_session.lock().unwrap();
+    let session = session_guard
+        .as_ref()
+        .ok_or_else(|| "Model not loaded".to_string())?;
+
+    let (model, tokenizer) = session;
+
+    // Tokenize input
+    let encoding = tokenizer
+        .encode(prompt, true)
+        .map_err(|e| format!("Tokenization error: {}", e))?;
+
+    let input_ids = encoding.get_ids().to_vec();
+
+    // Create input tensor
+    let input_tensor = tract_ndarray::Array2::from_shape_vec(
+        (1, input_ids.len()),
+        input_ids.iter().map(|&id| id as i64).collect(),
+    )
+    .map_err(|e| format!("Failed to create input tensor: {}", e))?;
+
+    // Run inference
+    let outputs = model
+        .run(tvec!(input_tensor.into_tensor().into()))
+        .map_err(|e| format!("Inference error: {}", e))?;
+
+    // Extract output ids from the model outputs
+    // Note: This is simplified - you'll need to adjust based on your model's actual output format
+    let output = outputs[0]
+        .to_array_view::<i64>()
+        .map_err(|e| format!("Failed to convert output: {}", e))?;
+
+    let output_ids: Vec<u32> = output
+        .iter()
+        .take(max_length)
+        .map(|&id| id as u32)
+        .collect();
+
+    // Decode output tokens
+    let result = tokenizer
+        .decode(&output_ids, true)
+        .map_err(|e| format!("Decoding error: {}", e))?;
+
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn get_model_status(
+    model_session: tauri::State<'_, ModelSession>,
+) -> Result<StatusResponse, String> {
+    let is_loaded = model_session.lock().unwrap().is_some();
+
+    Ok(StatusResponse {
+        loaded: is_loaded,
+        message: if is_loaded {
+            "Model loaded and ready".to_string()
+        } else {
+            "Model not loaded".to_string()
+        },
+    })
 }

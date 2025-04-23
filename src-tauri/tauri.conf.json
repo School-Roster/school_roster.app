@@ -25,6 +25,14 @@
       },
       "fs": {
         "all": true,
+        "scope": [
+          "$APPDIR/models",
+          "$RESOURCE/models",
+          "$APPDATA",
+          "$APPDATA/**",
+          "$APPDATA/models",
+          "$APPDATA/models/**"
+        ],
         "readFile": true,
         "writeFile": true,
         "readDir": true,
@@ -34,6 +42,9 @@
         "removeFile": true,
         "renameFile": true,
         "exists": true
+      },
+      "path": {
+        "all": true
       },
       "window": {
         "all": true,
@@ -85,6 +96,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
+      "resources": ["models/*"],
       "identifier": "school_roster.app",
       "icon": [
         "icons/32x32.png",

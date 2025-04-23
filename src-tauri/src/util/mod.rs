@@ -1,4 +1,4 @@
-// pub mod ai;
+pub mod ai;
 pub mod assignments;
 pub mod constraints;
 pub mod file_handler;
