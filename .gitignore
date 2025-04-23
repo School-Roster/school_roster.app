@@ -3,6 +3,8 @@ pnpm-lock.yaml
 
 test/
 
+src-tauri/models
+
 # Logs
 logs
 *.log
