@@ -21,6 +21,7 @@ tauri-build = { version = "1", features = [] }
 [dependencies]
 tauri = { version = "1", features = [ "path-all", "fs-all", "dialog-all", "window-all", "shell-open"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+reqwest = { version = "0.12.15", features = [ "json" ] }
 tokio = { version = "1.40.0", features = ["time", "rt", "macros"] }
 # sqlx = { version = "0.8.1", features = ["sqlite", "runtime-tokio", "macros"] }
 sqlx = { version = "0.6.3", features = ["sqlite", "runtime-tokio-native-tls", "macros"] }

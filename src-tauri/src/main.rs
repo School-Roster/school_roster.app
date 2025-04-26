@@ -6,7 +6,6 @@ mod db;
 mod util;
 
 use crate::db::{connect, AppState};
-use crate::util::ai::create_model_session;
 use std::process;
 use tauri::Manager as _; // Necesario para poder usar manage()
 
@@ -52,12 +51,11 @@ async fn main() {
             crate::util::file_handler::export_file,
             crate::util::file_handler::import_file,
             crate::util::file_handler::delete_all_data,
-            crate::util::ai::load_model,
-            crate::util::ai::generate_text,
-            crate::util::ai::get_model_status
+            crate::util::ai::init_model,
+            crate::util::ai::query_ai,
+            crate::util::ai::check_api_key
         ])
         .plugin(tauri_plugin_store::Builder::default().build())
-        .manage(create_model_session())
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
