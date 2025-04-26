@@ -1,159 +1,176 @@
-// src-tauri/src/ai_model.rs
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tauri::AppHandle;
-use tokenizers::Tokenizer;
-use tract_onnx::prelude::*;
+use tauri::{Manager, State};
 
-// Define type for model session
-type ModelSession = Arc<
-    Mutex<
-        Option<(
-            tract_onnx::prelude::TypedRunnableModel<Graph<TypedFact, Box<dyn TypedOp>>>,
-            Tokenizer,
-        )>,
-    >,
->;
-
-// Status response
-#[derive(Serialize, Deserialize)]
-pub struct StatusResponse {
-    loaded: bool,
-    message: String,
+/// Structure to store the AI state
+pub struct AIState {
+    api_key: String,
+    conversation_history: Arc<Mutex<Vec<String>>>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct GenerateRequest {
-    prompt: String,
-    max_length: Option<usize>,
+#[derive(Serialize)]
+struct ApiRequest {
+    model: String,
+    messages: Vec<Message>,
+    max_tokens: Option<u32>,
+    temperature: Option<f32>,
+    stream: bool,
 }
 
-// Load the model and tokenizer
-pub fn create_model_session() -> ModelSession {
-    Arc::new(Mutex::new(None))
+#[derive(Serialize)]
+struct Message {
+    role: String,
+    content: String,
+}
+
+#[derive(Deserialize)]
+struct ApiResponse {
+    choices: Vec<Choice>,
+}
+
+#[derive(Deserialize)]
+struct Choice {
+    message: ResponseMessage,
+}
+
+#[derive(Deserialize)]
+struct ResponseMessage {
+    content: String,
+}
+
+/// Initialize the AI state with API key
+#[tauri::command]
+pub async fn init_model(api_key: String, handle: tauri::AppHandle) -> Result<String, String> {
+    handle.manage(AIState {
+        api_key,
+        conversation_history: Arc::new(Mutex::new(Vec::new())),
+    });
+
+    Ok(String::from(
+        "OpenRouter API connection initialized successfully",
+    ))
 }
 
 #[tauri::command]
-pub async fn load_model(
-    app_handle: AppHandle,
-    model_session: tauri::State<'_, ModelSession>,
-) -> Result<StatusResponse, String> {
-    // Check if model is already loaded
-    if model_session.lock().unwrap().is_some() {
-        return Ok(StatusResponse {
-            loaded: true,
-            message: "Model already loaded".to_string(),
-        });
+pub async fn query_ai(message: String, state: tauri::State<'_, AIState>) -> Result<String, String> {
+    // Add message to conversation history and create messages before async operation
+    let messages = {
+        let mut history = state.conversation_history.lock().unwrap();
+        history.push(format!("User: {}", message));
+
+        // System prompt
+        let system_prompt = "You are an AI assistant helping with school scheduling. You can modify class schedules, suggest optimal arrangements, and answer questions about the schedule.";
+
+        // Prepare messages for API
+        let mut messages = vec![Message {
+            role: "system".to_string(),
+            content: system_prompt.to_string(),
+        }];
+
+        // Add conversation history
+        for entry in history.iter() {
+            if entry.starts_with("User: ") {
+                messages.push(Message {
+                    role: "user".to_string(),
+                    content: entry.replace("User: ", ""),
+                });
+            } else if entry.starts_with("Assistant: ") {
+                messages.push(Message {
+                    role: "assistant".to_string(),
+                    content: entry.replace("Assistant: ", ""),
+                });
+            }
+        }
+
+        messages
+    }; // MutexGuard is dropped here
+
+    // Prepare API request
+    let client = reqwest::Client::new();
+    let api_request = ApiRequest {
+        model: "deepseek/deepseek-chat-v3-0324:free".to_string(),
+        messages,
+        max_tokens: Some(512),
+        temperature: Some(0.7),
+        stream: false,
+    };
+
+    // Make API call to OpenRouter
+    let response = client
+        .post("https://openrouter.ai/api/v1/chat/completions")
+        .header("Authorization", format!("Bearer {}", state.api_key))
+        .header("Content-Type", "application/json")
+        .header("HTTP-Referer", "https://schedule-assistant.app") // Replace with your app's URL
+        .header("X-Title", "School Schedule Assistant") // Replace with your app's name
+        .json(&api_request)
+        .send()
+        .await
+        .map_err(|e| format!("API request error: {}", e))?;
+
+    // Store the status code before consuming the response
+    let status = response.status();
+
+    if !status.is_success() {
+        let error_text = response.text().await.unwrap_or_default();
+        return Err(format!("OpenRouter API error: {} - {}", status, error_text));
     }
 
-    // Get paths
-    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
-    let model_path = app_data_dir.join("models").join("model.onnx");
+    let api_response: ApiResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse OpenRouter API response: {}", e))?;
 
-    let resource_path = app_handle
-        .path_resolver()
-        .resolve_resource("models/tokenizer.json")
-        .ok_or_else(|| "Could not resolve tokenizer path".to_string())?;
+    if api_response.choices.is_empty() {
+        return Err("No response from OpenRouter API".to_string());
+    }
 
-    // Load tokenizer
-    let tokenizer = Tokenizer::from_file(resource_path)
-        .map_err(|e| format!("Failed to load tokenizer: {}", e))?;
+    let response_text = api_response.choices[0].message.content.clone();
 
-    // Load model
-    let model = load_onnx_model(&model_path).map_err(|e| format!("Failed to load model: {}", e))?;
+    // Add response to history after receiving the response
+    {
+        let mut history = state.conversation_history.lock().unwrap();
+        history.push(format!("Assistant: {}", response_text));
+    } // MutexGuard is dropped here
 
-    // Store model and tokenizer
-    *model_session.lock().unwrap() = Some((model, tokenizer));
-
-    Ok(StatusResponse {
-        loaded: true,
-        message: "Model loaded successfully".to_string(),
-    })
-}
-
-fn load_onnx_model(
-    path: &PathBuf,
-) -> Result<
-    tract_onnx::prelude::TypedRunnableModel<Graph<TypedFact, Box<dyn TypedOp>>>,
-    Box<dyn std::error::Error>,
-> {
-    // Load the model
-    let model = tract_onnx::onnx()
-        .model_for_path(path)?
-        .into_optimized()?
-        .into_runnable()?;
-
-    Ok(model)
+    Ok(response_text)
 }
 
 #[tauri::command]
-pub async fn generate_text(
-    model_session: tauri::State<'_, ModelSession>,
-    request: GenerateRequest,
-) -> Result<String, String> {
-    let max_length = request.max_length.unwrap_or(50);
-    let prompt = request.prompt;
+pub async fn check_api_key(api_key: String) -> Result<String, String> {
+    // Make a simple API call to verify the API key
+    let client = reqwest::Client::new();
+    let api_request = ApiRequest {
+        model: "deepseek/deepseek-chat-v3-0324:free".to_string(),
+        messages: vec![Message {
+            role: "user".to_string(),
+            content: "Hello".to_string(),
+        }],
+        max_tokens: Some(5),
+        temperature: Some(0.7),
+        stream: false,
+    };
 
-    // Get locked model session
-    let session_guard = model_session.lock().unwrap();
-    let session = session_guard
-        .as_ref()
-        .ok_or_else(|| "Model not loaded".to_string())?;
+    let response = client
+        .post("https://openrouter.ai/api/v1/chat/completions")
+        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
+        .header("HTTP-Referer", "https://schedule-assistant.app") // Replace with your app's URL
+        .header("X-Title", "School Schedule Assistant") // Replace with your app's name
+        .json(&api_request)
+        .send()
+        .await
+        .map_err(|e| format!("API request error: {}", e))?;
 
-    let (model, tokenizer) = session;
+    // Store the status code before potentially consuming the response
+    let status = response.status();
 
-    // Tokenize input
-    let encoding = tokenizer
-        .encode(prompt, true)
-        .map_err(|e| format!("Tokenization error: {}", e))?;
-
-    let input_ids = encoding.get_ids().to_vec();
-
-    // Create input tensor
-    let input_tensor = tract_ndarray::Array2::from_shape_vec(
-        (1, input_ids.len()),
-        input_ids.iter().map(|&id| id as i64).collect(),
-    )
-    .map_err(|e| format!("Failed to create input tensor: {}", e))?;
-
-    // Run inference
-    let outputs = model
-        .run(tvec!(input_tensor.into_tensor().into()))
-        .map_err(|e| format!("Inference error: {}", e))?;
-
-    // Extract output ids from the model outputs
-    // Note: This is simplified - you'll need to adjust based on your model's actual output format
-    let output = outputs[0]
-        .to_array_view::<i64>()
-        .map_err(|e| format!("Failed to convert output: {}", e))?;
-
-    let output_ids: Vec<u32> = output
-        .iter()
-        .take(max_length)
-        .map(|&id| id as u32)
-        .collect();
-
-    // Decode output tokens
-    let result = tokenizer
-        .decode(&output_ids, true)
-        .map_err(|e| format!("Decoding error: {}", e))?;
-
-    Ok(result)
-}
-
-#[tauri::command]
-pub async fn get_model_status(
-    model_session: tauri::State<'_, ModelSession>,
-) -> Result<StatusResponse, String> {
-    let is_loaded = model_session.lock().unwrap().is_some();
-
-    Ok(StatusResponse {
-        loaded: is_loaded,
-        message: if is_loaded {
-            "Model loaded and ready".to_string()
-        } else {
-            "Model not loaded".to_string()
-        },
-    })
+    if status.is_success() {
+        Ok("OpenRouter API key is valid".to_string())
+    } else {
+        let error_text = response.text().await.unwrap_or_default();
+        Err(format!(
+            "Invalid OpenRouter API key: {} - {}",
+            status, error_text
+        ))
+    }
 }

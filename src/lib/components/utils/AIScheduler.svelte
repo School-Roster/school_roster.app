@@ -1,271 +1,243 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { message } from "@tauri-apps/api/dialog";
-
-  let messages: { role: "user" | "assistant"; content: string }[] = [];
-  let inputMessage: string = "";
+  import { invoke } from '@tauri-apps/api/tauri';
+  import { onMount } from 'svelte';
+  
+  let messages: {role: 'user' | 'assistant', content: string}[] = [];
+  let inputMessage: string = '';
   let isLoading: boolean = false;
-  let modelLoaded: boolean = false;
-  let loadingStatus: string = "Initializing...";
-
-  // Load the model via Rust backend
-  async function loadModel() {
-    try {
-      loadingStatus = "Loading model...";
-      
-      const response = await invoke("load_model");
-      console.log("Model load response:", response);
-      
-      // Check model status after loading
-      const status = await invoke("get_model_status");
-      modelLoaded = status.loaded;
-      
-      if (modelLoaded) {
-        return true;
-      } else {
-        throw new Error(status.message);
-      }
-    } catch (error) {
-      console.error("Error loading model:", error);
-      await message(`Failed to load model: ${error}`, {
-        title: "Error",
-        type: "error",
-      });
-      return false;
+  let apiKey: string = '';
+  let apiKeyValid: boolean = false;
+  let selectedModel: 'standard' | 'reasoner' = 'standard';
+  let errorMessage: string = '';
+  
+  async function validateApiKey() {
+    if (!apiKey.trim()) {
+      errorMessage = 'Please enter an API key';
+      return;
     }
-  }
-
-  onMount(async () => {
+    
     try {
       isLoading = true;
-      messages = [
-        ...messages,
-        {
-          role: "assistant",
-          content: "Loading AI model, this might take a few moments...",
-        },
-      ];
-
-      const success = await loadModel();
-
-      if (success) {
-        messages = [
-          ...messages,
-          {
-            role: "assistant",
-            content:
-              "AI assistant loaded. How can I help with your school schedule?",
-          },
-        ];
-      } else {
-        throw new Error("Failed to load the model");
-      }
+      errorMessage = '';
+      const response = await invoke('check_api_key', { apiKey });
+      apiKeyValid = true;
+      await initializeModel();
     } catch (e) {
-      console.error("Failed to load model:", e);
-      messages = [
-        ...messages,
-        {
-          role: "assistant",
-          content: `Error loading AI model: ${e.message}`,
-        },
-      ];
+      console.error('API key validation failed:', e);
+      errorMessage = e as string;
+      apiKeyValid = false;
     } finally {
       isLoading = false;
     }
-  });
-
-  async function generateText(prompt: string, maxLength: number = 50): Promise<string> {
+  }
+  
+  async function initializeModel() {
     try {
-      const response = await invoke("generate_text", {
-        request: {
-          prompt,
-          max_length: maxLength
-        }
-      });
-      
-      return response as string;
-    } catch (error) {
-      console.error("Text generation error:", error);
-      throw error;
+      isLoading = true;
+      errorMessage = '';
+      await invoke('init_model', { apiKey });
+      messages = [...messages, {
+        role: 'assistant',
+        content: 'DeepSeek AI assistant connected. How can I help with your school schedule?'
+      }];
+    } catch (e) {
+      console.error('Failed to initialize DeepSeek API:', e);
+      errorMessage = e as string;
+      apiKeyValid = false;
+    } finally {
+      isLoading = false;
     }
   }
-
+  
   async function sendMessage() {
-    if (!inputMessage.trim() || isLoading || !modelLoaded) return;
-
+    if (!inputMessage.trim() || isLoading || !apiKeyValid) return;
+    
     const userMessage = inputMessage;
-    messages = [...messages, { role: "user", content: userMessage }];
-    inputMessage = "";
+    messages = [...messages, { role: 'user', content: userMessage }];
+    inputMessage = '';
     isLoading = true;
-
+    errorMessage = '';
+    
     try {
-      // Create a simple prompt
-      const promptText = `User: ${userMessage}\nAssistant:`;
-
-      // Generate response
-      const response = await generateText(promptText, 100);
-
-      messages = [...messages, { role: "assistant", content: response }];
+      // Use the appropriate endpoint based on model selection
+      const endpoint = selectedModel === 'standard' ? 'query_ai' : 'query_ai_reasoner';
+      const response = await invoke(endpoint, { message: userMessage });
+      messages = [...messages, { role: 'assistant', content: response as string }];
     } catch (e) {
-      console.error("AI query failed:", e);
-      messages = [
-        ...messages,
-        {
-          role: "assistant",
-          content: `Sorry, I couldn't process that request: ${e.message}`,
-        },
-      ];
+      console.error('AI query failed:', e);
+      errorMessage = e as string;
+      messages = [...messages, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error processing your request.'
+      }];
     } finally {
       isLoading = false;
     }
   }
 </script>
 
-<div class="chat-container">
-  <div class="messages">
-    {#each messages as message}
-      <div class="message {message.role}">
-        <span class="role"
-          >{message.role === "user" ? "You" : "Assistant"}:</span
-        >
-        <p>{message.content}</p>
+<div class="app-container">
+  {#if !apiKeyValid}
+    <div class="api-key-setup">
+      <h2>Connect to DeepSeek AI</h2>
+      <p>Enter your DeepSeek API key to continue</p>
+      
+      <div class="input-group">
+        <input 
+          type="password" 
+          bind:value={apiKey} 
+          placeholder="sk-..." 
+          on:keydown={(e) => e.key === 'Enter' && validateApiKey()}
+          disabled={isLoading}
+        />
+        <button on:click={validateApiKey} disabled={isLoading}>
+          {isLoading ? 'Verifying...' : 'Connect'}
+        </button>
       </div>
-    {/each}
-    {#if isLoading}
-      <div class="loading">
-        <span class="loading-text">{loadingStatus}</span>
-        <div class="loading-spinner"></div>
+      
+      {#if errorMessage}
+        <div class="error-message">{errorMessage}</div>
+      {/if}
+    </div>
+  {:else}
+    <div class="chat-container">
+      <div class="model-selector">
+        <label>
+          <input type="radio" bind:group={selectedModel} value="standard">
+          Standard Chat
+        </label>
+        <label>
+          <input type="radio" bind:group={selectedModel} value="reasoner">
+          Reasoner (More detailed)
+        </label>
       </div>
-    {/if}
-  </div>
-
-  <div class="input-area">
-    <input
-      type="text"
-      bind:value={inputMessage}
-      placeholder="Ask about scheduling..."
-      on:keydown={(e) => e.key === "Enter" && sendMessage()}
-      disabled={!modelLoaded || isLoading}
-    />
-    <button
-      on:click={sendMessage}
-      disabled={!modelLoaded || isLoading}
-      class:loading={isLoading}
-    >
-      {isLoading ? "Sending..." : "Send"}
-    </button>
-  </div>
+      
+      <div class="messages">
+        {#each messages as message}
+          <div class="message {message.role}">
+            <span class="role">{message.role === 'user' ? 'You' : 'Assistant'}:</span>
+            <p>{message.content}</p>
+          </div>
+        {/each}
+        {#if isLoading}
+          <div class="loading">Assistant is thinking...</div>
+        {/if}
+        {#if errorMessage}
+          <div class="error-message">{errorMessage}</div>
+        {/if}
+      </div>
+      
+      <div class="input-area">
+        <input 
+          type="text" 
+          bind:value={inputMessage} 
+          placeholder="Ask about scheduling..." 
+          on:keydown={(e) => e.key === 'Enter' && sendMessage()}
+          disabled={isLoading}
+        />
+        <button on:click={sendMessage} disabled={isLoading}>
+          Send
+        </button>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
-  .chat-container {
+  .app-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     max-width: 800px;
     margin: 0 auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-
+  
+  .api-key-setup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .input-group {
+    display: flex;
+    width: 100%;
+    max-width: 500px;
+    margin: 1rem 0;
+  }
+  
+  .model-selector {
+    display: flex;
+    padding: 0.5rem;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .model-selector label {
+    margin-right: 1rem;
+    cursor: pointer;
+  }
+  
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
   .messages {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
   }
-
+  
   .message {
     margin-bottom: 0.5rem;
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: 0.5rem;
-    max-width: 80%;
   }
-
+  
   .message.user {
     background-color: #e0f2ff;
     align-self: flex-end;
   }
-
+  
   .message.assistant {
     background-color: #f0f0f0;
     align-self: flex-start;
   }
-
+  
   .role {
     font-weight: bold;
-    margin-bottom: 0.5rem;
-    display: block;
   }
-
+  
   .input-area {
     display: flex;
     padding: 1rem;
     border-top: 1px solid #ddd;
-    gap: 0.5rem;
   }
-
+  
   input {
     flex: 1;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    padding: 0.5rem;
+    margin-right: 0.5rem;
   }
-
-  input:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
+  
+  .error-message {
+    color: #e53935;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background-color: #ffebee;
+    border-radius: 0.25rem;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
-
-  button {
-    padding: 0.75rem 1.5rem;
-    background-color: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  button:hover:not(:disabled) {
-    background-color: #0052a3;
-  }
-
-  button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-
+  
   .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
+    padding: 0.5rem;
+    font-style: italic;
     color: #666;
-  }
-
-  .loading-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #0066cc;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
   }
 </style>
