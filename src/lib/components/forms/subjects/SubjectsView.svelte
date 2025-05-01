@@ -1,4 +1,6 @@
 <script lang="ts">
+  import "$styles/tutorial.scss";
+
   import { invoke } from "@tauri-apps/api";
   import { emit } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
@@ -17,11 +19,35 @@
     type SubjectItem,
   } from "$lib/modules/entities/subjectsStore";
 
+  import FormTutorial from "$lib/components/utils/tutorials/FormTutorial.svelte";
+  
+  // Tutorial menu state
+  let showTutorialMenu = false;
 
+  let show = false;
   let search = "";
 
+  // Close tutorial menu when clicking outside
+  function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest(".tutorial-menu-container")) {
+      showTutorialMenu = false;
+    }
+  }
+
+  // Handle tutorial completion
+  function handleTutorialComplete() {
+    show = false;
+  }
+
   // Carga las materias desde la base de datos en rust
-  onMount(loadSubjects);
+  onMount(() => {
+    loadSubjects();
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  });
 
   // Columnas de la tabla (key es el nombre de la propiedad en la interfaz)
   const columns = [
@@ -102,10 +128,45 @@
   };
 </script>
 
+
 <section class="form-container">
   <div class="title">
     <img src="/icons/books.svg" alt="Materias" />
     <span>Materias</span>
+    <div class="tutorial-menu-container">
+      <button
+        class="tutorial-menu-button"
+        on:click={() => (showTutorialMenu = !showTutorialMenu)}
+        aria-label="Tutoriales disponibles"
+      >
+        <img src="/icons/circle-question-solid.svg" alt="Tutoriales" />
+      </button>
+
+      {#if showTutorialMenu}
+        <div class="tutorial-menu-dropdown">
+          <div class="tutorial-menu-header">
+            <h3>Tutoriales disponibles</h3>
+          </div>
+          <div class="tutorial-menu-items">
+            <button
+              class="tutorial-menu-item"
+              on:click={() => {
+                show = true;
+                showTutorialMenu = false;
+              }}
+            >
+              <img src="/icons/save.svg" alt="Navbar" />
+              <span>Tutorial de formularios</span>
+            </button>
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    {#if show}
+      <FormTutorial on:complete={handleTutorialComplete} formName={"Materias"}/>
+    {/if}
+
   </div>
   <div class="divider"></div>
   <div class="controls">
