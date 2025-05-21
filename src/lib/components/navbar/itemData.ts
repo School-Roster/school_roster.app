@@ -7,12 +7,12 @@
 
 export const itemData = [
   {
-    it: 1, name: "Archivo", icon: "/icons/file.svg", menu: "todo",
+    it: 1, name: "Archivo", icon: "/icons/file.svg", menu: "submenu",
     submenu: [ { name: "Nuevo", icon: "/icons/new.svg", menu: "todo"},
-      { name: "Abrir", icon: "/icons/open.svg", menu: "todo"},
+      { name: "Abrir", icon: "/icons/open.svg", menu: "import"},
       { name: "Guardar", icon: "/icons/save.svg", menu: "todo"},
-      { name: "Guardar como", icon: "/icons/saveas.svg", menu: "todo"},
-      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "todo"},
+      { name: "Guardar como", icon: "/icons/saveas.svg", menu: "export"},
+      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "deleteAll"},
     ],
   },
   {
