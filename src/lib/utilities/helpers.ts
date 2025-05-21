@@ -18,7 +18,8 @@ export enum ClassType {
   Groups,
   Subjects,
   Teachers,
-  Classrooms
+  Classrooms,
+  Students
 }
 
 /**

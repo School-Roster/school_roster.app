@@ -7,6 +7,7 @@
 
     let selectedTeacherId: number | null = null;
     
+    // TODO: Cambiar a horas por modulo
     let horas = [
         "7:00 - 7:50",
         "7:50 - 8:40",
