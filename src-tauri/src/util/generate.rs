@@ -1,7 +1,5 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
-use std::future::Future;
-use std::pin::Pin;
 
 use crate::{
     class::{
@@ -13,7 +11,7 @@ use crate::{
     db::AppState,
 };
 
-use super::{assignments::Assignment, constraints::constraints_satisfied};
+use super::assignments::Assignment;
 
 // TODO: Cambiar a modulos registrados
 const MAX_MODULES: u8 = 9;
@@ -234,7 +232,7 @@ pub async fn generate_schedule(
         }
 
         // Check how many modules we've already assigned for this subject
-        let key = (group.id.unwrap(), subject.id);
+        let _key = (group.id.unwrap(), subject.id);
         let already_assigned = schedule
             .iter()
             .filter(|a| a.group_id == group.id.unwrap() && a.subject_id == subject.id)
@@ -701,8 +699,8 @@ fn is_schedule_available(
 // Improve the find_best_teacher_from_list function to be smarter about teacher selection
 fn find_best_teacher_from_list(
     schedule: &Vec<Assignment>,
-    group: &Group,
-    subject: &SubjectWithTeacher,
+    _group: &Group,
+    _subject: &SubjectWithTeacher,
     day: &str,
     starting_module: i16,
     block_size: i16,
@@ -788,11 +786,11 @@ fn is_teacher_available(
 
 // Fix assign_group_subject function to better distribute modules
 async fn assign_group_subject(
-    pool: &tauri::State<'_, AppState>,
+    _pool: &tauri::State<'_, AppState>,
     schedule: &mut Vec<Assignment>,
     group: &Group,
     subject: &SubjectWithTeacher,
-    all_subjects: &[SubjectWithTeacher],
+    _all_subjects: &[SubjectWithTeacher],
     teachers_by_subject: &HashMap<i16, Vec<Teacher>>,
 ) -> Result<bool, String> {
     println!(

@@ -54,11 +54,11 @@ simplemente llama a la vista deseada.
     case 'subjectSchedule':
       view = SubjectSchedule;
       break;
-    default:
-      view = NotFoundView;
-      break;
     case 'login':
       view = loginView;
+      break;
+    default:
+      view = NotFoundView;
       break;
     
   }

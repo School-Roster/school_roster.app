@@ -155,7 +155,7 @@
 </script>
 
 <div class="subjects-container">
-  <section class="items">
+  <section class="subjects-items">
     {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
       <div
         class="subject"
