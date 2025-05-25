@@ -11,7 +11,7 @@
     handleAssignDrop,
     handleAssignClick,
   } from "$lib/modules/entities/assignments";
-  import { subjectsWithTeachers, loadSubjectsWithTeachers, type SubjectItem } from "$lib/modules/entities/subjectsStore";
+  import { subjectsWithTeachers, loadSubjectsWithTeachers, type SubjectItem, subjects } from "$lib/modules/entities/subjectsStore";
   import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
 
   // TODO: Los dias se registraran en la ventana de configuracion
@@ -128,7 +128,7 @@
         {#each days as day}
           <div class="day-modules">
             {#each Array(modulesPerDay) as _, moduleIndex}
-              {#each assignedSubjects as subject}
+              <!-- {#each assignedSubjects as subject} -->
                 {#key $assignmentsStore}
                   {#if true}
                     {@const assignment = getLocalAssignment(
@@ -147,20 +147,23 @@
                       on:mouseleave={(e) => handleDragLeave(e.currentTarget)}
                     >
                       {#if assignment}
-                        <div
-                          class="subject-pill"
-                          style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
-                            assignment.color || 'black',
-                          )}"
-                          on:mousedown={(e) => handleMiddleClick(e, assignment.id, subject)}
-                        >
-                          {assignment.shorten}
+                        {@const subject = $subjectsWithTeachers.find(s => s.id === assignment.subjectId)}
+                        {#if subject}
+                          <div
+                            class="subject-pill"
+                            style="background-color: {assignment.color || 'black'}; color: {getContrastColor(
+                              assignment.color || 'black',
+                            )}"
+                            on:mousedown={(e) => handleMiddleClick(e, assignment.id, subject)}
+                          >
+                            {assignment.shorten}
                         </div>
+                        {/if}
                       {/if}
                     </div>
                   {/if}
                 {/key}
-              {/each}
+              <!-- {/each} -->
             {/each}
           </div>
         {/each}
