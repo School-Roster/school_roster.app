@@ -1,5 +1,6 @@
 <script lang="ts">
   import "$styles/grid.scss";
+  import "$styles/tutorial.scss";
   import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
   import { getContrastColor } from "$lib/utilities/helpers";
   import { onMount } from "svelte";
@@ -13,6 +14,38 @@
   } from "$lib/modules/entities/assignments";
   import { subjectsWithTeachers, loadSubjectsWithTeachers, type SubjectItem, subjects } from "$lib/modules/entities/subjectsStore";
   import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
+  // import { loadSubjectsWithTeachers } from "$lib/modules/entities/subjectsStore";
+  import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
+  import GridTutorial from "../utils/tutorials/GridTutorial.svelte";
+
+  // Tutorial menu state
+  let showTutorialMenu = false;
+
+  let show = {
+    navbar: false,
+    grid: false,
+  };
+
+  // Close tutorial menu when clicking outside
+  function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest(".tutorial-menu-container")) {
+      showTutorialMenu = false;
+    }
+  }
+
+  // Handle tutorial completion
+  function handleTutorialComplete() {
+    show.navbar = false;
+    show.grid = false;
+  }
+
+  onMount(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  });
 
   // TODO: Los dias se registraran en la ventana de configuracion
   export let days: string[] = [
@@ -44,7 +77,6 @@
   // Maneja el evento fuera de HTML5 como custom event
   function handleCustomDrop(e: CustomEvent): void {
     const { subject, groupId, day, moduleIndex } = e.detail;
-    
     // Llama el handler existente con los datos necesarios
     handleAssignDrop(
       { 
@@ -83,7 +115,18 @@
   }
 
   function handleDragOver(target: HTMLElement): void{
+    // Llama el handler existente con los datos necesarios
     target.classList.add("drag-over");
+    handleAssignDrop(
+      {
+        preventDefault: () => {},
+        subject: subject, // Pasa la materia directamente
+        data: subject, // Pasamos 'data' para mayor flexibilidad en el codigo
+      },
+      groupId,
+      day,
+      moduleIndex,
+    );
   }
 
   function handleDragLeave(target: HTMLElement): void {
@@ -101,8 +144,54 @@
   $: assignedSubjects = $subjectsWithTeachers.filter(
     (item) => item.assigned_teacher,
   );
-
 </script>
+
+<div class="tutorial-menu-container">
+  <button
+    class="tutorial-menu-button"
+    on:click={() => (showTutorialMenu = !showTutorialMenu)}
+    aria-label="Tutoriales disponibles"
+  >
+    <img src="/icons/circle-question-solid.svg" alt="Tutoriales" />
+  </button>
+
+  {#if showTutorialMenu}
+    <div class="tutorial-menu-dropdown">
+      <div class="tutorial-menu-header">
+        <h3>Tutoriales disponibles</h3>
+      </div>
+      <div class="tutorial-menu-items">
+        <button
+          class="tutorial-menu-item"
+          on:click={() => {
+            show.navbar = true;
+            showTutorialMenu = false;
+          }}
+        >
+          <img src="/icons/save.svg" alt="Navbar" />
+          <span>Tutorial de navegación</span>
+        </button>
+        <button
+          class="tutorial-menu-item"
+          on:click={() => {
+            show.grid = true;
+            showTutorialMenu = false;
+          }}
+        >
+          <img src="/icons/preview.svg" alt="Navbar" />
+          <span>Tutorial de horarios</span>
+        </button>
+      </div>
+    </div>
+  {/if}
+</div>
+
+{#if show.navbar}
+  <NavbarTutorial on:complete={handleTutorialComplete} />
+{/if}
+{#if show.grid}
+  <GridTutorial on:complete={handleTutorialComplete} />
+{/if}
 
 <section class="schedule-grid">
   <!-- Header con los dias y los modulos -->
@@ -132,7 +221,7 @@
                 {#key $assignmentsStore}
                   {#if true}
                     {@const assignment = getLocalAssignment(
-                      group.id,
+                      group.id ? group.id : 0,
                       day,
                       moduleIndex,
                     )}

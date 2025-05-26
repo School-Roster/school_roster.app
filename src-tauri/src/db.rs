@@ -1,4 +1,4 @@
-/* 
+/*
     Conecta la base de datos con la aplicacion.
     sqlx es un crate que nos permite interactuar con la base de datos de forma asincrona.
     la base de datos sera en sqlite.
@@ -10,7 +10,7 @@ use std::path::PathBuf;
 
 use tauri::App;
 
-const DB_NAME: &str = "school_roster.sqlite";
+pub const DB_NAME: &str = "school_roster.sqlite";
 
 // Pool de la base de datos para interactuar con ella en la aplicacion.
 pub type DbPool = Pool<Sqlite>;
@@ -39,7 +39,7 @@ pub async fn connect(app: &App) -> Result<DbPool, Box<dyn std::error::Error>> {
         Ok(_) => {
             println!("Database migrations completed successfully!");
             Ok(pool)
-        },
+        }
         Err(e) => {
             if e.to_string().contains("VersionMissing") {
                 println!("Attemting to reset migrations...");
@@ -59,13 +59,9 @@ pub async fn connect(app: &App) -> Result<DbPool, Box<dyn std::error::Error>> {
 
 fn setup_db_path(app: &App) -> Result<PathBuf, std::io::Error> {
     // Obtiene la ruta de la aplicacion.
-    let mut path = app
-        .path_resolver()
-        .app_data_dir()
-        .ok_or_else(|| std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "Failed to get data directory"
-        ))?;
+    let mut path = app.path_resolver().app_data_dir().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::NotFound, "Failed to get data directory")
+    })?;
 
     fs::create_dir_all(&path)?;
     path.push(DB_NAME);
@@ -89,7 +85,5 @@ fn create_database_file(path: &PathBuf) -> Result<(), std::io::Error> {
 }
 
 async fn handle_migrations(pool: &DbPool) -> Result<(), sqlx::migrate::MigrateError> {
-    sqlx::migrate!("./migrations")
-        .run(pool)
-        .await
+    sqlx::migrate!("./migrations").run(pool).await
 }
