@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::future::Future;
+use std::pin::Pin;
 
 use crate::{
     class::{
@@ -11,6 +13,7 @@ use crate::{
     db::AppState,
 };
 
+// use super::{assignments::Assignment, constraints::constraints_satisfied};
 use super::assignments::Assignment;
 
 // TODO: Cambiar a modulos registrados

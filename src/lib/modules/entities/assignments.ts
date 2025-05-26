@@ -59,10 +59,8 @@ export function getLocalAssignment(groupId: number, day: string, moduleIndex: nu
 // Funcion para cuando se suelta una materia en el modulo
 export function handleAssignDrop(e: DragEvent | any, groupId: number, day: string, moduleIndex: number) {
   e.preventDefault?.(); // Make preventDefault optional
-  
   // Handle both regular drag events and our custom events
   let data;
-  
   if (e.dataTransfer) {
     // Regular drag event
     try {
@@ -72,7 +70,6 @@ export function handleAssignDrop(e: DragEvent | any, groupId: number, day: strin
       console.error("Error parsing drag data:", error);
       return;
     }
-    
     // Clean up UI
     const target = e.target as HTMLElement;
     if (target && target.classList) {
@@ -82,7 +79,6 @@ export function handleAssignDrop(e: DragEvent | any, groupId: number, day: strin
     // Our custom event
     data = e.subject || e.data;
   }
-  
   // Continue with the assignment logic
   if (data) {
     saveAssignment(groupId, day, moduleIndex, data.id, data.teacherId);
@@ -104,6 +100,16 @@ export async function handleAssignClick(
   }
 }
 
+export async function deleteAssignment(assign_id: unknown): Promise<void> {
+  try {
+    await invoke("delete_assignment", {assign_id})
+    await loadAssignments()
+    console.log("Deleted assignment with id:", assign_id);
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 export async function saveAssignment(
   groupId: number,
   day: string,
@@ -119,7 +125,7 @@ export async function saveAssignment(
       subject_id: subjectId,
       teacher_id: teacherId
     });
-    
+
     // Update local store
     const key = `${groupId}-${day}-${moduleIndex}`;
     assignmentsStore.update((currentMap) => {
@@ -133,7 +139,7 @@ export async function saveAssignment(
       });
       return newMap;
     });
-    
+
     // Reload assignments to get the full data with subject details
     await loadAssignments();
   } catch (error) {
