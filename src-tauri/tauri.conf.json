@@ -24,6 +24,7 @@
         "message": true
       },
       "fs": {
+        "scope": ["**", "**/*", "/**/*"],
         "all": true,
         "readFile": true,
         "writeFile": true,
