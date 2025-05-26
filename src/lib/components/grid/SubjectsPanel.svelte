@@ -16,7 +16,7 @@
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
-
+  
   // Variables for custom drag and drop
   let isDragging = false;
   let draggedSubject: SubjectItem | null = null;
@@ -36,8 +36,8 @@
     })();
 
     // Agrega el evento global para los handlers
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
 
     return (): void => {
       cleanup?.();
@@ -50,7 +50,6 @@
 
   function handleMouseDown(e: MouseEvent, subject: SubjectItem) {
     if (e.button !== 0) return;
-
     e.preventDefault();
 
     isDragging = true;
@@ -154,7 +153,7 @@
 </script>
 
 <div class="subjects-container">
-  <section class="items">
+  <section class="subjects-items">
     {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
       <div
         class="subject"

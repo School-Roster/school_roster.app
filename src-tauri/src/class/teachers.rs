@@ -322,7 +322,11 @@ pub async fn get_all_teachers(
 /// * `pool` - Conexion a la base de datos
 /// * `subject_id` - ID de la materia
 /// Retorna un vector con los profesores que pueden impartir la materia
-pub async fn get_teachers_for_subject(pool: &tauri::State<'_, AppState>, subject_id: i16) -> Result<Vec<Teacher>, String> {
+#[allow(unused)]
+pub async fn get_teachers_for_subject(
+    pool: &tauri::State<'_, AppState>,
+    subject_id: i16,
+) -> Result<Vec<Teacher>, String> {
     let teachers = sqlx::query_as::<_, Teacher>(
         "SELECT t.* FROM teachers t JOIN teacher_subjects ts ON t.id = ts.teacher_id WHERE ts.subject_id = ?1"
     )
