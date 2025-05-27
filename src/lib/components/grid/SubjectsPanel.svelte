@@ -14,6 +14,10 @@
     undoChange
   } from "$lib/stores/AssignmentUndoRedo";
   import { assignmentsStore } from "$lib/modules/entities/assignments";
+  import WarningModal from "../buttons/WarningModal.svelte";
+
+  let showConflictModal = false;
+  let conflictMessage = '';
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -88,10 +92,10 @@
         a.day === day &&
         a.moduleIndex === parseInt(moduleIndex!, 10)
       );
+
       if (conflict) {
-        window.alert(
-          `⚠️ El profesor ${draggedSubject.assigned_teacher?.name} ya tiene una materia asignada en ${day}, módulo ${parseInt(moduleIndex!, 10) + 1}.`
-        );
+        conflictMessage = `⚠️ El profesor ${draggedSubject.assigned_teacher?.name} ya tiene una materia asignada en ${day}, módulo ${parseInt(moduleIndex!, 10) + 1}.`
+        showConflictModal = true;
         return;
       }
 
@@ -166,6 +170,11 @@
   );
 </script>
 
+<WarningModal
+  message={conflictMessage}
+  visible={showConflictModal}
+  onClose={() => (showConflictModal = false)}
+/>
 <div class="subjects-container">
   <section class="subjects-items">
     {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
