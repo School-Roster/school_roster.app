@@ -13,6 +13,7 @@
     redoChange,
     undoChange
   } from "$lib/stores/AssignmentUndoRedo";
+  import { assignmentsStore } from "$lib/modules/entities/assignments";
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -80,6 +81,19 @@
       const groupId = dropTarget.getAttribute("data-group-id");
       const day = dropTarget.getAttribute("data-day");
       const moduleIndex = dropTarget.getAttribute("data-module-index");
+
+      // Evitar que se coloque al mismo profesor en la misma hora con otro grupo
+      const conflict = Array.from($assignmentsStore.values()).find(a => 
+        a.teacherId === draggedSubject?.assigned_teacher?.id &&
+        a.day === day &&
+        a.moduleIndex === parseInt(moduleIndex!, 10)
+      );
+      if (conflict) {
+        window.alert(
+          `⚠️ El profesor ${draggedSubject.assigned_teacher?.name} ya tiene una materia asignada en ${day}, módulo ${parseInt(moduleIndex!, 10) + 1}.`
+        );
+        return;
+      }
 
       // Call saveAssignment directly
       if (groupId && day && moduleIndex) {
