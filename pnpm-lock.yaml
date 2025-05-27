@@ -11,6 +11,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^1
         version: 1.6.0
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
       jspdf:
         specifier: ^3.0.1
         version: 3.0.1
@@ -1172,8 +1175,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  base64-arraybuffer@1.0.2:
-    optional: true
+  base64-arraybuffer@1.0.2: {}
 
   binary-extensions@2.3.0: {}
 
@@ -1241,7 +1243,6 @@ snapshots:
   css-line-break@2.1.0:
     dependencies:
       utrie: 1.0.2
-    optional: true
 
   css-tree@2.3.1:
     dependencies:
@@ -1335,7 +1336,6 @@ snapshots:
     dependencies:
       css-line-break: 2.1.0
       text-segmentation: 1.0.3
-    optional: true
 
   immutable@4.3.7: {}
 
@@ -1587,7 +1587,6 @@ snapshots:
   text-segmentation@1.0.3:
     dependencies:
       utrie: 1.0.2
-    optional: true
 
   tiny-glob@0.2.9:
     dependencies:
@@ -1607,7 +1606,6 @@ snapshots:
   utrie@1.0.2:
     dependencies:
       base64-arraybuffer: 1.0.2
-    optional: true
 
   vite@5.4.2(sass@1.77.8):
     dependencies:
