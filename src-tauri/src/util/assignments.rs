@@ -14,6 +14,7 @@ pub struct Assignment {
     pub subject_id: i16,
     pub teacher_id: i16,
     pub classroom_id: i16,
+    pub subject_name: String,
     pub subject_shorten: String,
     pub subject_color: String,
 }

@@ -191,6 +191,7 @@ pub async fn generate_schedule(
                                 subject_id: subject.id,
                                 teacher_id: teacher.id.unwrap(),
                                 classroom_id: 0,
+                                subject_name: subject.name.clone(),
                                 subject_shorten: subject.shorten.clone(),
                                 subject_color: subject.color.clone(),
                             };
@@ -306,6 +307,7 @@ pub async fn generate_schedule(
                                 subject_id: subject.id,
                                 teacher_id: teacher.id.unwrap(),
                                 classroom_id: 0,
+                                subject_name: subject.name.clone(),
                                 subject_shorten: subject.shorten.clone(),
                                 subject_color: subject.color.clone(),
                             };
@@ -462,6 +464,7 @@ pub async fn generate_schedule(
                                     subject_id: subject.id,
                                     teacher_id: teacher.id.unwrap(),
                                     classroom_id: 0,
+                                    subject_name: subject.name.clone(),
                                     subject_shorten: subject.shorten.clone(),
                                     subject_color: subject.color.clone(),
                                 };
@@ -876,6 +879,7 @@ async fn assign_group_subject(
                             subject_id: subject.id,
                             teacher_id: teacher.id.unwrap(),
                             classroom_id: 0, // We'll assign classrooms later
+                            subject_name: subject.name.clone(),
                             subject_shorten: subject.shorten.clone(),
                             subject_color: subject.color.clone(),
                         };

@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { writable, type Writable } from "svelte/store";
+import { subjects } from "./subjectsStore";
 
 /**
   * Interfaz para los datos de los grupos
@@ -16,6 +17,7 @@ export interface AssignmentItem {
   subject_id: number,
   teacher_id: number,
   classroom_id: number,
+  subject_name: string,
   subject_shorten: string,
   subject_color: string
 }
@@ -27,16 +29,22 @@ export async function loadAssignments(): Promise<void> {
   const response = await invoke("get_all_assignments");
   const assignments = response as AssignmentItem[];
 
+  console.log(assignments)
+
   const newAssignmentsMap = new Map();
   assignments.forEach((assignment) => {
     const key = `${assignment.group_id}-${assignment.day}-${assignment.module_index}`;
     newAssignmentsMap.set(key, {
       id: assignment.id,
+      subject_name: assignment.subject_name,
       shorten: assignment.subject_shorten,
       color: assignment.subject_color,
       teacherId: assignment.teacher_id,
       subjectId: assignment.subject_id,
       classroomId: assignment.classroom_id,
+      day: assignment.day,
+      moduleIndex: assignment.module_index,
+      groupId: assignment.group_id
     });
   });
 
