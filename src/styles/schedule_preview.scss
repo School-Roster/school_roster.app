@@ -1,0 +1,77 @@
+@import "variables";
+@import "mixins";
+
+.select-container {
+  margin: 1rem 0;
+  color: $black-hard;
+}
+
+label {
+  margin-bottom: 0.5rem;
+  margin-right: 1rem;
+  margin-left: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.custom-select {
+  padding: 1rem;
+  background-color: $black;
+  border: none;
+  border-radius: 0.5rem;
+  color: $white-hard;
+  font-size: 1rem;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-left: 0.5rem;
+}
+
+.custom-select:hover {
+  opacity: 90%;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 150px repeat(5, 1fr);
+  grid-template-rows: repeat(9, 50px);
+}
+
+.header {
+  background-color: $white-overlay;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  font-weight: bold;
+  color: $black-hard;
+}
+
+.time {
+  background-color: $white-overlay;
+  text-align: center;
+  font-weight: bold;
+  padding: 16px;
+  color: $black-hard;
+}
+
+.cell {
+  background-color: $white-hard;
+  border: 1px solid $black-hard;
+  align-content: center;
+  text-align: center;
+}
+
+.header,
+.time {
+  font-size: 16px;
+}
+
+.time-block {
+  width: 97.5%;
+  height: 100%;
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+}
