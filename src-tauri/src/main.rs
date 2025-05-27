@@ -48,6 +48,7 @@ async fn main() {
             crate::util::assignments::save_assignment,
             crate::util::assignments::delete_assignment,
             crate::util::generate::generate_schedule,
+            crate::util::file_handler::export_pdf_file,
             crate::util::file_handler::export_file,
             crate::util::file_handler::import_file,
             crate::util::file_handler::delete_all_data
