@@ -71,6 +71,15 @@ fn simple_checksum(data: &[u8]) -> u32 {
     data.iter().fold(0u32, |acc, &x| acc.wrapping_add(x as u32))
 }
 
+#[tauri::command]
+pub async fn export_pdf_file() -> Option<String> {
+    dialog::blocking::FileDialogBuilder::new()
+        .set_title("Guardar PDF")
+        .add_filter("PDF", &["pdf"])
+        .save_file()
+        .map(|p| p.to_string_lossy().to_string())
+}
+
 /// Funcion para exportar el archivo (.roster)
 #[tauri::command]
 pub async fn export_file(
