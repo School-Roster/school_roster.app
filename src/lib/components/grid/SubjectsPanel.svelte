@@ -13,6 +13,11 @@
     redoChange,
     undoChange
   } from "$lib/stores/AssignmentUndoRedo";
+  import { assignmentsStore } from "$lib/modules/entities/assignments";
+  import WarningModal from "../buttons/WarningModal.svelte";
+
+  let showConflictModal = false;
+  let conflictMessage = '';
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -80,6 +85,18 @@
       const groupId = dropTarget.getAttribute("data-group-id");
       const day = dropTarget.getAttribute("data-day");
       const moduleIndex = dropTarget.getAttribute("data-module-index");
+
+      // Evitar que se coloque al mismo profesor en la misma hora con otro grupo
+      const conflict = Array.from($assignmentsStore.values()).find(a => 
+        a.teacherId === draggedSubject?.assigned_teacher?.id &&
+        a.day === day &&
+        a.moduleIndex === parseInt(moduleIndex!, 10)
+      );
+
+      if (conflict) {
+        conflictMessage = `⚠️ El profesor ${draggedSubject.assigned_teacher?.name} ya tiene una materia asignada en ${day}, módulo ${parseInt(moduleIndex!, 10) + 1}.`
+        showConflictModal = true;
+      }
 
       // Call saveAssignment directly
       if (groupId && day && moduleIndex) {
@@ -152,6 +169,11 @@
   );
 </script>
 
+<WarningModal
+  message={conflictMessage}
+  visible={showConflictModal}
+  onClose={() => (showConflictModal = false)}
+/>
 <div class="subjects-container">
   <section class="subjects-items">
     {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
