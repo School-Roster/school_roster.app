@@ -96,7 +96,6 @@
       if (conflict) {
         conflictMessage = `⚠️ El profesor ${draggedSubject.assigned_teacher?.name} ya tiene una materia asignada en ${day}, módulo ${parseInt(moduleIndex!, 10) + 1}.`
         showConflictModal = true;
-        return;
       }
 
       // Call saveAssignment directly
