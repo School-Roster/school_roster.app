@@ -173,7 +173,7 @@
       data={$teachers.filter((s) => {
         switch (filter) {
           case "ID":
-            return s.id.toString().includes(search);
+            return (s.id == undefined ? "" : s.id.toString().includes(search));
           case "Nombre":
             return s.name.toLowerCase().includes(search.toLowerCase());
           case "Apellido paterno":
@@ -198,7 +198,7 @@
             return s.performance.toString().includes(search);
           default:
             return (
-              s.id.toString().includes(search) ||
+              (s.id == undefined ? "" : s.id.toString().includes(search))||
               s.name.toLowerCase().includes(search.toLowerCase()) ||
               s.father_lastname.toLowerCase().includes(search.toLowerCase()) ||
               s.mother_lastname.toLowerCase().includes(search.toLowerCase())
