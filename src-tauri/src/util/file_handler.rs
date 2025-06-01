@@ -12,7 +12,7 @@ use crate::{
     util::assignments::save_assignment,
 };
 use bincode;
-use futures::{FutureExt, TryFutureExt};
+// use futures::{FutureExt, TryFutureExt};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
@@ -74,9 +74,9 @@ fn simple_checksum(data: &[u8]) -> u32 {
 /// Funcion para exportar el archivo (.roster)
 #[tauri::command]
 pub async fn export_file(
-    handle: tauri::AppHandle,
+    _handle: tauri::AppHandle,
     pool: tauri::State<'_, AppState>,
-    window: Window,
+    _window: Window,
 ) -> Result<(), String> {
     // Selector de archivos del usuario
     // Utilizar canal para comunicar callback y async
@@ -117,7 +117,7 @@ async fn export_file_impl(
 ) -> ScheduleResult<()> {
     let subjects = get_subjects(pool.clone())
         .await
-        .map_err(|e| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
+        .map_err(|_| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
 
     let teachers = get_all_teachers(pool.clone())
         .await
@@ -128,7 +128,7 @@ async fn export_file_impl(
 
     let teacher_subjects = get_subjects_with_teachers(pool.clone())
         .await
-        .map_err(|e| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
+        .map_err(|_| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
 
     let groups = get_groups(pool.clone())
         .await
@@ -139,11 +139,11 @@ async fn export_file_impl(
 
     let classrooms = get_classrooms(pool.clone())
         .await
-        .map_err(|e| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
+        .map_err(|_| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
 
     let assignments = get_all_assignments(pool.clone())
         .await
-        .map_err(|e| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
+        .map_err(|_| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
     // let group_subjects = get_all_group_subjects(pool.clone()).await?;
 
     // Package data
@@ -183,7 +183,7 @@ async fn export_file_impl(
 pub async fn import_file(
     handle: tauri::AppHandle,
     pool: tauri::State<'_, AppState>,
-    window: Window,
+    _window: Window,
 ) -> Result<(), String> {
     // Selector de archivos del usuario
     // Utilizar canal para comunicar callback y async
@@ -223,7 +223,8 @@ async fn import_file_impl(
     handle: tauri::AppHandle,
     file_path: &PathBuf,
 ) -> ScheduleResult<()> {
-    let mut file = File::open(file_path);
+    // let mut file = File::open(file_path);
+    let file = File::open(file_path);
     let mut buffer = Vec::new();
 
     file?.read_to_end(&mut buffer)?;
