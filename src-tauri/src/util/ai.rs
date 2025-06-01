@@ -1,11 +1,32 @@
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
+use tract_onnx::{prelude::tract_itertools::Groups, tract_core::ndarray::AssignElem};
+
+use super::assignments::{get_all_assignments, Assignment};
+use crate::{
+    class::{
+        classrooms::{get_classrooms, Classroom},
+        groups::{get_groups, Group},
+        subjects::{get_subjects_with_teachers, SubjectWithTeacher},
+        teachers::{get_all_teachers, Teacher},
+    },
+    AppState,
+};
 
 /// Structure to store the AI state
 pub struct AIState {
     api_key: String,
     conversation_history: Arc<Mutex<Vec<String>>>,
+    schedule_data: Arc<Mutex<Option<ScheduleData>>>,
+}
+
+struct ScheduleData {
+    teachers: Vec<Teacher>,
+    subjects: Vec<SubjectWithTeacher>,
+    groups: Vec<Group>,
+    classrooms: Vec<Classroom>,
+    assignments: Vec<Assignment>,
 }
 
 #[derive(Serialize)]
@@ -40,14 +61,27 @@ struct ResponseMessage {
 
 /// Initialize the AI state with API key
 #[tauri::command]
-pub async fn init_model(api_key: String, handle: tauri::AppHandle) -> Result<String, String> {
+pub async fn init_model(
+    api_key: String,
+    handle: tauri::AppHandle,
+    pool: tauri::State<'_, AppState>,
+) -> Result<String, String> {
+    let sd = ScheduleData {
+        teachers: get_all_teachers(&pool),
+        subjects: get_subjects_with_teachers(&pool),
+        groups: get_groups(&pool),
+        classrooms: get_classrooms(&pool),
+        assignments: get_all_assignments(&pool),
+    };
+
     handle.manage(AIState {
         api_key,
         conversation_history: Arc::new(Mutex::new(Vec::new())),
+        schedule_data: Arc::new(Mutex::new(Some(sd))),
     });
 
     Ok(String::from(
-        "OpenRouter API connection initialized successfully",
+        "La conexión a la API se inicializó correctamente",
     ))
 }
 
@@ -59,7 +93,8 @@ pub async fn query_ai(message: String, state: tauri::State<'_, AIState>) -> Resu
         history.push(format!("User: {}", message));
 
         // System prompt
-        let system_prompt = "You are an AI assistant helping with school scheduling. You can modify class schedules, suggest optimal arrangements, and answer questions about the schedule.";
+        // let system_prompt = "You are an AI assistant helping with school scheduling. You can modify class schedules, suggest optimal arrangements, and answer questions about the schedule.";
+        let system_prompt = "Eres un asistente IA ayudando a hacer horarios escolares. Puedes modificar horarios de clase, sugerir movimientos optimos y contestar preguntas acerca del horario.";
 
         // Prepare messages for API
         let mut messages = vec![Message {
@@ -77,7 +112,7 @@ pub async fn query_ai(message: String, state: tauri::State<'_, AIState>) -> Resu
             } else if entry.starts_with("Assistant: ") {
                 messages.push(Message {
                     role: "assistant".to_string(),
-                    content: entry.replace("Assistant: ", ""),
+                    content: entry.replace("Asistente: ", ""),
                 });
             }
         }
@@ -101,7 +136,7 @@ pub async fn query_ai(message: String, state: tauri::State<'_, AIState>) -> Resu
         .header("Authorization", format!("Bearer {}", state.api_key))
         .header("Content-Type", "application/json")
         .header("HTTP-Referer", "https://schedule-assistant.app") // Replace with your app's URL
-        .header("X-Title", "School Schedule Assistant") // Replace with your app's name
+        .header("X-Title", "Asistente para School Roster") // Replace with your app's name
         .json(&api_request)
         .send()
         .await
@@ -155,7 +190,7 @@ pub async fn check_api_key(api_key: String) -> Result<String, String> {
         .header("Authorization", format!("Bearer {}", api_key))
         .header("Content-Type", "application/json")
         .header("HTTP-Referer", "https://schedule-assistant.app") // Replace with your app's URL
-        .header("X-Title", "School Schedule Assistant") // Replace with your app's name
+        .header("X-Title", "Asistente para School Roster") // Replace with your app's name
         .json(&api_request)
         .send()
         .await
