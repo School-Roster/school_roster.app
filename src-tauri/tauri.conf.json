@@ -26,6 +26,9 @@
       "fs": {
         "all": true,
         "scope": [
+          "**",
+          "**/*",
+          "/**/*",
           "$APPDIR/models",
           "$RESOURCE/models",
           "$APPDATA",

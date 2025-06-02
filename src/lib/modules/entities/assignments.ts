@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { writable, type Writable } from "svelte/store";
+import { subjects } from "./subjectsStore";
 
 /**
   * Interfaz para los datos de los grupos
@@ -16,6 +17,7 @@ export interface AssignmentItem {
   subject_id: number,
   teacher_id: number,
   classroom_id: number,
+  subject_name: string,
   subject_shorten: string,
   subject_color: string
 }
@@ -27,16 +29,22 @@ export async function loadAssignments(): Promise<void> {
   const response = await invoke("get_all_assignments");
   const assignments = response as AssignmentItem[];
 
+  console.log(assignments)
+
   const newAssignmentsMap = new Map();
   assignments.forEach((assignment) => {
     const key = `${assignment.group_id}-${assignment.day}-${assignment.module_index}`;
     newAssignmentsMap.set(key, {
       id: assignment.id,
+      subject_name: assignment.subject_name,
       shorten: assignment.subject_shorten,
       color: assignment.subject_color,
       teacherId: assignment.teacher_id,
       subjectId: assignment.subject_id,
       classroomId: assignment.classroom_id,
+      day: assignment.day,
+      moduleIndex: assignment.module_index,
+      groupId: assignment.group_id
     });
   });
 
@@ -56,10 +64,8 @@ export function getLocalAssignment(groupId: number, day: string, moduleIndex: nu
 // Funcion para cuando se suelta una materia en el modulo
 export function handleAssignDrop(e: DragEvent | any, groupId: number, day: string, moduleIndex: number) {
   e.preventDefault?.(); // Make preventDefault optional
-  
   // Handle both regular drag events and our custom events
   let data;
-  
   if (e.dataTransfer) {
     // Regular drag event
     try {
@@ -69,7 +75,6 @@ export function handleAssignDrop(e: DragEvent | any, groupId: number, day: strin
       console.error("Error parsing drag data:", error);
       return;
     }
-    
     // Clean up UI
     const target = e.target as HTMLElement;
     if (target && target.classList) {
@@ -79,7 +84,6 @@ export function handleAssignDrop(e: DragEvent | any, groupId: number, day: strin
     // Our custom event
     data = e.subject || e.data;
   }
-  
   // Continue with the assignment logic
   if (data) {
     saveAssignment(groupId, day, moduleIndex, data.id, data.teacherId);
@@ -101,6 +105,16 @@ export async function handleAssignClick(
   }
 }
 
+export async function deleteAssignment(assign_id: unknown): Promise<void> {
+  try {
+    await invoke("delete_assignment", {assign_id})
+    await loadAssignments()
+    console.log("Deleted assignment with id:", assign_id);
+  } catch (e) {
+    console.log(e)
+  }
+}
+
 export async function saveAssignment(
   groupId: number,
   day: string,
@@ -116,7 +130,6 @@ export async function saveAssignment(
       subject_id: subjectId,
       teacher_id: teacherId
     });
-    
     // Update local store
     const key = `${groupId}-${day}-${moduleIndex}`;
     assignmentsStore.update((currentMap) => {
@@ -130,7 +143,6 @@ export async function saveAssignment(
       });
       return newMap;
     });
-    
     // Reload assignments to get the full data with subject details
     await loadAssignments();
   } catch (error) {
