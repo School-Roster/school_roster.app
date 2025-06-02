@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { WebviewWindow } from "@tauri-apps/api/window";
   import "$styles/welcome.scss";
-  import { saveConfig } from '$lib/modules/config/configStore';
+  import { saveConfig } from "$lib/modules/config/configStore";
 
   // State variables
   let currentStep = 1;
@@ -32,7 +32,6 @@
 
   // TODO: Abrir archivo
   let fileInput: HTMLInputElement;
-
 
   // Watch for changes in break count to update positions
   $: if (breakCount !== breakPositions.length) {
@@ -113,9 +112,9 @@
       hasBreaks,
       breakCount,
       breakDuration,
-      breakPositions
+      breakPositions,
     });
-    
+
     continueToSchedule();
   }
 
@@ -129,9 +128,9 @@
       hasBreaks,
       breakCount,
       breakDuration,
-      breakPositions
+      breakPositions,
     });
-    
+
     continueToSchedule();
   }
 
@@ -164,6 +163,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
 <section class="welcome-container">
   <div class="step-indicator">
     <div
@@ -453,7 +453,7 @@
 
                 {#if breakCount > 0 && moduleCount > 0}
                   <div class="break-positions">
-                    <label>Posición de los descansos</label>
+                    <label for="break">Posición de los descansos</label>
                     <div class="break-slots">
                       {#each Array(Math.min(breakCount, moduleCount - 1)) as _, i}
                         <div class="break-slot-row">
@@ -500,9 +500,9 @@
       {:else if selectedOption === "existing"}
         <button class="primary" on:click={continueToSchedule}>Continuar</button>
       {:else if selectedOption === "generate"}
-        <button class="primary" on:click={generateSchedule}
-          >Generar horario</button
-        >
+        <button class="primary" on:click={generateSchedule}>
+          Generar horario
+        </button>
       {/if}
     {/if}
   </div>

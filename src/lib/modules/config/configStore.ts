@@ -5,7 +5,7 @@ interface Config {
   days: string[];
   modulesPerDay: number;
   moduleDuration: number;
-  durationUnit: 'minutes' | 'hours';
+  durationUnit: 'minutes' | 'hours' | string;
   hasBreaks: boolean;
   breakCount: number;
   breakDuration: number;

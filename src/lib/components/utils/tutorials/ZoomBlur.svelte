@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount, onDestroy, afterUpdate } from "svelte";
+  import "$styles/zoom_blur.scss";
 
   // Props
   export let targetSelector: string; // CSS selector for the element to highlight
   export let description: string; // Description text to show next to the highlighted element
   export let position: "top" | "right" | "bottom" | "left" = "right"; // Position of the description
   export let zoomLevel = 1.01; // How much to zoom the target element (1.05 = 5% zoom)
-  export let blurAmount = 5; // Blur amount in pixels for non-target elements
+  // export let blurAmount = 5; // Blur amount in pixels for non-target elements
   export let onClose: () => void; // Callback function when tutorial is closed
 
   let targetElement: HTMLElement | null = null;
@@ -186,97 +187,3 @@
     cleanup();
   });
 </script>
-
-<style>
-  :global(.zoon-blur-overlay) {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    z-index: 999;
-    pointer-events: auto;
-  }
-
-  :global(.zoon-blur-description) {
-    position: absolute;
-    background-color: white;
-    color: #333;
-    padding: 12px 16px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    max-width: 300px;
-    z-index: 1001;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  :global(.zoon-blur-description .description-content) {
-    margin-right: 20px;
-  }
-
-  :global(.zoon-blur-description .close-button) {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: #666;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-  }
-
-  :global(.zoon-blur-description .close-button:hover) {
-    background-color: #f0f0f0;
-    color: #333;
-  }
-
-  :global(.zoon-blur-description::before) {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-  }
-
-  :global(.zoon-blur-description.position-right::before) {
-    left: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 10px 10px 10px 0;
-    border-color: transparent white transparent transparent;
-  }
-
-  :global(.zoon-blur-description.position-left::before) {
-    right: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 10px 0 10px 10px;
-    border-color: transparent transparent transparent white;
-  }
-
-  :global(.zoon-blur-description.position-top::before) {
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 10px 10px 0 10px;
-    border-color: white transparent transparent transparent;
-  }
-
-  :global(.zoon-blur-description.position-bottom::before) {
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 0 10px 10px 10px;
-    border-color: transparent transparent white transparent;
-  }
-</style>
