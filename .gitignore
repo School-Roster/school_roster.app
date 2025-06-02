@@ -42,3 +42,4 @@ vite.config.ts.timestamp-*
 static/fonts/*.zip
 static/fonts/FontAwesome/svgs/
 static/fonts/FontAwesome/metadata/
+src-tauri/models/*.onnx
