@@ -1,55 +1,238 @@
 @import "variables";
-@import "mixins";
 
-/*estilos para el boton de tema*/
-/*estilos para la vista de configuracion */
 .config-card {
-  background: var(--background);
-  color: var(--text-color);
+  background: $white-hard;
+  color: $black-hard;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  box-shadow: 0px 4px 10px rgba(55, 129, 154, 0.999);
+  max-width: 900px;
   margin: auto;
   text-align: center;
-  margin-top: 110px;
+  margin-top: 45px;
+
+  body.dark & {
+    background: $black-hard;
+    color: $white-hard;
+  }
 
   h2 {
     font-size: 1.5rem;
     margin-bottom: 15px;
   }
 
-  .config-section {
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 8px;
-    background: var(--section-background);
+  .loading {
+    padding: 20px;
+    font-style: italic;
+    color: $black-overlay;
 
-    h3 {
-      font-size: 1.2rem;
-      margin-bottom: 8px;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-
-      li {
-        background: var(--item-background);
-        padding: 8px;
-        margin: 5px 0;
-        border-radius: 6px;
-      }
+    body.dark & {
+      color: $white-overlay;
     }
   }
 
-  /* Estilos del toggle de tema */
+  .config-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background: $white-overlay;
+    text-align: left;
+
+    body.dark & {
+      background: $black-overlay;
+    }
+
+    p {
+      color: $black-hard;
+      body.dark & {
+        color: $white-overlay;
+      }
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    // Days configuration
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+
+      .day-option {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: $white-hard;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        body.dark & {
+          background: $black-hard;
+        }
+
+        &:hover {
+          opacity: 0.8;
+        }
+
+        &.selected {
+          background: $primary-color;
+          color: $white-hard;
+          body.dark & {
+            color: $primary-color;
+          }
+        }
+
+        input[type="checkbox"] {
+          pointer-events: none;
+        }
+      }
+    }
+
+    .module-config {
+      .config-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: end;
+
+        @media (max-width: 600px) {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+
+      .form-group {
+        flex: 1;
+
+        label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 500;
+          font-size: 0.9rem;
+        }
+
+        select,
+        input {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid $black-overlay;
+          border-radius: 4px;
+          background: $white-background;
+          color: map-get($theme, fg-color);
+        }
+
+        .duration-input {
+          display: flex;
+          gap: 5px;
+
+          input {
+            flex: 2;
+          }
+
+          select {
+            flex: 1;
+          }
+        }
+
+        &.checkbox-group {
+          .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 0;
+
+            input[type="checkbox"] {
+              width: auto;
+            }
+          }
+        }
+      }
+
+      .breaks-config {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 6px;
+
+        .break-positions {
+          margin-top: 15px;
+
+          .break-slots {
+            margin-top: 8px;
+
+            .break-slot-row {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              margin-bottom: 8px;
+
+              span {
+                min-width: 100px;
+                font-size: 0.9rem;
+              }
+
+              select {
+                flex: 1;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Buttons
+    .btn-save,
+    .btn-mapping {
+      background: $primary-color;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      width: 100%;
+
+      &:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &.saving {
+        background: $secondary-color;
+      }
+    }
+
+    .success-message {
+      margin-top: 10px;
+      padding: 8px;
+      background: #4caf50;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+  }
+
   .theme-toggle {
     text-align: center;
 
     p {
       font-size: 0.9rem;
-      color: var(--text-secondary);
+      color: $black-overlay;
+      margin-bottom: 10px;
     }
 
     .toggle-container {
