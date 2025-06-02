@@ -115,4 +115,8 @@
   padding: 0.5rem;
   font-style: italic;
   color: $black-overlay;
+
+  body.dark & {
+    color: $white-overlay;
+  }
 }
