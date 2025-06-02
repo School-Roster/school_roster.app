@@ -51,6 +51,10 @@ async fn main() {
             crate::util::file_handler::export_file,
             crate::util::file_handler::import_file,
             crate::util::file_handler::delete_all_data,
+            crate::util::file_handler::export_pdf_file,
+            crate::util::file_handler::export_file,
+            crate::util::file_handler::import_file,
+            crate::util::file_handler::delete_all_data,
             crate::util::ai::init_model,
             crate::util::ai::query_ai,
             crate::util::ai::check_api_key

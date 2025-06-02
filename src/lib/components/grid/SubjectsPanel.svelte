@@ -8,6 +8,11 @@
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
+  import {
+    commitChange,findDropTarget,
+    redoChange,
+    undoChange
+  } from "$lib/stores/AssignmentUndoRedo";
 
   let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -37,20 +42,19 @@
     return (): void => {
       cleanup?.();
       // Limpia las funciones
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
       removeGhostElement();
     };
   });
 
   function handleMouseDown(e: MouseEvent, subject: SubjectItem) {
     if (e.button !== 0) return;
-    
     e.preventDefault();
-    
+
     isDragging = true;
     draggedSubject = subject;
-    
+
     // Create ghost element
     createGhostElement(e, subject);
   }
@@ -58,7 +62,6 @@
   // Handle mouse movement during drag
   function handleMouseMove(e: MouseEvent) {
     if (!isDragging || !ghostElement) return;
-    
     // Move ghost element with cursor
     ghostElement.style.left = `${e.clientX + 10}px`;
     ghostElement.style.top = `${e.clientY + 10}px`;
@@ -67,76 +70,69 @@
   // End dragging and handle drop
   function handleMouseUp(e: MouseEvent) {
     if (!isDragging || !draggedSubject) return;
-    
     // Find if we're over a valid drop target
     const dropTarget = findDropTarget(e);
-    
+
     if (dropTarget && draggedSubject) {
       // Get drop target information
-      const groupId = dropTarget.getAttribute('data-group-id');
-      const day = dropTarget.getAttribute('data-day');
-      const moduleIndex = dropTarget.getAttribute('data-module-index');
-      
+      const groupId = dropTarget.getAttribute("data-group-id");
+      const day = dropTarget.getAttribute("data-day");
+      const moduleIndex = dropTarget.getAttribute("data-module-index");
+
       // Call saveAssignment directly
       if (groupId && day && moduleIndex) {
         saveAssignment(
           parseInt(groupId, 10),
           day,
           parseInt(moduleIndex, 10),
-          draggedSubject.id,
-          draggedSubject.assigned_teacher?.id
+          draggedSubject.id!,
+          draggedSubject.assigned_teacher?.id!,
         );
-        
+
+        commitChange({
+          action: "create",
+          day,
+          groupId: parseInt(groupId, 10),
+          moduleIndex: parseInt(moduleIndex, 10),
+          subjectId: draggedSubject.id!,
+          teacherId: draggedSubject.assigned_teacher?.id!,
+        });
+
         // Provide visual feedback
-        dropTarget.classList.add('flash-highlight');
+        dropTarget.classList.add("flash-highlight");
         setTimeout(() => {
-          dropTarget.classList.remove('flash-highlight');
+          dropTarget.classList.remove("flash-highlight");
         }, 300);
       }
     }
-    
+
     // Reset drag state
     isDragging = false;
     draggedSubject = null;
     removeGhostElement();
   }
 
-  // Find valid drop target under cursor
-  function findDropTarget(e: MouseEvent): HTMLElement | null {
-    // Get all elements at the current mouse position
-    const elements = document.elementsFromPoint(e.clientX, e.clientY);
-    
-    // Find the first element with class 'module-cell'
-    for (const el of elements) {
-      if (el.classList.contains('module-cell')) {
-        return el as HTMLElement;
-      }
-    }
-    
-    return null;
-  }
-
   // Create visual ghost element
   function createGhostElement(e: MouseEvent, subject: SubjectItem) {
     removeGhostElement(); // Remove any existing ghost
-    
-    ghostElement = document.createElement('div');
-    ghostElement.className = 'subject-ghost';
+
+    ghostElement = document.createElement("div");
+    ghostElement.className = "subject-ghost";
     ghostElement.textContent = subject.shorten;
     ghostElement.style.backgroundColor = subject.color;
     ghostElement.style.color = getContrastColor(subject.color);
-    ghostElement.style.position = 'fixed';
-    ghostElement.style.pointerEvents = 'none';
-    ghostElement.style.padding = '8px';
-    ghostElement.style.borderRadius = '4px';
-    ghostElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-    ghostElement.style.zIndex = '9999';
-    ghostElement.style.opacity = '0.8';
-    
+    ghostElement.style.position = "fixed";
+    ghostElement.style.pointerEvents = "none";
+    ghostElement.style.padding = "8px";
+    ghostElement.style.borderRadius = "4px";
+    ghostElement.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    ghostElement.style.zIndex = "9999";
+    ghostElement.style.opacity = "0.8";
+
     // Position at cursor
     ghostElement.style.left = `${e.clientX + 10}px`;
     ghostElement.style.top = `${e.clientY + 10}px`;
-    
+
     document.body.appendChild(ghostElement);
   }
 
@@ -155,7 +151,7 @@
 </script>
 
 <div class="subjects-container">
-  <section class="items">
+  <section class="subjects-items">
     {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
       <div
         class="subject"
@@ -196,4 +192,6 @@
       </div>
     </div>
   {/if}
+  <button on:click={async() => await undoChange()}> Undo </button>
+  <button on:click={async() => await redoChange()}> Redo </button>
 </div>

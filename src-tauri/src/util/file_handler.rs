@@ -71,6 +71,15 @@ fn simple_checksum(data: &[u8]) -> u32 {
     data.iter().fold(0u32, |acc, &x| acc.wrapping_add(x as u32))
 }
 
+#[tauri::command]
+pub async fn export_pdf_file() -> Option<String> {
+    dialog::blocking::FileDialogBuilder::new()
+        .set_title("Guardar PDF")
+        .add_filter("PDF", &["pdf"])
+        .save_file()
+        .map(|p| p.to_string_lossy().to_string())
+}
+
 /// Funcion para exportar el archivo (.roster)
 #[tauri::command]
 pub async fn export_file(
@@ -144,6 +153,7 @@ async fn export_file_impl(
     let assignments = get_all_assignments(pool.clone())
         .await
         .map_err(|_| ScheduleFileError::DatabaseError(sqlx::Error::RowNotFound))?;
+
     // let group_subjects = get_all_group_subjects(pool.clone()).await?;
 
     // Package data
@@ -223,7 +233,6 @@ async fn import_file_impl(
     handle: tauri::AppHandle,
     file_path: &PathBuf,
 ) -> ScheduleResult<()> {
-    // let mut file = File::open(file_path);
     let file = File::open(file_path);
     let mut buffer = Vec::new();
 
