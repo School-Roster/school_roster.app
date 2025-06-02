@@ -1,27 +1,56 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri";
+  import { afterUpdate } from "svelte";
 
   import "$styles/chat.scss";
 
+  // --------------------
+  //  ESTADO DEL COMPONENTE
+  // --------------------
   let messages: { role: "user" | "assistant"; content: string }[] = [];
-  let inputMessage: string = "";
-  let isLoading: boolean = false;
-  let apiKey: string = "";
-  let apiKeyValid: boolean = false;
+  let inputMessage = "";
+  let isLoading = false;
+  let apiKey = "";
+  let apiKeyValid = false;
   let selectedModel: "standard" | "reasoner" = "standard";
-  let errorMessage: string = "";
+  let errorMessage = "";
 
+  let chatEnd: HTMLDivElement | null = null;
+
+  // --------------------
+  //  UTILIDADES
+  // --------------------
+ function formatMessage(content: string): string {
+  return content
+    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+    .replace(/\n/g, "<br>")
+    .replace(/\*{1,2}([^*]+)\*{1,2}/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/^- (.*)$/gm, "<li>$1</li>")
+    .replace(/(<li>[^]*?<\/li>)/g, "<ul>$1</ul>");
+}
+
+
+  afterUpdate(() => {
+    chatEnd?.scrollIntoView({ behavior: "smooth" });
+  });
+
+  // --------------------
+  //  LÓGICA DE NEGOCIO
+  // --------------------
   async function validateApiKey() {
     if (!apiKey.trim()) {
       errorMessage =
-        "Por favor inicie sesion para poder utilizar nuestro asistente IA";
+        "Por favor inicie sesión para poder utilizar nuestro asistente IA";
       return;
     }
 
     try {
       isLoading = true;
       errorMessage = "";
-      const response = await invoke("check_api_key", { apiKey });
+      await invoke("check_api_key", { apiKey });
       apiKeyValid = true;
       await initializeModel();
     } catch (e) {
@@ -37,15 +66,13 @@
     try {
       isLoading = true;
       errorMessage = "";
-
       await invoke("init_model", { apiKey });
       messages = [
         ...messages,
         {
           role: "assistant",
-          // content: 'DeepSeek AI assistant connected. How can I help with your school schedule?'
           content:
-            "Asistente AI conectado. En que te puedo ayudar con tu horario escolar?",
+            "¡Hola!, Mi nombre es Roster y estoy para ayudarte con cualquier duda. ¿En qué te puedo ayudar con tu horario escolar?",
         },
       ];
     } catch (e) {
@@ -67,7 +94,6 @@
     errorMessage = "";
 
     try {
-      // Usa el endpoint basado en la seleccion del modelo
       const endpoint =
         selectedModel === "standard" ? "query_ai" : "query_ai_reasoner";
       const response = await invoke(endpoint, { message: userMessage });
@@ -82,7 +108,8 @@
         ...messages,
         {
           role: "assistant",
-          content: "Lo lamentamos, encontré un error al procesar su solicitud.",
+          content:
+            "Lo lamentamos, encontré un error al procesar su solicitud.",
         },
       ];
     } finally {
@@ -91,12 +118,14 @@
   }
 </script>
 
+<!-- --------------------
+     MARKUP
+     -------------------- -->
 <div class="app-container">
   {#if !apiKeyValid}
     <div class="api-key-setup">
-      <h2>Conectandose a nuestra API</h2>
-      <!-- TODO: Validar con el usuario -->
-      <p>Ingresa tu codigo para poder continuar</p>
+      <h2>Conectándose a nuestra API</h2>
+      <p>Ingresa tu código para poder continuar</p>
 
       <div class="input-group">
         <input
@@ -107,7 +136,7 @@
           disabled={isLoading}
         />
         <button on:click={validateApiKey} disabled={isLoading}>
-          {isLoading ? "Verificando..." : "Conectado"}
+          {isLoading ? "Verificando..." : "Conectar"}
         </button>
       </div>
 
@@ -120,29 +149,39 @@
       <div class="messages">
         {#each messages as message}
           <div class="message {message.role}">
-            <span class="role"
-              >{message.role === "user" ? "Tu" : "Asistente"}:</span
-            >
-            <p>{message.content}</p>
+<span class="role">
+  {#if message.role !== "user"}
+    <img src="/roster.png" alt="Roster" class="roster-icon" />
+  {/if}
+  {message.role === "user" ? "Tú" : "Roster"}:
+</span>
+
+            <p>{@html formatMessage(message.content)}</p>
           </div>
         {/each}
+
         {#if isLoading}
-          <div class="loading">Pensando...</div>
+          <div class="loading">Pensando…</div>
         {/if}
+
         {#if errorMessage}
           <div class="error-message">{errorMessage}</div>
         {/if}
+
+        <div bind:this={chatEnd}></div>
       </div>
 
       <div class="input-area">
         <input
           type="text"
           bind:value={inputMessage}
-          placeholder="Preguntame acerca de tu horario..."
+          placeholder="Pregúntame acerca de tu horario…"
           on:keydown={(e) => e.key === "Enter" && sendMessage()}
           disabled={isLoading}
         />
-        <button on:click={sendMessage} disabled={isLoading}> Enviar </button>
+        <button on:click={sendMessage} disabled={isLoading}>
+          Enviar
+        </button>
       </div>
     </div>
   {/if}
