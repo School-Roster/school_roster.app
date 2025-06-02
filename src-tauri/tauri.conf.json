@@ -109,12 +109,25 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
+      "externalBin": [],
+      "copyright": "Copyright © 2025 School Roster",
+      "category": "Education",
+      "shortDescription": "Aplicacion de horarios escolares",
+      "longDescription": "Aplicacion representa una solucion para automatizar y facilitar la creacion de horarios, reduciendo el esfuerzo, otpimizando el uso de recursos y mejorando la precision en la planificacion.",
+      "deb": {
+        "depends": []
+      },
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
         "frameworks": [],
         "providerShortName": null,
         "signingIdentity": null
+      },
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
       }
     }
   }
