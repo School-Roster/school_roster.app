@@ -44,6 +44,7 @@
     if (!apiKey.trim()) {
       errorMessage =
         "Por favor inicie sesión para poder utilizar nuestro asistente IA";
+
       return;
     }
 
@@ -66,13 +67,16 @@
     try {
       isLoading = true;
       errorMessage = "";
+
       await invoke("init_model", { apiKey });
       messages = [
         ...messages,
         {
           role: "assistant",
+
           content:
             "¡Hola!, Mi nombre es Roster y estoy para ayudarte con cualquier duda. ¿En qué te puedo ayudar con tu horario escolar?",
+
         },
       ];
     } catch (e) {
@@ -149,13 +153,12 @@
       <div class="messages">
         {#each messages as message}
           <div class="message {message.role}">
-<span class="role">
-  {#if message.role !== "user"}
-    <img src="/roster.png" alt="Roster" class="roster-icon" />
-  {/if}
-  {message.role === "user" ? "Tú" : "Roster"}:
-</span>
-
+            <span class="role">
+              {#if message.role !== "user"}
+                <img src="/roster.png" alt="Roster" class="roster-icon" />
+              {/if}
+                {message.role === "user" ? "Tú" : "Roster"}:
+            </span>
             <p>{@html formatMessage(message.content)}</p>
           </div>
         {/each}
