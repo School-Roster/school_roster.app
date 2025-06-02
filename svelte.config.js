@@ -8,7 +8,13 @@ import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 const config = {
   preprocess: vitePreprocess(),
   kit: {
-    adapter: adapter(),
+    // adapter: adapter(),
+    adapter: adapter({
+      fallback: '200.html' // this file will act as the catch-all fallback
+    }),
+    prerender: {
+      entries: [] // or keep default: ['*'] if your static pages are prerenderable
+    },
     alias: {
       $styles: "./src/styles",
     },

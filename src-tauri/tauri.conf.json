@@ -6,7 +6,7 @@
     "distDir": "../build"
   },
   "package": {
-    "productName": "school_roster",
+    "productName": "School Roster",
     "version": "0.1.0"
   },
   "tauri": {
@@ -101,7 +101,7 @@
       "active": true,
       "targets": "all",
       "resources": ["models/*"],
-      "identifier": "school_roster.app",
+      "identifier": "com.schoolroster.app",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
