@@ -61,6 +61,7 @@
                   deleteAll();
                 } else {
                   console.log (subitem.menu);
+                  createWindow(subitem.menu);
                 }
               }}
             >
@@ -73,3 +74,17 @@
     {/if}
   </div>
 {/each}
+
+<style>
+  .submenu-item {
+    background: none;
+    border: none;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-align: left;
+    color: white;
+  }
+</style>

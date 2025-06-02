@@ -5,9 +5,14 @@
   import GridView from "$lib/components/grid/GridView.svelte";
   import SubjectsPanel from "$lib/components/grid/SubjectsPanel.svelte";
   import { onMount } from "svelte";
+  import WelcomeScreen from "$lib/components/utils/WelcomeScreen.svelte";
+
+  let showWelcomeScreen: boolean = false;
 
   const applySystemTheme = () => {
-    const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const darkModeMediaQuery = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    );
     if (darkModeMediaQuery.matches) {
       document.body.classList.add("dark");
     } else {
@@ -24,7 +29,7 @@
     } else {
       applySystemTheme();
     }
-  }
+  };
 
   onMount(() => {
     applyTheme();
@@ -32,9 +37,13 @@
 </script>
 
 <main>
-  <Navbar />
-  <div class="content">
-    <GridView />
-    <SubjectsPanel />
-  </div>
+  {#if showWelcomeScreen}
+    <WelcomeScreen />
+  {:else}
+    <Navbar />
+    <div class="content">
+      <GridView />
+      <SubjectsPanel />
+    </div>
+  {/if}
 </main>

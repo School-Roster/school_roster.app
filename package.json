@@ -16,6 +16,7 @@
   "dependencies": {
     "@tauri-apps/api": "^1",
     "follow-redirects": "^1.15.9",
+    "jspdf": "^3.0.1",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#v1",
     "xlsx": "^0.18.5"
   },
