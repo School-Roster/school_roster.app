@@ -8,7 +8,7 @@
 
   import WelcomeScreen from "$lib/components/utils/WelcomeScreen.svelte";
 
-  let showWelcomeScreen: boolean = true;
+  let showWelcomeScreen: boolean = false;
 
   const applySystemTheme = () => {
     const darkModeMediaQuery = window.matchMedia(

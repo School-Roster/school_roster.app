@@ -5,6 +5,7 @@
   } from "$lib/modules/entities/assignments";
   import { teachers, loadTeachers } from "$lib/modules/entities/teachersStore";
   import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
+  import { configStore, loadConfig } from "$lib/modules/config/configStore";
   import { onMount } from "svelte";
   import jsPDF from "jspdf";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -14,33 +15,64 @@
 
   let selectedTeacherId: number | null = null;
 
-  // TODO: Cambiar a horas por modulo
-  let horas = [
-    "7:00 - 7:50",
-    "7:50 - 8:40",
-    "8:40 - 9:30",
-    "9:30 - 10:20",
-    "10:20 - 11:10",
-    "11:10 - 12:00",
-    "12:00 - 12:50",
-    "12:50 - 1:40",
-    "1:40 - 2:30",
-  ];
+  // Helper function to calculate time slots based on config
+  function generateTimeSlots(config: any): string[] {
+    const slots: string[] = [];
+    let currentTime = new Date();
+    currentTime.setHours(7, 0, 0, 0); // Start at 7:00 AM by default
+    
+    const durationMs = config.durationUnit === 'hours' 
+      ? config.moduleDuration * 60 * 60 * 1000 
+      : config.moduleDuration * 60 * 1000;
+    
+    const breakDurationMs = config.breakDuration * 60 * 1000;
+    
+    for (let i = 0; i < config.modulesPerDay; i++) {
+      const startTime = new Date(currentTime);
+      currentTime = new Date(currentTime.getTime() + durationMs);
+      
+      const startStr = startTime.toLocaleTimeString('es-MX', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+      const endStr = currentTime.toLocaleTimeString('es-MX', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+      
+      slots.push(`${startStr} - ${endStr}`);
+      
+      // Add break time if needed
+      if (config.hasBreaks && config.breakPositions.includes(i)) {
+        currentTime = new Date(currentTime.getTime() + breakDurationMs);
+      }
+    }
+    
+    return slots;
+  }
 
-  const dayMap: Record<string, number> = {
-    lunes: 1,
-    martes: 2,
-    miercoles: 3,
-    jueves: 4,
-    viernes: 5,
-  };
+  // Create day mapping dynamically based on config
+  function createDayMap(days: string[]): Record<string, number> {
+    const map: Record<string, number> = {};
+    days.forEach((day, index) => {
+      map[day.toLowerCase()] = index + 1;
+    });
+    return map;
+  }
 
-  onMount(() => {
-    loadAssignments();
-    loadTeachers();
-    loadGroups();
+  onMount(async () => {
+    await loadConfig(); // Load config first
+    await loadAssignments();
+    await loadTeachers();
+    await loadGroups();
   });
 
+  // Reactive values from config
+  $: days = $configStore.days;
+  $: dayMap = createDayMap(days);
+  $: horas = generateTimeSlots($configStore);
   $: assignmentsMap = $assignmentsStore;
   $: teachersList = $teachers;
   $: groupsList = $groups;
@@ -56,10 +88,10 @@
       )
     : [];
 
-  function findAssignment(day: number, moduleIndex: number) {
+  function findAssignment(dayIndex: number, moduleIndex: number) {
     return teacherSchedule.find((a) => {
-      const dayKey = a.day.toLowerCase() as keyof typeof dayMap;
-      return dayMap[dayKey] === day && a.moduleIndex === moduleIndex;
+      const dayKey = a.day.toLowerCase();
+      return dayMap[dayKey] === dayIndex && a.moduleIndex === moduleIndex;
     });
   }
 
@@ -133,19 +165,17 @@
 
 <div class="grid-container">
   <div class="time"></div>
-  <div class="header">Lunes</div>
-  <div class="header">Martes</div>
-  <div class="header">Miércoles</div>
-  <div class="header">Jueves</div>
-  <div class="header">Viernes</div>
+  {#each days as day}
+    <div class="header">{day}</div>
+  {/each}
 
   {#each horas as hora, index}
     <div class="time">{hora}</div>
-    {#each [1, 2, 3, 4, 5] as colIndex}
+    {#each days as day, colIndex}
       <div class="cell">
-        {#key `${selectedTeacherId}-${colIndex}-${index}`}
+        {#key `${selectedTeacherId}-${colIndex + 1}-${index}`}
           {#if selectedTeacherId}
-            {@const assignment = findAssignment(colIndex, index)}
+            {@const assignment = findAssignment(colIndex + 1, index)}
             {#if assignment}
               <div
                 class="time-block"

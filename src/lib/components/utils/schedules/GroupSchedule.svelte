@@ -9,22 +9,37 @@
   import jsPDF from "jspdf";
   import { invoke } from "@tauri-apps/api/tauri";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
+  import { configStore } from '$lib/modules/config/configStore';
 
   import "$styles/schedule_preview.scss";
 
   let selectedGroupId: number | null = null;
 
-  let horas = [
-    "7:00 - 7:50",
-    "7:50 - 8:40",
-    "8:40 - 9:30",
-    "9:30 - 10:20",
-    "10:20 - 11:10",
-    "11:10 - 12:00",
-    "12:00 - 12:50",
-    "12:50 - 1:40",
-    "1:40 - 2:30",
-  ];
+  let horas: string[] = [];
+  
+  $: {
+    // Generate time slots based on config
+    const { modulesPerDay, moduleDuration, durationUnit, hasBreaks, breakDuration, breakPositions } = $configStore;
+    horas = [];
+    let currentTime = new Date();
+    currentTime.setHours(7, 0, 0); // Start at 7:00 AM
+
+    for (let i = 0; i < modulesPerDay; i++) {
+      const startTime = new Date(currentTime);
+      currentTime.setMinutes(currentTime.getMinutes() + moduleDuration);
+      const endTime = new Date(currentTime);
+      
+      horas.push(`${startTime.getHours()}:${startTime.getMinutes().toString().padStart(2, '0')} - ${endTime.getHours()}:${endTime.getMinutes().toString().padStart(2, '0')}`);
+      
+      // Add break if configured
+      if (hasBreaks && breakPositions.includes(i)) {
+        const breakStart = new Date(currentTime);
+        currentTime.setMinutes(currentTime.getMinutes() + breakDuration);
+        const breakEnd = new Date(currentTime);
+        horas.push(`Receso: ${breakStart.getHours()}:${breakStart.getMinutes().toString().padStart(2, '0')} - ${breakEnd.getHours()}:${breakEnd.getMinutes().toString().padStart(2, '0')}`);
+      }
+    }
+  }
 
   const dayMap: Record<string, number> = {
     lunes: 1,
@@ -122,19 +137,17 @@
 
 <div class="grid-container">
   <div class="time"></div>
-  <div class="header">Lunes</div>
-  <div class="header">Martes</div>
-  <div class="header">Miércoles</div>
-  <div class="header">Jueves</div>
-  <div class="header">Viernes</div>
-
+  {#each $configStore.days as day}
+    <div class="header">{day}</div>
+  {/each}
+  
   {#each horas as hora, index}
     <div class="time">{hora}</div>
-    {#each [1, 2, 3, 4, 5] as colIndex}
+    {#each $configStore.days as day, dayIndex}
       <div class="cell">
-        {#key `${selectedGroupId}-${colIndex}-${index}`}
+        {#key `${selectedGroupId}-${dayIndex}-${index}`}
           {#if selectedGroupId}
-            {@const assignment = findAssignment(colIndex, index)}
+            {@const assignment = findAssignment(dayIndex + 1, index)}
             {#if assignment}
               <div
                 class="time-block"

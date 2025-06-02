@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { WebviewWindow } from "@tauri-apps/api/window";
   import "$styles/welcome.scss";
+  import { saveConfig } from '$lib/modules/config/configStore';
 
   // State variables
   let currentStep = 1;
@@ -102,18 +103,35 @@
     }
   }
 
-  function startNewSchedule(): void {
-    // TODO: Iniciar nuevo horario con la configuracion seleccionada
-    console.log("Starting new schedule with:", {
-      selectedDays,
-      moduleCount
+  async function startNewSchedule(): void {
+    // Save configuration before proceeding
+    await saveConfig({
+      days: selectedDays,
+      modulesPerDay: moduleCount,
+      moduleDuration,
+      durationUnit,
+      hasBreaks,
+      breakCount,
+      breakDuration,
+      breakPositions
     });
+    
     continueToSchedule();
   }
 
-  function generateSchedule(): void {
-    // TODO: Generar un horario usando el algoritmo
-    console.log("Generating schedule with:", { selectedDays, moduleCount});
+  async function generateSchedule(): void {
+    // Save configuration before proceeding
+    await saveConfig({
+      days: selectedDays,
+      modulesPerDay: moduleCount,
+      moduleDuration,
+      durationUnit,
+      hasBreaks,
+      breakCount,
+      breakDuration,
+      breakPositions
+    });
+    
     continueToSchedule();
   }
 
