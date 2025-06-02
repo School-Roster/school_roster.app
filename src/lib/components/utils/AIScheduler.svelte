@@ -142,7 +142,7 @@
           on:keydown={(e) => e.key === "Enter" && sendMessage()}
           disabled={isLoading}
         />
-        <button on:click={sendMessage} disabled={isLoading}> Mandar </button>
+        <button on:click={sendMessage} disabled={isLoading}> Enviar </button>
       </div>
     </div>
   {/if}
