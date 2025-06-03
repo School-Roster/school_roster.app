@@ -9,12 +9,13 @@
   export let value: string = '#5E7ABC';
 
   // Matriz de colores disponibles para selección
-  let values: string[][] = [
-    ['#DAAFE9', '#C7DBF5', '#AAD5FB', '#ADE5DA', '#B0EDC3', '#FDF0A4', '#F8D6A2'],
-    ['#C47ADA', '#90BAEE', '#75BAFA', '#72D5BF', '#73DE8C', '#FBE66E', '#F5B969'],
-    ['#AE44B7', '#5E7ABC', '#5E7ABC', '#4DACA9', '#63B75A', '#EDBD4A', '#EC9740'],
-    ['#501B87', '#021B6B', '#0C2794', '#337277', '#2F6A52', '#AE802F', '#AD6127']
-  ];
+let values: string[][] = [
+  ['#DAAFE9', '#C7DBF5', '#AAD5FB', '#ADE5DA', '#B0EDC3', '#FDF0A4', '#F8D6A2', '#FFC0CB', '#FFE4B5', '#98FB98', '#AFEEEE', '#E6E6FA', '#FFD700', '#D3D3D3'],
+  ['#C47ADA', '#90BAEE', '#75BAFA', '#72D5BF', '#73DE8C', '#FBE66E', '#F5B969', '#FF69B4', '#FFA07A', '#00FA9A', '#40E0D0', '#BA55D3', '#FFDAB9', '#A9A9A9'],
+  ['#AE44B7', '#5E7ABC', '#5E7ABC', '#4DACA9', '#63B75A', '#EDBD4A', '#EC9740', '#9932CC', '#4682B4', '#66CDAA', '#9ACD32', '#DAA520', '#BC8F8F', '#808080'],
+  ['#501B87', '#021B6B', '#0C2794', '#337277', '#2F6A52', '#AE802F', '#AD6127', '#8A2BE2', '#4169E1', '#20B2AA', '#556B2F', '#8B4513', '#D2691E', '#696969']
+];
+
 
   let trigger = 'Escape';
   function handleKeydown(e: KeyboardEvent) {
