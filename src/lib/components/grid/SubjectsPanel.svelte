@@ -3,13 +3,14 @@
   import {
     subjectsWithTeachers,
     loadSubjectsWithTeachers,
+    selectedSubject,
     type SubjectItem,
   } from "$lib/modules/entities/subjectsStore";
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
 
-  let selectedSubject: SubjectItem | null = null;
+  // let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
   
   // Variables for custom drag and drop
@@ -165,8 +166,8 @@
           item.color,
         )}"
         on:mousedown={(e) => handleMouseDown(e, item)}
-        on:click={() => (selectedSubject = item)}
-        on:keydown={(e) => e.key === "Enter" && (selectedSubject = item)}
+        on:click={() => ($selectedSubject = item)}
+        on:keydown={(e) => e.key === "Enter" && ($selectedSubject = item)}
         class:dragging={isDragging && draggedSubject?.id === item.id}
       >
         {item.shorten}
@@ -174,23 +175,24 @@
     {/each}
   </section>
 
-  {#if selectedSubject}
+  {#if $selectedSubject}
     <div class="subjects-details">
       <div
         class="color"
-        style="background-color: {selectedSubject.color}; color: {getContrastColor(
-          selectedSubject.color,
+        style="background-color: {$selectedSubject.color}; color: {getContrastColor(
+          $selectedSubject.color,
         )}"
       >
-        {selectedSubject.shorten}
+        {$selectedSubject.shorten}
       </div>
       <div class="details">
-        <span>Nombre de la materia: {selectedSubject.name}</span>
-        <span>Tipo: {selectedSubject.spec}</span>
-        {#if selectedSubject.assigned_teacher}
-          <span
-            >Profesor asignado: {selectedSubject.assigned_teacher.name}
-            {selectedSubject.assigned_teacher.father_lastname}</span
+        <span>Nombre de la materia: {$selectedSubject.name}</span>
+        {#if $selectedSubject.assigned_teacher}
+          <span>
+            Profesor asignado:
+            {$selectedSubject.assigned_teacher.name}
+            {$selectedSubject.assigned_teacher.father_lastname}
+          </span
           >
         {/if}
       </div>

@@ -7,6 +7,7 @@
   import { listen } from "@tauri-apps/api/event";
   import {
     assignmentsStore,
+    saveAssignment,
     loadAssignments,
     getLocalAssignment,
     handleAssignDrop,
@@ -15,9 +16,11 @@
   import {
     subjectsWithTeachers,
     loadSubjectsWithTeachers,
+    selectedSubject,
     type SubjectItem,
     subjects,
   } from "$lib/modules/entities/subjectsStore";
+  import { get } from "svelte/store";
   import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
   import { configStore, loadConfig } from "$lib/modules/config/configStore";
   import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
@@ -92,6 +95,23 @@
     );
   }
 
+  function handleModuleCellClick(
+    groupId: number,
+    day: string,
+    moduleIndex: number,
+  ) {
+    const subject = get(selectedSubject);
+    if (!subject || !subject.assigned_teacher) return;
+
+    saveAssignment(
+      groupId,
+      day,
+      moduleIndex,
+      subject.id == undefined ? -1 : subject.id,
+      subject.assigned_teacher.id,
+    );
+  }
+
   function handleMiddleClick(
     e: MouseEvent,
     assignment: undefined,
@@ -120,6 +140,8 @@
   function handleDragOver(target: HTMLElement): void {
     // Llama el handler existente con los datos necesarios
     target.classList.add("drag-over");
+    /*
+    // BUG: Esto hace que constantemente aparezcan @Abrotello no se cual era el proposito de este cambio
     handleAssignDrop(
       {
         preventDefault: () => {},
@@ -130,6 +152,7 @@
       day,
       moduleIndex,
     );
+    */
   }
 
   function handleDragLeave(target: HTMLElement): void {
@@ -150,6 +173,8 @@
   $: assignedSubjects = $subjectsWithTeachers.filter(
     (item) => item.assigned_teacher,
   );
+  $: isCompactView = $groups.length > 8;
+  $: isSuperCompactView = $groups.length > 30;
 </script>
 
 {#if show.navbar}
@@ -159,7 +184,11 @@
   <GridTutorial on:complete={handleTutorialComplete} />
 {/if}
 
-<section class="schedule-grid">
+<section
+  class="schedule-grid"
+  class:compact={isCompactView}
+  class:super-compact={isSuperCompactView}
+>
   <!-- Header con los dias y los modulos -->
   <div class="header-row">
     <div class="corner-cell">Grupos</div>
@@ -191,13 +220,14 @@
                     day,
                     moduleIndex,
                   )}
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
+                  <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
                   <div
                     class="module-cell"
                     class:has-subject={assignment}
                     data-group-id={group.id}
                     data-day={day}
                     data-module-index={moduleIndex}
+                    on:click={() => handleModuleCellClick(group.id == undefined ? -1 : group.id, day, moduleIndex)}
                     on:mouseenter={(e) => handleDragOver(e.currentTarget)}
                     on:mouseleave={(e) => handleDragLeave(e.currentTarget)}
                   >
@@ -230,6 +260,7 @@
   </div>
 </section>
 
+<!--
 <div class="tutorial-menu-container" style="margin-top: 6px;">
   <button
     class="tutorial-menu-button"
@@ -269,3 +300,4 @@
     </div>
   {/if}
 </div>
+-->
