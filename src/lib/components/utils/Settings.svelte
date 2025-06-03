@@ -12,7 +12,7 @@
   } from "$lib/modules/config/configStore";
 
   // Configuration variables (loaded from store)
-  let days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+  let days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sabado"];
   let selectedDays = [];
   let moduleCount = 6;
   let moduleDuration = 60;

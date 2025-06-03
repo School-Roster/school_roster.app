@@ -1,13 +1,15 @@
 <!-- Vista de la pizarra para los horarios -->
 
 <script lang="ts">
+  import { invoke } from "@tauri-apps/api";
+  import { onMount } from "svelte";
   import Navbar from "$lib/components/navbar/Navbar.svelte";
   import GridView from "$lib/components/grid/GridView.svelte";
   import SubjectsPanel from "$lib/components/grid/SubjectsPanel.svelte";
-  import { onMount } from "svelte";
   import WelcomeScreen from "$lib/components/utils/WelcomeScreen.svelte";
 
   let showWelcomeScreen: boolean = false;
+  let checkedSchedule: boolean = false;
 
   const applySystemTheme = () => {
     const darkModeMediaQuery = window.matchMedia(
@@ -31,19 +33,45 @@
     }
   };
 
-  onMount(() => {
+  onMount(async () => {
     applyTheme();
+
+    // Consultar si hay profesores (como proxy para "hay horario")
+    try {
+      const hasTeachers = await invoke<boolean>("has_teachers");
+      showWelcomeScreen = !hasTeachers; // si no hay profesores, mostrar WelcomeScreen
+    } catch (error) {
+      console.error("Error al consultar profesores:", error);
+      showWelcomeScreen = true; // en caso de error, mejor mostrar pantalla bienvenida
+    }
+
+    checkedSchedule = true;
+
+    // Evento para cerrar welcome screen (ya lo tienes)
+    const handleCloseWelcomeScreen = () => {
+      showWelcomeScreen = false;
+    };
+    window.addEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
+
+    return () => {
+      window.removeEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
+    };
   });
 </script>
 
 <main>
-  {#if showWelcomeScreen}
-    <WelcomeScreen />
+  {#if !checkedSchedule}
+    <!-- Opcional: mostrar loading mientras se consulta -->
+    <p>Cargando...</p>
   {:else}
-    <Navbar />
-    <div class="content">
-      <GridView />
-      <SubjectsPanel />
-    </div>
+    {#if showWelcomeScreen}
+      <WelcomeScreen />
+    {:else}
+      <Navbar />
+      <div class="content">
+        <GridView />
+        <SubjectsPanel />
+      </div>
+    {/if}
   {/if}
 </main>

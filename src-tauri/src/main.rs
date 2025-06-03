@@ -11,6 +11,7 @@ use tauri::Manager as _; // Necesario para poder usar manage()
 
 #[tokio::main]
 async fn main() {
+    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             // Subjects
@@ -28,6 +29,7 @@ async fn main() {
             crate::class::teachers::get_all_teachers,
             crate::class::teachers::delete_teacher,
             crate::class::teachers::delete_teachers,
+            crate::class::teachers::has_teachers,
             // Groups
             crate::class::groups::create_group,
             crate::class::groups::create_groups,

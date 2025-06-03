@@ -1,4 +1,6 @@
 <script lang="ts">
+  import "$styles/form/editor.scss";
+
   import {
     addGroup,
     editGroup,
@@ -15,7 +17,7 @@
   import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
   import ImportExcel from "$lib/components/utils/excel/ImportExcel.svelte";
   import { importStudentsFromXlsx } from "$lib/modules/entities/groupsStore";
-    import { ClassType } from "$lib/utilities/helpers";
+  import { ClassType } from "$lib/utilities/helpers";
 
   let g: GroupItem = {
     grade: null,
@@ -75,7 +77,7 @@
 
   function toggleSelection(subject: SubjectItem): void {
     const index: number = selectedSubjects.findIndex(
-      (s) => s.id === subject.id
+      (s) => s.id === subject.id,
     );
     if (index >= 0) {
       // Si la materia ya esta seleccionada la quitamos
@@ -90,7 +92,12 @@
   const handleStudentImport = async (event: CustomEvent) => {
     const { headerMappings, data } = event.detail;
     if (item?.id) {
-      await importStudentsFromXlsx(headerMappings, data, item.id, lastNamesCombined);
+      await importStudentsFromXlsx(
+        headerMappings,
+        data,
+        item.id,
+        lastNamesCombined,
+      );
       showStudentImport = false;
     }
   };
@@ -193,7 +200,10 @@
 
   {#if item?.id}
     <div class="form-field">
-      <button class="import-students-btn" on:click={() => showStudentImport = true}>
+      <button
+        class="import-students-btn"
+        on:click={() => (showStudentImport = true)}
+      >
         Importar estudiantes
       </button>
     </div>
@@ -201,20 +211,23 @@
     {#if showStudentImport}
       <div class="student-import-section">
         <label class="checkbox-label">
-          <input 
-            type="checkbox" 
-            bind:checked={lastNamesCombined}
-          >
+          <input type="checkbox" bind:checked={lastNamesCombined} />
           Los apellidos están en la misma columna
         </label>
-        
+
         <ImportExcel
           defaultClass={ClassType.Students}
-          availableData={
-          [
+          availableData={[
             { name: "Nombre", key: "name", required: true },
-            { name: "Apellido paterno", key: "father_lastname", required: true },
-            { name: !lastNamesCombined ? "Apellido materno" : "Apellidos", key: "mother_lastname" }
+            {
+              name: "Apellido paterno",
+              key: "father_lastname",
+              required: true,
+            },
+            {
+              name: !lastNamesCombined ? "Apellido materno" : "Apellidos",
+              key: "mother_lastname",
+            },
           ]}
         />
       </div>
@@ -224,16 +237,16 @@
 
 <style lang="scss">
   .import-students-btn {
-    background-color: #4CAF50;
+    background-color: #4caf50;
     color: white;
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    
+
     &:hover {
-      background-color: darken(#4CAF50, 10%);
+      background-color: darken(#4caf50, 10%);
     }
   }
 
@@ -250,7 +263,7 @@
     gap: 8px;
     margin-bottom: 15px;
     font-size: 14px;
-    
+
     input[type="checkbox"] {
       width: 16px;
       height: 16px;

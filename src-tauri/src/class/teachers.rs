@@ -382,3 +382,14 @@ pub async fn delete_teachers(
     }
     Ok(())
 }
+
+/// Funcion para comprobar si hay algun profesor registrado
+#[tauri::command]
+pub async fn has_teachers(pool: tauri::State<'_, AppState>) -> Result<bool, String> {
+    let row: Option<i64> = sqlx::query_scalar("SELECT 1 FROM teachers LIMIT 1")
+        .fetch_optional(&pool.db)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(row.is_some())
+}

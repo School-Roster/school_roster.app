@@ -18,12 +18,11 @@
     type SubjectItem,
     subjects,
   } from "$lib/modules/entities/subjectsStore";
-  // import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
+  import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
   import { configStore, loadConfig } from "$lib/modules/config/configStore";
   import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
   import GridTutorial from "../utils/tutorials/GridTutorial.svelte";
 
-  // Tutorial menu state
   let showTutorialMenu = false;
 
   let show = {
@@ -39,7 +38,7 @@
     }
   }
 
-  // Handle tutorial completion
+  // tutorial completion
   function handleTutorialComplete() {
     show.navbar = false;
     show.grid = false;
@@ -93,7 +92,6 @@
     );
   }
 
-  /*
   function handleMiddleClick(
     e: MouseEvent,
     assignment: undefined,
@@ -118,21 +116,14 @@
       });
     }
   }
-  */
 
-  function handleDragOver(
-    target: HTMLElement,
-    subject: SubjectItem,
-    groupId: number,
-    day: string,
-    moduleIndex: number,
-  ): void {
+  function handleDragOver(target: HTMLElement): void {
     // Llama el handler existente con los datos necesarios
     target.classList.add("drag-over");
     handleAssignDrop(
       {
         preventDefault: () => {},
-        subject, // Pasa la materia directamente
+        subject: subject, // Pasa la materia directamente
         data: subject, // Pasamos 'data' para mayor flexibilidad en el codigo
       },
       groupId,
@@ -160,46 +151,6 @@
     (item) => item.assigned_teacher,
   );
 </script>
-
-<div class="tutorial-menu-container">
-  <button
-    class="tutorial-menu-button"
-    on:click={() => (showTutorialMenu = !showTutorialMenu)}
-    aria-label="Tutoriales disponibles"
-  >
-    <img src="/icons/circle-question-solid.svg" alt="Tutoriales" />
-  </button>
-
-  {#if showTutorialMenu}
-    <div class="tutorial-menu-dropdown">
-      <div class="tutorial-menu-header">
-        <h3>Tutoriales disponibles</h3>
-      </div>
-      <div class="tutorial-menu-items">
-        <button
-          class="tutorial-menu-item"
-          on:click={() => {
-            show.navbar = true;
-            showTutorialMenu = false;
-          }}
-        >
-          <img src="/icons/save.svg" alt="Navbar" />
-          <span>Tutorial de navegación</span>
-        </button>
-        <button
-          class="tutorial-menu-item"
-          on:click={() => {
-            show.grid = true;
-            showTutorialMenu = false;
-          }}
-        >
-          <img src="/icons/preview.svg" alt="Navbar" />
-          <span>Tutorial de horarios</span>
-        </button>
-      </div>
-    </div>
-  {/if}
-</div>
 
 {#if show.navbar}
   <NavbarTutorial on:complete={handleTutorialComplete} />
@@ -261,6 +212,8 @@
                             'black'}; color: {getContrastColor(
                             assignment.color || 'black',
                           )}"
+                          on:mousedown={(e) =>
+                            handleMiddleClick(e, assignment.id, subject)}
                         >
                           {assignment.shorten}
                         </div>
@@ -276,3 +229,43 @@
     {/each}
   </div>
 </section>
+
+<div class="tutorial-menu-container" style="margin-top: 6px;">
+  <button
+    class="tutorial-menu-button"
+    on:click={() => (showTutorialMenu = !showTutorialMenu)}
+    aria-label="Tutoriales disponibles"
+  >
+    <img src="/icons/circle-question-solid.svg" alt="Tutoriales" />
+  </button>
+
+  {#if showTutorialMenu}
+    <div class="tutorial-menu-dropdown">
+      <div class="tutorial-menu-header">
+        <h3>Tutoriales disponibles</h3>
+      </div>
+      <div class="tutorial-menu-items">
+        <button
+          class="tutorial-menu-item"
+          on:click={() => {
+            show.navbar = true;
+            showTutorialMenu = false;
+          }}
+        >
+          <img src="/icons/save.svg" alt="Navbar" />
+          <span>Tutorial de navegación</span>
+        </button>
+        <button
+          class="tutorial-menu-item"
+          on:click={() => {
+            show.grid = true;
+            showTutorialMenu = false;
+          }}
+        >
+          <img src="/icons/preview.svg" alt="Navbar" />
+          <span>Tutorial de horarios</span>
+        </button>
+      </div>
+    </div>
+  {/if}
+</div>
