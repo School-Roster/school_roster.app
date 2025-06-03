@@ -34,29 +34,36 @@
   };
 
   onMount(async () => {
-    applyTheme();
+  applyTheme();
 
-    // Consultar si hay profesores (como proxy para "hay horario")
-    try {
-      const hasTeachers = await invoke<boolean>("has_teachers");
-      showWelcomeScreen = !hasTeachers; // si no hay profesores, mostrar WelcomeScreen
-    } catch (error) {
-      console.error("Error al consultar profesores:", error);
-      showWelcomeScreen = true; // en caso de error, mejor mostrar pantalla bienvenida
-    }
+  // Consultar si hay profesores (como proxy para "hay horario")
+  try {
+    const hasTeachers = await invoke<boolean>("has_teachers");
+    showWelcomeScreen = !hasTeachers; // si no hay profesores, mostrar WelcomeScreen
+  } catch (error) {
+    console.error("Error al consultar profesores:", error);
+    showWelcomeScreen = true; // en caso de error, mostrar pantalla bienvenida
+  }
 
-    checkedSchedule = true;
+  checkedSchedule = true;
 
-    // Evento para cerrar welcome screen (ya lo tienes)
-    const handleCloseWelcomeScreen = () => {
-      showWelcomeScreen = false;
-    };
-    window.addEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
+  const handleCloseWelcomeScreen = () => {
+    showWelcomeScreen = false;
+  };
 
-    return () => {
-      window.removeEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
-    };
-  });
+  const handleShowWelcomeAgain = () => {
+    showWelcomeScreen = true;
+  };
+
+  window.addEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
+  window.addEventListener("showWelcomeScreenAgain", handleShowWelcomeAgain);
+
+  return () => {
+    window.removeEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
+    window.removeEventListener("showWelcomeScreenAgain", handleShowWelcomeAgain);
+  };
+});
+
 </script>
 
 <main>

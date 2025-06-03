@@ -3,8 +3,26 @@
   import { itemData } from "./itemData";
   import { generateSchedule } from "$lib/utilities/generateAlgorithm";
   import { deleteAll, exportFile, importFile } from "$lib/utilities/fileHandler";
+  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
+
   export let isCollapsed: boolean;
   export let createWindow: (windowName: string) => void;
+
+  let showModal = false;
+
+async function handleConfirm() {
+  showModal = false;
+  await exportFile();
+  window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
+}
+
+
+
+  function handleCancel() {
+    showModal = false;
+    window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
+
+  }
 </script>
 
 {#each itemData as item}
@@ -52,15 +70,16 @@
           <li>
             <button
               class="submenu-item"
-              on:click={() => {
-                if (subitem.menu == "export") {
-                  exportFile();
-                } else if (subitem.menu == "import") {
-                  importFile();
-                } else if (subitem.menu == "deleteAll") {
-                  deleteAll();
+              on:click={async () => {
+                if (subitem.menu === "export") {
+                  await exportFile();
+                } else if (subitem.menu === "import") {
+                  await importFile();
+                } else if (subitem.menu === "deleteAll") {
+                  await deleteAll();
+                } else if (subitem.menu === "todo") {
+                  showModal = true; // 
                 } else {
-                  console.log (subitem.menu);
                   createWindow(subitem.menu);
                 }
               }}
@@ -75,6 +94,17 @@
   </div>
 {/each}
 
+<ConfirmModal
+  isOpen={showModal}
+  onConfirm={handleConfirm}
+  onCancel={handleCancel}
+  title="¿Deseas guardar?"
+  message="¿Deseas guardar el horario antes de continuar?"
+  confirmText="Guardar"
+  cancelText="No guardar"
+/>
+
+
 <style>
   .submenu-item {
     background: none;
@@ -88,3 +118,4 @@
     color: white;
   }
 </style>
+
