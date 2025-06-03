@@ -118,18 +118,17 @@
   }
 
   function handleDragOver(target: HTMLElement): void {
-    // Llama el handler existente con los datos necesarios
-    target.classList.add("drag-over");
-    handleAssignDrop(
-      {
-        preventDefault: () => {},
-        subject: subject, // Pasa la materia directamente
-        data: subject, // Pasamos 'data' para mayor flexibilidad en el codigo
-      },
-      groupId,
-      day,
-      moduleIndex,
-    );
+          target.classList.add("drag-over");
+          handleAssignDrop(
+            {
+                preventDefault: () => {},
+                subject: subject, 
+                data: subject, 
+                    },
+                    groupId,
+                    day,
+                    moduleIndex,
+                  );
   }
 
   function handleDragLeave(target: HTMLElement): void {
@@ -150,6 +149,15 @@
   $: assignedSubjects = $subjectsWithTeachers.filter(
     (item) => item.assigned_teacher,
   );
+  // Ordenar los grupos por grado (número) y luego por nombre de grupo (letra)
+$: sortedGroups = [...$groups].sort((a, b) => {
+  if (a.grade !== b.grade) {
+    return a.grade - b.grade;
+  }
+  // Asumimos que 'group' es una letra, se ordena alfabéticamente
+  return a.group.localeCompare(b.group);
+});
+
 </script>
 
 {#if show.navbar}
@@ -177,7 +185,7 @@
 
   <!-- Grupos y los modulos -->
   <div class="grid-content">
-    {#each $groups as group}
+    {#each sortedGroups as group}
       <div class="group-row">
         <div class="group-cell">{group.grade}{group.group}</div>
         {#each days as day}
