@@ -29,6 +29,11 @@ export interface SubjectItem {
 export const subjects = writable<SubjectItem[]>([]);
 
 /**
+  * Variable que expone una materia seleccionada (en grid)
+  */
+export const selectedSubject = writable<SubjectItem | null>(null);
+
+/**
  * Lista de todas las materias con profesores asignados
  */
 export const subjectsWithTeachers = writable<SubjectItem[]>([]);
