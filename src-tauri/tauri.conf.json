@@ -6,7 +6,7 @@
     "distDir": "../build"
   },
   "package": {
-    "productName": "School Roster",
+    "productName": "school-roster",
     "version": "0.1.0"
   },
   "tauri": {
