@@ -1,5 +1,6 @@
 <script lang="ts">
   import "$styles/form/editor.scss";
+  import { usedColors } from "$lib/stores/usedColors";
 
   import {
     addSubject,
@@ -9,8 +10,8 @@
   import ColorPicker from "$lib/components/buttons/ColorPicker.svelte";
   import { onMount } from "svelte";
   import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
-
-  /*
+  import { get } from "svelte/store";
+	/*
     TODO: Generar un color que pueda usarse sin cambiarlo para no perder el tiempo
     NOTE: Tendremos en cuenta los colores registrados en la base de datos
       para que no se repitan y darle al usuario una recomendación de color
@@ -23,8 +24,7 @@
     required_modules: null,
     priority: null,
   };
-
-  // Para editar una materia agregamos el item como propiedad
+	  // Para editar una materia agregamos el item como propiedad
   export let item: SubjectItem | null = null;
 
   function initForm(item: SubjectItem | null): void {
@@ -39,23 +39,59 @@
     }
   }
 
+  const flatColors = [
+    '#DAAFE9', '#C7DBF5', '#AAD5FB', '#ADE5DA', '#B0EDC3', '#FDF0A4', '#F8D6A2',
+    '#C47ADA', '#90BAEE', '#75BAFA', '#72D5BF', '#73DE8C', '#FBE66E', '#F5B969',
+    '#AE44B7', '#5E7ABC', '#4DACA9', '#63B75A', '#EDBD4A', '#EC9740',
+    '#501B87', '#021B6B', '#0C2794', '#337277', '#2F6A52', '#AE802F', '#AD6127'
+  ];
+
+  onMount((): void => {
+    initForm(item);
+
+    if (!item) {
+      const used = get(usedColors);
+      const available = flatColors.filter(c => !used.includes(c));
+      if (available.length > 0) {
+        const randomIndex = Math.floor(Math.random() * available.length);
+        subject.color = available[randomIndex];
+      }
+    }
+  });
+
+  function assignRandomColor() {
+    const used = get(usedColors);
+    const available = flatColors.filter(c => !used.includes(c));
+    if (available.length > 0) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      subject.color = available[randomIndex];
+    } else {
+      subject.color = flatColors[Math.floor(Math.random() * flatColors.length)];
+    }
+  }
+
   const handleSubmit = (): void => {
     if (item) {
       editSubject(subject);
     } else {
       addSubject(subject);
-    }
-    subject.name = "";
-    subject.shorten = "";
-    subject.color = "#a50044";
-    subject.spec = "";
-    subject.required_modules = null;
-    subject.priority = null;
-  };
 
-  onMount((): void => {
-    initForm(item);
-  });
+      usedColors.update((colors) => {
+        if (!colors.includes(subject.color)) {
+          return [...colors, subject.color];
+        }
+        return colors;
+      });
+
+      subject.name = "";
+      subject.shorten = "";
+      subject.spec = "";
+      subject.required_modules = null;
+      subject.priority = null;
+
+      assignRandomColor();
+    }
+  };
 </script>
 
 <section class="form-editor">

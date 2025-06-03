@@ -118,17 +118,17 @@
   }
 
   function handleDragOver(target: HTMLElement): void {
-          target.classList.add("drag-over");
-          handleAssignDrop(
-            {
-                preventDefault: () => {},
-                subject: subject, 
-                data: subject, 
-                    },
-                    groupId,
-                    day,
-                    moduleIndex,
-                  );
+      target.classList.add("drag-over");
+      handleAssignDrop(
+        {
+          preventDefault: () => {},
+          subject: subject, 
+          data: subject, 
+        },
+        groupId,
+        day,
+        moduleIndex,
+      );
   }
 
   function handleDragLeave(target: HTMLElement): void {
