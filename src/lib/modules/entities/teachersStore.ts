@@ -12,7 +12,7 @@ import { emit } from "@tauri-apps/api/event";
   * @property {string} email - Correo electrónico (opcional)
   * @property {string} phone - Número de teléfono (opcional)
   * @property {string} degree - Grado académico (opcional)
-  * @property {number} commissioned_hours - Horas comisionadas (opcional)
+  * @property {number} commisioned_hours - Horas comisionadas (opcional)
   * @property {number} active_hours - Horas activas (opcional)
   * @property {string[]} preferred_days - Dias preferidos del profesor (opcional)
   * @property {number[]} preferred_modules - Modulos preferidos del profesor (opcional)
@@ -25,7 +25,7 @@ export interface TeacherItem {
   email: string;
   phone: string;
   degree: string;
-  commissioned_hours: number;
+  commisioned_hours: number;
   active_hours: number;
   performance: number;
   preferred_days?: string[];
@@ -58,7 +58,7 @@ export async function addTeacher(teacher: TeacherItem, selectedSubjects: Subject
     return;
   }
 
-  if (teacher.commissioned_hours < 0 || teacher.performance < 0) {
+  if (teacher.commisioned_hours < 0 || teacher.performance < 0) {
     alert("Por favor, rellene los campos con valores positivos");
     return;
   }
@@ -83,7 +83,7 @@ export async function editTeacher(teacher: TeacherItem, selectedSubjects: Subjec
     return;
   }
 
-  if (teacher.commissioned_hours < 0 || teacher.performance < 0) {
+  if (teacher.commisioned_hours < 0 || teacher.performance < 0) {
     alert("Por favor, rellene los campos numericos con valores positivos");
     return;
   }
@@ -145,7 +145,7 @@ export async function importTeachersFromXlsx(
       email: String(row.email || ''),
       phone: String(row.phone || ''),
       degree: String(row.degree || ''),
-      commissioned_hours: Number(row.commissioned_hours || 0),
+      commisioned_hours: Number(row.commisioned_hours || 0),
       active_hours: Number(row.active_hours || 0),
       performance: Number(row.performance || 0),
       preferred_days: row.preferred_days ? JSON.parse(row.preferred_days) : [],

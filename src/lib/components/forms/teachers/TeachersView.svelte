@@ -18,7 +18,7 @@
 
   import NoResults from "$lib/components/utils/NoResults.svelte";
   import ImportExcel from "$lib/components/utils/excel/ImportExcel.svelte";
-    import { loadAssignments } from "$lib/modules/entities/assignments";
+  import { loadAssignments } from "$lib/modules/entities/assignments";
 
   let search: string = "";
   let filter: string = "";
@@ -54,7 +54,7 @@
     { name: "Correo", key: "email" },
     { name: "Teléfono", key: "phone" },
     { name: "Titulo", key: "degree" },
-    { name: "Horas (comosion)", key: "comissioned_hours" },
+    { name: "Horas (comision)", key: "commisioned_hours" },
     { name: "Horas (activas)", key: "active_hours" },
     { name: "Rendimiento", key: "performance" },
     { name: "Materias", key: "assigned_subjects" },
@@ -191,7 +191,7 @@
           case "Titulo":
             return s.degree.toLowerCase().includes(search.toLowerCase());
           case "Horas (comosion)":
-            return s.commissioned_hours.toString().includes(search);
+            return s.commisioned_hours.toString().includes(search);
           case "Horas (activas)":
             return s.active_hours.toString().includes(search);
           case "Rendimiento":
