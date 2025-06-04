@@ -1,3 +1,4 @@
+import { addNotification } from "$lib/stores/notificationsStore";
 import { invoke } from "@tauri-apps/api";
 import { writable, type Writable } from "svelte/store";
 
@@ -124,6 +125,16 @@ export async function saveAssignment(
   teacherId: number
 ): Promise<void> {
   try {
+    const isAvailable = await isTeacherAvailable(teacherId, day, moduleIndex);
+    if (!isAvailable) {
+      // DEBUG
+      addNotification({
+        message: "Profesor tiene este modulo del dia ocupado",
+        type: "error",
+        timeout: 1500
+      });
+      return;
+    }
     await invoke("save_assignment", {
       group_id: groupId,
       day,
@@ -150,5 +161,24 @@ export async function saveAssignment(
     await loadAssignments();
   } catch (error) {
     console.error("Failed to save assignment:", error);
+  }
+}
+
+// Funcion para checar si el profesor no tiene el modulo ocupado (el mismo dia)
+export async function isTeacherAvailable(
+  teacherId: number,
+  day: string,
+  moduleIndex: number
+): Promise<boolean> {
+  try {
+    const response = await invoke("check_teacher_availability", {
+      teacherId,
+      day,
+      moduleIndex,
+    });
+    return response as boolean;
+  } catch (error) {
+    console.error("Error comprobando disponibilidad del profesor:", error);
+    return false;
   }
 }
