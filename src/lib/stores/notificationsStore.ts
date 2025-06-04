@@ -10,7 +10,6 @@ interface Notification {
 export const notifications = writable<Notification[]>([]);
 
 export function addNotification(notification: Omit<Notification, 'id'>) {
-    console.log('hi');
     const id = Math.random().toString(36).substring(2, 9);
     notifications.update((current) => [...current, { ...notification, id }]);
     

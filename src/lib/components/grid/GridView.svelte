@@ -12,6 +12,7 @@
     getLocalAssignment,
     handleAssignDrop,
     handleAssignClick,
+    canAssignToModule,
   } from "$lib/modules/entities/assignments";
   import {
     subjectsWithTeachers,
@@ -31,6 +32,7 @@
   import { configStore, loadConfig } from "$lib/modules/config/configStore";
   import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
   import GridTutorial from "../utils/tutorials/GridTutorial.svelte";
+  import { addNotification } from "$lib/stores/notificationsStore";
 
   let showTutorialMenu = false;
 
@@ -101,13 +103,24 @@
     );
   }
 
-  function handleModuleCellClick(
+  async function handleModuleCellClick(
     groupId: number,
     day: string,
     moduleIndex: number,
   ) {
     const subject = get(selectedSubject);
     if (!subject || !subject.assigned_teacher) return;
+
+    // Verificar si el módulo está ocupado antes de asignar
+    const canAssign = await canAssignToModule(groupId, day, moduleIndex);
+    if (!canAssign) {
+      addNotification({
+        message: "No puedes sobrescribir una asignación existente",
+        type: "warning",
+        timeout: 2000,
+      });
+      return;
+    }
 
     saveAssignment(
       groupId,

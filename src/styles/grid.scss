@@ -17,43 +17,106 @@
 ---------------------------------------- */
 
 // Contentenedor para las materias.
+// Actualiza la sección de subjects-container
 .subjects-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  gap: 14px;
+  padding: 10px;
+  align-items: flex-start;
 
+  // Contenedor de la información de la materia seleccionada
+  .subjects-details {
+    flex: 0 0 250px; // Ancho fijo para los detalles
+    order: 1; // Lo movemos a la izquierda
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px solid #ccc;
+
+    .color {
+      width: 100% !important; // Ocupa todo el ancho disponible
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+
+    .details {
+      min-width: 80% !important;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+  }
+
+  // Contenedor de las materias
   .items {
+    flex: 1; // Ocupa el espacio restante
+    order: 2; // Lo movemos a la derecha
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px;
-    justify-content: center;
+    gap: 3px;
+    align-content: flex-start;
+
+    // Estilos responsivos para las materias
+    $base-size: 40px;
+    $compact-threshold: 20; // Cuando hay más de 20 materias
+
+    .subject {
+      min-width: $base-size;
+      height: $base-size;
+      padding: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      font-size: 0.8rem;
+      cursor: grab;
+      transition: all 0.2s ease;
+      text-align: center;
+      word-break: break-word;
+
+      // Cuando hay muchas materias, reducimos el tamaño
+      @for $i from 1 through 3 {
+        &:nth-child(n + #{$compact-threshold * $i}) {
+          min-width: $base-size - ($i * 5px);
+          height: $base-size - ($i * 5px);
+          font-size: 0.8rem - ($i * 0.1rem);
+          padding: 3px;
+        }
+      }
+
+      // Tamaño mínimo garantizado
+      min-width: 20px !important;
+      height: 28px !important;
+      font-size: 0.575rem !important;
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+    }
   }
+}
 
-  .subject {
-    display: flex;
+// Media queries para pantallas pequeñas
+@media (max-width: 768px) {
+  .subjects-container {
     flex-direction: column;
-    gap: 5px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    text-align: center;
-    min-width: 40px;
-    cursor: grab !important;
-    -webkit-user-drag: element;
-    user-select: none;
 
-    body.dark & {
-      background-color: map-get($dark-theme, nav-bg-color);
-      color: map-get($dark-theme, fg-color);
+    .subjects-details {
+      flex: 0 0 auto;
+      width: 100%;
+      order: 2; // Detalles abajo en móvil
     }
 
-    &.dragging {
-      opacity: 0.3;
-      box-shadow: none;
-    }
-
-    &:active {
-      cursor: grabbing !important;
+    .items {
+      order: 1; // Materias arriba en móvil
     }
   }
 }
@@ -79,7 +142,6 @@
     flex-direction: column;
     gap: 2px;
     padding: 10px;
-    border: 1px solid #ccc;
     min-width: 320px;
 
     body.dark & {
@@ -260,7 +322,15 @@
             font-size: 0.675rem;
             font-weight: 500;
           }
-        }
+          &.has-subject {
+            background-color: rgba(255, 0, 0, 0.1);
+            cursor: not-allowed;
+
+            &:hover {
+              box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+            }
+          }
+        } // .module-cell
       }
     }
   }

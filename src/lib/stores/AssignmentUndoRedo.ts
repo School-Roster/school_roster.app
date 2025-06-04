@@ -2,7 +2,9 @@ import {
     getLocalAssignment,
     saveAssignment,
     deleteAssignment,
+    isTeacherAvailable,
 } from "$lib/modules/entities/assignments";
+import { addNotification } from "./notificationsStore";
 
 
 const MAX_STACK_SIZE = 16
@@ -26,18 +28,21 @@ function getkey(assignment: Assigments) {
     return `${assignment.groupId}-${assignment.day}-${assignment.moduleIndex}`
 }
 
-export function commitChange(newChange: Assigments) {
+export async function commitChange(newChange: Assigments) {
+    const isAvailable = await isTeacherAvailable(newChange.teacherId, newChange.day, newChange.moduleIndex);
+    if (!isAvailable) {
+      return;
+    }
+
     if (undoStack.length > MAX_STACK_SIZE) undoStack.shift()
     const key = getkey(newChange)
 
     undoStack.push(new Map([[key, newChange]]))
-    console.log("Undo stack", undoStack)
     redoStack.length = 0
 }
 
 export async function undoChange() {
     if (undoStack.length === 0) return
-    console.log("hi");
 
     const lastChange = undoStack.pop()
     if (!lastChange) return

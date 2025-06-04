@@ -109,7 +109,7 @@ export async function handleAssignClick(
 
 export async function deleteAssignment(assign_id: unknown): Promise<void> {
   try {
-    await invoke("delete_assignment", {assign_id})
+    await invoke("delete_assignment", { assign_id })
     await loadAssignments()
     console.log("Deleted assignment with id:", assign_id);
   } catch (e) {
@@ -125,9 +125,19 @@ export async function saveAssignment(
   teacherId: number
 ): Promise<void> {
   try {
-    const isAvailable = await isTeacherAvailable(teacherId, day, moduleIndex);
-    if (!isAvailable) {
-      // DEBUG
+
+    const moduleAvailable = await canAssignToModule(groupId, day, moduleIndex);
+    if (!moduleAvailable) {
+      addNotification({
+        message: "El módulo ya está ocupado por otra materia",
+        type: "error",
+        timeout: 1000
+      });
+      return;
+    }
+
+    const teacherAvailable = await isTeacherAvailable(teacherId, day, moduleIndex);
+    if (!teacherAvailable) {
       addNotification({
         message: "Profesor tiene este modulo del dia ocupado",
         type: "error",
@@ -181,4 +191,14 @@ export async function isTeacherAvailable(
     console.error("Error comprobando disponibilidad del profesor:", error);
     return false;
   }
+}
+
+/// Funcion que impide sustituir una materia dentro de un modulo
+export async function canAssignToModule(
+  groupId: number,
+  day: string,
+  moduleIndex: number
+): Promise<boolean> {
+  const assignment = getLocalAssignment(groupId, day, moduleIndex);
+  return !assignment; // Devuelve true si el módulo está vacío
 }
