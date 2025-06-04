@@ -215,6 +215,8 @@ pub async fn edit_teacher(
     let preferred_modules = serde_json::to_string(&teacher.preferred_modules)
         .map_err(|e| format!("Failed to serialize teacher preferred modules: {:?}", e))?;
 
+    println!("{:?}", teacher);
+
     // Actualizar los datos del profesor
     sqlx::query(
         "

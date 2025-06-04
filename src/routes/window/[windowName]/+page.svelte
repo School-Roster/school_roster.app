@@ -7,7 +7,6 @@ simplemente llama a la vista deseada.
 <script lang="ts">
 	import type { PageData } from './$types';
 	export let data: PageData;
-	export const prerender = true;
 
   /* Formularios */
   import SubjectsView from '$lib/components/forms/subjects/SubjectsView.svelte';

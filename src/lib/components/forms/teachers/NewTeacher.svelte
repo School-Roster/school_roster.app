@@ -22,7 +22,7 @@
     email: "",
     phone: "",
     degree: "",
-    commissioned_hours: 0,
+    commisioned_hours: 0,
     active_hours: 0,
     performance: 0,
     preferred_days: [],
@@ -44,7 +44,7 @@
       t.email = item.email || "";
       t.phone = item.phone || "";
       t.degree = item.degree || "";
-      t.commissioned_hours = item.commissioned_hours;
+      t.commisioned_hours = item.commisioned_hours;
       t.active_hours = item.active_hours;
       t.performance = item.performance;
       t.preferred_days = item.preferred_days;
@@ -70,6 +70,7 @@
 
   const handleSubmit = (): void => {
     if (item) {
+      console.log(t);
       editTeacher(t, selectedSubjects);
     } else {
       addTeacher(t, selectedSubjects);
@@ -80,7 +81,7 @@
       t.email = "";
       t.phone = "";
       t.degree = "";
-      t.commissioned_hours = 0;
+      t.commisioned_hours = 0;
       t.active_hours = 0;
       t.performance = 0;
       selectedSubjects = [];
@@ -188,7 +189,7 @@
         type="number"
         placeholder="Horas (comisión)"
         id="comissioned_hours"
-        bind:value={t.comissioned_hours}
+        bind:value={t.commisioned_hours}
       />
     </div>
 
@@ -251,11 +252,11 @@
             <input
               type="checkbox"
               class="form-checkbox"
-              id={subject.id.toString()}
+              id={subject.id == undefined ? "" : subject.id.toString()}
               checked={selectedSubjects.some((s) => s.id === subject.id)}
               on:change={() => toggleSelection(subject)}
             />
-            <label for={subject.id.toString()}>{subject.name}</label>
+            <label for={subject.id == undefined ? "" : subject.id.toString()}>{subject.name}</label>
           </div>
         {/each}
       </div>
