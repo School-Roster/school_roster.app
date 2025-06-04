@@ -129,6 +129,7 @@ let values: string[][] = [
 <style>
 
   .color-picker-holder {
+    margin-left: 10px;
     position: relative;
     width: 180px;
   }
@@ -137,9 +138,9 @@ let values: string[][] = [
     align-items: center;
   }
   .select-color {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #ccc;
+    margin-top: 4px;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
     padding: 0;
     margin-right: 8px;
