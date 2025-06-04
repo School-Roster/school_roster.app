@@ -2,7 +2,11 @@
   import "$styles/nav.scss";
   import { itemData } from "./itemData";
   import { generateSchedule } from "$lib/utilities/generateAlgorithm";
-  import { deleteAll, exportFile, importFile } from "$lib/utilities/fileHandler";
+  import {
+    deleteAll,
+    exportFile,
+    importFile,
+  } from "$lib/utilities/fileHandler";
   import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
 
   export let isCollapsed: boolean;
@@ -10,18 +14,19 @@
 
   let showModal = false;
 
-async function handleConfirm() {
-  showModal = false;
-  await exportFile();
-  window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
-}
-
-
-
-  function handleCancel() {
+  async function handleConfirm() {
     showModal = false;
+    await exportFile();
+    await deleteAll();
+    window.location.reload();
     window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
+  }
 
+  async function handleCancel() {
+    showModal = false;
+    await deleteAll();
+    window.location.reload();
+    window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
   }
 </script>
 
@@ -77,8 +82,8 @@ async function handleConfirm() {
                   await importFile();
                 } else if (subitem.menu === "deleteAll") {
                   await deleteAll();
-                } else if (subitem.menu === "todo") {
-                  showModal = true; // 
+                } else if (subitem.menu === "newSchedule") {
+                  showModal = true; //
                 } else {
                   createWindow(subitem.menu);
                 }
@@ -104,7 +109,6 @@ async function handleConfirm() {
   cancelText="No guardar"
 />
 
-
 <style>
   .submenu-item {
     background: none;
@@ -118,4 +122,3 @@ async function handleConfirm() {
     color: white;
   }
 </style>
-

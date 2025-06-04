@@ -14,11 +14,10 @@
 export const itemData = [
   {
     it: 1, name: "Archivo", icon: "/icons/file.svg", menu: "submenu",
-    submenu: [ { name: "Nuevo", icon: "/icons/new.svg", menu: "todo"},
+    submenu: [ { name: "Nuevo", icon: "/icons/new.svg", menu: "newSchedule"},
       { name: "Abrir", icon: "/icons/open.svg", menu: "import"},
-      { name: "Guardar", icon: "/icons/save.svg", menu: "todo"},
-      { name: "Guardar como", icon: "/icons/saveas.svg", menu: "export"},
-      { name: "Cerrar todo", icon: "/icons/close.svg", menu: "deleteAll"},
+      { name: "Guardar horario", icon: "/icons/saveas.svg", menu: "export"},
+      { name: "Cerrar", icon: "/icons/close.svg", menu: "deleteAll"},
     ],
   },
   {
@@ -47,12 +46,11 @@ export const itemData = [
   { it: 0, name: "Aulas", icon: "/icons/door.svg", menu: "classroom", submenu: [] },
 
   { it: 3, name: "IA", icon: "/icons/robot.svg", menu: "ai", submenu: [] },
-  { it: 0, name: "Historial", icon: "/icons/clock.svg", menu: "todo", submenu: [] },
+  { it: 0, name: "Generar horario", icon: "/icons/edit.svg", menu: "generate", submenu: [] },
 
   { it: 0, name: "Configuracion", icon: "/icons/school.svg", menu: "settings", submenu: [] },
 
   { it: 0, name: "Login", icon: "/icons/login.svg", menu: "login", submenu: [] },
-  { it: 0, name: "Generar horario", icon: "/icons/edit.svg", menu: "generate", submenu: [] },
 
 
 ];
