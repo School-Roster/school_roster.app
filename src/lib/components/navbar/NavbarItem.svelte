@@ -2,9 +2,32 @@
   import "$styles/nav.scss";
   import { itemData } from "./itemData";
   import { generateSchedule } from "$lib/utilities/generateAlgorithm";
-  import { deleteAll, exportFile, importFile } from "$lib/utilities/fileHandler";
+  import {
+    deleteAll,
+    exportFile,
+    importFile,
+  } from "$lib/utilities/fileHandler";
+  import ConfirmModal from "$lib/components/buttons/ConfirmModal.svelte";
+
   export let isCollapsed: boolean;
   export let createWindow: (windowName: string) => void;
+
+  let showModal = false;
+
+  async function handleConfirm() {
+    showModal = false;
+    await exportFile();
+    await deleteAll();
+    window.location.reload();
+    window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
+  }
+
+  async function handleCancel() {
+    showModal = false;
+    await deleteAll();
+    window.location.reload();
+    window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
+  }
 </script>
 
 {#each itemData as item}
@@ -52,15 +75,16 @@
           <li>
             <button
               class="submenu-item"
-              on:click={() => {
-                if (subitem.menu == "export") {
-                  exportFile();
-                } else if (subitem.menu == "import") {
-                  importFile();
-                } else if (subitem.menu == "deleteAll") {
-                  deleteAll();
+              on:click={async () => {
+                if (subitem.menu === "export") {
+                  await exportFile();
+                } else if (subitem.menu === "import") {
+                  await importFile();
+                } else if (subitem.menu === "deleteAll") {
+                  await deleteAll();
+                } else if (subitem.menu === "newSchedule") {
+                  showModal = true; //
                 } else {
-                  console.log (subitem.menu);
                   createWindow(subitem.menu);
                 }
               }}
@@ -74,6 +98,16 @@
     {/if}
   </div>
 {/each}
+
+<ConfirmModal
+  isOpen={showModal}
+  onConfirm={handleConfirm}
+  onCancel={handleCancel}
+  title="¿Deseas guardar?"
+  message="¿Deseas guardar el horario antes de continuar?"
+  confirmText="Guardar"
+  cancelText="No guardar"
+/>
 
 <style>
   .submenu-item {

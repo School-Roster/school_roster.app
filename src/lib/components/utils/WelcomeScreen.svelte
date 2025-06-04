@@ -3,13 +3,14 @@
   import { WebviewWindow } from "@tauri-apps/api/window";
   import "$styles/welcome.scss";
   import { saveConfig } from "$lib/modules/config/configStore";
+    import { importFile } from "$lib/utilities/fileHandler";
 
   // State variables
   let currentStep = 1;
   let selectedOption = "";
 
   // Configuration options
-  let days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sabado"];
+  let days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
   let selectedDays = [...days];
 
   // Module configuration variables
@@ -60,15 +61,12 @@
 
   function handleOptionSelect(option: string): void {
     selectedOption = option;
-  }
 
-  function handleFileSelect(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (file) {
-      // TODO: Process the file and load the schedule
-      console.log("File selected:", file.name);
+    /*
+    if (option == "existing") {
+      importFile();
     }
+    */
   }
 
   function handleDayToggle(day: string): void {
@@ -81,12 +79,17 @@
     }
   }
 
-  function nextStep(): void {
+  async function nextStep(): Promise<void> {
     if (currentStep === 1 && !selectedOption) {
       return; // Don't proceed if no option is selected
     }
 
     if (currentStep === 1) {
+      if (selectedOption === "existing") {
+        await importFile(); // llama tu función para importar el archivo
+        continueToSchedule(); // cerrar pantalla de bienvenida
+        return;
+      }
       currentStep = 2;
     } else if (currentStep === 2) {
       currentStep = 3;
@@ -245,24 +248,6 @@
         Haz clic en cada categoría para registrar la información
         correspondiente.
       </p>
-
-      {#if selectedOption === "existing"}
-        <div class="registration-form">
-          <h2>Selecciona un archivo de horario</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="file-input">Archivo de horario (.json)</label>
-              <input
-                type="file"
-                id="file-input"
-                accept=".json"
-                on:change={handleFileSelect}
-                bind:this={fileInput}
-              />
-            </div>
-          </div>
-        </div>
-      {/if}
 
       <div class="registration-form">
         <div class="data-registration-container">
@@ -497,8 +482,6 @@
         <button class="primary" on:click={startNewSchedule}
           >Crear horario</button
         >
-      {:else if selectedOption === "existing"}
-        <button class="primary" on:click={continueToSchedule}>Continuar</button>
       {:else if selectedOption === "generate"}
         <button class="primary" on:click={generateSchedule}>
           Generar horario

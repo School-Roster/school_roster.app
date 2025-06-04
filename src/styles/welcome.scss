@@ -583,6 +583,10 @@
         font-size: 1rem;
         width: 100%;
 
+        &:last-child {
+          margin-right: 20px;
+        }
+
         @media (max-width: 1366px) {
           padding: 0.4rem;
           font-size: 0.9rem;
