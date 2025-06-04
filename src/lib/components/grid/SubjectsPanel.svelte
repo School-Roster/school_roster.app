@@ -9,6 +9,7 @@
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
+    import { commitChange } from "$lib/stores/AssignmentUndoRedo";
 
   // let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -87,6 +88,16 @@
           draggedSubject.id,
           draggedSubject.assigned_teacher?.id
         );
+        
+        commitChange({
+          action: "create",
+          day,
+          groupId: parseInt(groupId, 10),
+          moduleIndex: parseInt(moduleIndex, 10),
+          subjectId: draggedSubject.id!,
+          teacherId: draggedSubject.assigned_teacher?.id!,
+        });
+
         
         // Provide visual feedback
         dropTarget.classList.add('flash-highlight');

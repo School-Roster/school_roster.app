@@ -7,6 +7,7 @@
   import GridView from "$lib/components/grid/GridView.svelte";
   import SubjectsPanel from "$lib/components/grid/SubjectsPanel.svelte";
   import WelcomeScreen from "$lib/components/utils/WelcomeScreen.svelte";
+  import Notification from "$lib/components/utils/Notification.svelte";
 
   let showWelcomeScreen: boolean = false;
   let checkedSchedule: boolean = false;
@@ -34,51 +35,57 @@
   };
 
   onMount(async () => {
-  applyTheme();
+    applyTheme();
 
-  // Consultar si hay profesores (como proxy para "hay horario")
-  try {
-    const hasTeachers = await invoke<boolean>("has_teachers");
-    showWelcomeScreen = !hasTeachers; // si no hay profesores, mostrar WelcomeScreen
-  } catch (error) {
-    console.error("Error al consultar profesores:", error);
-    showWelcomeScreen = true; // en caso de error, mostrar pantalla bienvenida
-  }
+    // Consultar si hay profesores (como proxy para "hay horario")
+    try {
+      const hasTeachers = await invoke<boolean>("has_teachers");
+      showWelcomeScreen = !hasTeachers; // si no hay profesores, mostrar WelcomeScreen
+    } catch (error) {
+      console.error("Error al consultar profesores:", error);
+      showWelcomeScreen = true; // en caso de error, mostrar pantalla bienvenida
+    }
 
-  checkedSchedule = true;
+    checkedSchedule = true;
 
-  const handleCloseWelcomeScreen = () => {
-    showWelcomeScreen = false;
-  };
+    const handleCloseWelcomeScreen = () => {
+      showWelcomeScreen = false;
+    };
 
-  const handleShowWelcomeAgain = () => {
-    showWelcomeScreen = true;
-  };
+    const handleShowWelcomeAgain = () => {
+      showWelcomeScreen = true;
+    };
 
-  window.addEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
-  window.addEventListener("showWelcomeScreenAgain", handleShowWelcomeAgain);
+    window.addEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
+    window.addEventListener("showWelcomeScreenAgain", handleShowWelcomeAgain);
 
-  return () => {
-    window.removeEventListener("closeWelcomeScreen", handleCloseWelcomeScreen);
-    window.removeEventListener("showWelcomeScreenAgain", handleShowWelcomeAgain);
-  };
-});
-
+    return () => {
+      window.removeEventListener(
+        "closeWelcomeScreen",
+        handleCloseWelcomeScreen,
+      );
+      window.removeEventListener(
+        "showWelcomeScreenAgain",
+        handleShowWelcomeAgain,
+      );
+    };
+  });
 </script>
 
 <main>
   {#if !checkedSchedule}
     <!-- Opcional: mostrar loading mientras se consulta -->
     <p>Cargando...</p>
+  {:else if showWelcomeScreen}
+    <WelcomeScreen />
   {:else}
-    {#if showWelcomeScreen}
-      <WelcomeScreen />
-    {:else}
-      <Navbar />
-      <div class="content">
-        <GridView />
-        <SubjectsPanel />
-      </div>
-    {/if}
+    <Navbar />
+    <div class="content">
+      <GridView />
+      <SubjectsPanel />
+    </div>
   {/if}
+
+  <slot />
+  <Notification />
 </main>

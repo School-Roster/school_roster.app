@@ -5,7 +5,7 @@ import {
 } from "$lib/modules/entities/assignments";
 
 
-const MAX_STACK_SIZE = 10
+const MAX_STACK_SIZE = 16
 export type actionType = "create" | "delete"
 
 interface Assigments {
@@ -37,6 +37,7 @@ export function commitChange(newChange: Assigments) {
 
 export async function undoChange() {
     if (undoStack.length === 0) return
+    console.log("hi");
 
     const lastChange = undoStack.pop()
     if (!lastChange) return
