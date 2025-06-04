@@ -1,0 +1,84 @@
+@import "variables";
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.notification {
+  animation: slideIn 0.3s ease forwards;
+
+  &.exiting {
+    animation: fadeOut 0.3s ease forwards;
+  }
+}
+
+.notifications-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+}
+
+.notification {
+  padding: 15px;
+  border-radius: 5px;
+  color: white;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform: translateX(0);
+  opacity: 1;
+
+  &:hover {
+    transform: translateX(-5px);
+  }
+
+  &.success {
+    background-color: $blue;
+  }
+
+  &.error {
+    background-color: $red;
+  }
+
+  &.warning {
+    background-color: $black-overlay;
+    color: $white-hard;
+
+    body.dark & {
+      background-color: $white-overlay;
+      color: $black-hard;
+    }
+  }
+
+  &.info {
+    background-color: $other-color;
+    color: $black-overlay;
+  }
+
+  .message {
+    font-size: 12px;
+  }
+}

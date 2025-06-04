@@ -12,6 +12,7 @@
     getLocalAssignment,
     handleAssignDrop,
     handleAssignClick,
+    canAssignToModule,
   } from "$lib/modules/entities/assignments";
   import {
     subjectsWithTeachers,
@@ -20,11 +21,18 @@
     type SubjectItem,
     subjects,
   } from "$lib/modules/entities/subjectsStore";
+  import {
+    commitChange,
+    findDropTarget,
+    redoChange,
+    undoChange,
+  } from "$lib/stores/AssignmentUndoRedo";
+
   import { get } from "svelte/store";
-  import { commitChange, findDropTarget } from "$lib/stores/AssignmentUndoRedo";
   import { configStore, loadConfig } from "$lib/modules/config/configStore";
   import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
   import GridTutorial from "../utils/tutorials/GridTutorial.svelte";
+  import { addNotification } from "$lib/stores/notificationsStore";
 
   let showTutorialMenu = false;
 
@@ -95,13 +103,24 @@
     );
   }
 
-  function handleModuleCellClick(
+  async function handleModuleCellClick(
     groupId: number,
     day: string,
     moduleIndex: number,
   ) {
     const subject = get(selectedSubject);
     if (!subject || !subject.assigned_teacher) return;
+
+    // Verificar si el módulo está ocupado antes de asignar
+    const canAssign = await canAssignToModule(groupId, day, moduleIndex);
+    if (!canAssign) {
+      addNotification({
+        message: "No puedes sobrescribir una asignación existente",
+        type: "warning",
+        timeout: 2000,
+      });
+      return;
+    }
 
     saveAssignment(
       groupId,
@@ -185,6 +204,66 @@
   });
 </script>
 
+<div class="tools-container">
+  <div class="undo-redo-container">
+    <!-- <button on:click={async () => await undoChange()}> Undo </button> -->
+    <button
+      class="icon-button"
+      on:click={async () => await undoChange()}
+      aria-label="Deshacer"
+    >
+      <img src="/icons/undo.svg" alt="Deshacer" />
+    </button>
+    <button
+      class="icon-button"
+      on:click={async () => await redoChange()}
+      aria-label="Rehacer"
+    >
+      <img src="/icons/redo.svg" alt="Rehacer" />
+    </button>
+  </div>
+
+  <div class="tutorial-menu-container">
+    <button
+      class="tutorial-menu-button"
+      on:click={() => (showTutorialMenu = !showTutorialMenu)}
+      aria-label="Tutoriales disponibles"
+    >
+      <img src="/icons/question.svg" alt="Tutoriales" />
+    </button>
+
+    {#if showTutorialMenu}
+      <div class="tutorial-menu-dropdown">
+        <div class="tutorial-menu-header">
+          <h3>Tutoriales disponibles</h3>
+        </div>
+        <div class="tutorial-menu-items">
+          <button
+            class="tutorial-menu-item"
+            on:click={() => {
+              show.navbar = true;
+              showTutorialMenu = false;
+            }}
+          >
+            <img src="/icons/save.svg" alt="Navbar" />
+            <span>Tutorial de navegación</span>
+          </button>
+          <button
+            class="tutorial-menu-item"
+            on:click={() => {
+              show.grid = true;
+              showTutorialMenu = false;
+            }}
+          >
+            <img src="/icons/preview.svg" alt="Navbar" />
+            <span>Tutorial de horarios</span>
+          </button>
+        </div>
+      </div>
+    {/if}
+  </div>
+</div>
+
 {#if show.navbar}
   <NavbarTutorial on:complete={handleTutorialComplete} />
 {/if}
@@ -235,7 +314,12 @@
                     data-group-id={group.id}
                     data-day={day}
                     data-module-index={moduleIndex}
-                    on:click={() => handleModuleCellClick(group.id == undefined ? -1 : group.id, day, moduleIndex)}
+                    on:click={() =>
+                      handleModuleCellClick(
+                        group.id == undefined ? -1 : group.id,
+                        day,
+                        moduleIndex,
+                      )}
                     on:mouseenter={(e) => handleDragOver(e.currentTarget)}
                     on:mouseleave={(e) => handleDragLeave(e.currentTarget)}
                   >
@@ -267,45 +351,3 @@
     {/each}
   </div>
 </section>
-
-<!--
-<div class="tutorial-menu-container" style="margin-top: 6px;">
-  <button
-    class="tutorial-menu-button"
-    on:click={() => (showTutorialMenu = !showTutorialMenu)}
-    aria-label="Tutoriales disponibles"
-  >
-    <img src="/icons/circle-question-solid.svg" alt="Tutoriales" />
-  </button>
-
-  {#if showTutorialMenu}
-    <div class="tutorial-menu-dropdown">
-      <div class="tutorial-menu-header">
-        <h3>Tutoriales disponibles</h3>
-      </div>
-      <div class="tutorial-menu-items">
-        <button
-          class="tutorial-menu-item"
-          on:click={() => {
-            show.navbar = true;
-            showTutorialMenu = false;
-          }}
-        >
-          <img src="/icons/save.svg" alt="Navbar" />
-          <span>Tutorial de navegación</span>
-        </button>
-        <button
-          class="tutorial-menu-item"
-          on:click={() => {
-            show.grid = true;
-            showTutorialMenu = false;
-          }}
-        >
-          <img src="/icons/preview.svg" alt="Navbar" />
-          <span>Tutorial de horarios</span>
-        </button>
-      </div>
-    </div>
-  {/if}
-</div>
--->

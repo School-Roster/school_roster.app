@@ -30,6 +30,7 @@ async fn main() {
             crate::class::teachers::delete_teacher,
             crate::class::teachers::delete_teachers,
             crate::class::teachers::has_teachers,
+            crate::class::teachers::check_teacher_availability,
             // Groups
             crate::class::groups::create_group,
             crate::class::groups::create_groups,
