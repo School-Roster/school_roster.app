@@ -187,7 +187,7 @@
             <strong>Profesor:</strong>
             {$selectedSubject.assigned_teacher.name}
             {$selectedSubject.assigned_teacher.father_lastname}
-            ({teacherHours[$selectedSubject.assigned_teacher.id] || 0} horas activas)
+            ({teacherHours[$selectedSubject.assigned_teacher.id] || 0} modulos activos)
           </span>
         {/if}
       </div>
