@@ -9,10 +9,14 @@
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
+  import { teacherHoursStore } from "$lib/modules/entities/assignments";
+
+  let teacherHours: Record<number, number> = {};
+  $: unsubscribe = teacherHoursStore.subscribe(value => teacherHours = value);
 
   // let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
-  
+
   // Variables for custom drag and drop
   let isDragging = false;
   let draggedSubject: SubjectItem | null = null;
@@ -46,12 +50,12 @@
 
   function handleMouseDown(e: MouseEvent, subject: SubjectItem) {
     if (e.button !== 0) return;
-    
+
     e.preventDefault();
-    
+
     isDragging = true;
     draggedSubject = subject;
-    
+
     // Create ghost element
     createGhostElement(e, subject);
   }
@@ -59,7 +63,7 @@
   // Handle mouse movement during drag
   function handleMouseMove(e: MouseEvent) {
     if (!isDragging || !ghostElement) return;
-    
+
     // Move ghost element with cursor
     ghostElement.style.left = `${e.clientX + 10}px`;
     ghostElement.style.top = `${e.clientY + 10}px`;
@@ -68,16 +72,16 @@
   // End dragging and handle drop
   function handleMouseUp(e: MouseEvent) {
     if (!isDragging || !draggedSubject) return;
-    
+
     // Find if we're over a valid drop target
     const dropTarget = findDropTarget(e);
-    
+
     if (dropTarget && draggedSubject) {
       // Get drop target information
       const groupId = dropTarget.getAttribute('data-group-id');
       const day = dropTarget.getAttribute('data-day');
       const moduleIndex = dropTarget.getAttribute('data-module-index');
-      
+
       // Call saveAssignment directly
       if (groupId && day && moduleIndex) {
         saveAssignment(
@@ -87,7 +91,7 @@
           draggedSubject.id,
           draggedSubject.assigned_teacher?.id
         );
-        
+
         // Provide visual feedback
         dropTarget.classList.add('flash-highlight');
         setTimeout(() => {
@@ -95,7 +99,7 @@
         }, 300);
       }
     }
-    
+
     // Reset drag state
     isDragging = false;
     draggedSubject = null;
@@ -106,21 +110,21 @@
   function findDropTarget(e: MouseEvent): HTMLElement | null {
     // Get all elements at the current mouse position
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
-    
+
     // Find the first element with class 'module-cell'
     for (const el of elements) {
       if (el.classList.contains('module-cell')) {
         return el as HTMLElement;
       }
     }
-    
+
     return null;
   }
 
   // Create visual ghost element
   function createGhostElement(e: MouseEvent, subject: SubjectItem) {
     removeGhostElement(); // Remove any existing ghost
-    
+
     ghostElement = document.createElement('div');
     ghostElement.className = 'subject-ghost';
     ghostElement.textContent = subject.shorten;
@@ -133,11 +137,11 @@
     ghostElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
     ghostElement.style.zIndex = '9999';
     ghostElement.style.opacity = '0.8';
-    
+
     // Position at cursor
     ghostElement.style.left = `${e.clientX + 10}px`;
     ghostElement.style.top = `${e.clientY + 10}px`;
-    
+
     document.body.appendChild(ghostElement);
   }
 
@@ -162,15 +166,14 @@
         class="subject"
         role="button"
         tabindex="0"
-        style="background-color: {item.color}; color: {getContrastColor(
-          item.color,
-        )}"
+        style="background-color: {item.color}; color: {getContrastColor(item.color)}"
         on:mousedown={(e) => handleMouseDown(e, item)}
         on:click={() => ($selectedSubject = item)}
         on:keydown={(e) => e.key === "Enter" && ($selectedSubject = item)}
         class:dragging={isDragging && draggedSubject?.id === item.id}
       >
         {item.shorten}
+        <!-- Ya no se muestran las horas en el ícono que se arrastra -->
       </div>
     {/each}
   </section>
@@ -192,8 +195,8 @@
             Profesor asignado:
             {$selectedSubject.assigned_teacher.name}
             {$selectedSubject.assigned_teacher.father_lastname}
-          </span
-          >
+            ({teacherHours[$selectedSubject.assigned_teacher.id] || 0} horas activas)
+          </span>
         {/if}
       </div>
     </div>

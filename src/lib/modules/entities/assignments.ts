@@ -152,3 +152,18 @@ export async function saveAssignment(
     console.error("Failed to save assignment:", error);
   }
 }
+import { derived } from "svelte/store";
+
+export const teacherHoursStore = derived(assignmentsStore, ($assignmentsStore) => {
+  const hoursMap: Record<number, number> = {};
+
+  for (const assignment of $assignmentsStore.values()) {
+    if (!hoursMap[assignment.teacherId]) {
+      hoursMap[assignment.teacherId] = 1;
+    } else {
+      hoursMap[assignment.teacherId] += 1;
+    }
+  }
+
+  return hoursMap;
+});
