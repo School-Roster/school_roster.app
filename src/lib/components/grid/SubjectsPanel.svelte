@@ -10,6 +10,10 @@
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
   import { commitChange } from "$lib/stores/AssignmentUndoRedo";
+  import { teacherHoursStore } from "$lib/modules/entities/assignments";
+
+  let teacherHours: Record<number, number> = {};
+  $: unsubscribe = teacherHoursStore.subscribe(value => teacherHours = value);
 
   // let selectedSubject: SubjectItem | null = null;
   let cleanup: () => void;
@@ -97,7 +101,6 @@
           subjectId: draggedSubject.id!,
           teacherId: draggedSubject.assigned_teacher?.id!,
         });
-
         // Provide visual feedback
         dropTarget.classList.add("flash-highlight");
         setTimeout(() => {
@@ -184,6 +187,7 @@
             <strong>Profesor:</strong>
             {$selectedSubject.assigned_teacher.name}
             {$selectedSubject.assigned_teacher.father_lastname}
+            ({teacherHours[$selectedSubject.assigned_teacher.id] || 0} modulos activos)
           </span>
         {/if}
       </div>

@@ -1,6 +1,7 @@
 import { addNotification } from "$lib/stores/notificationsStore";
 import { invoke } from "@tauri-apps/api";
 import { writable, type Writable } from "svelte/store";
+import { derived } from "svelte/store";
 
 /**
   * Interfaz para los datos de los grupos
@@ -173,6 +174,21 @@ export async function saveAssignment(
     console.error("Failed to save assignment:", error);
   }
 }
+
+
+export const teacherHoursStore = derived(assignmentsStore, ($assignmentsStore) => {
+  const hoursMap: Record<number, number> = {};
+
+  for (const assignment of $assignmentsStore.values()) {
+    if (!hoursMap[assignment.teacherId]) {
+      hoursMap[assignment.teacherId] = 1;
+    } else {
+      hoursMap[assignment.teacherId] += 1;
+    }
+  }
+
+  return hoursMap;
+});
 
 // Funcion para checar si el profesor no tiene el modulo ocupado (el mismo dia)
 export async function isTeacherAvailable(

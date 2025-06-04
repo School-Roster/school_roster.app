@@ -81,6 +81,11 @@
       text-align: center;
       word-break: break-word;
 
+      // Tamaño mínimo garantizado
+      min-width: 20px !important;
+      height: 28px !important;
+      font-size: 0.575rem !important;
+
       // Cuando hay muchas materias, reducimos el tamaño
       @for $i from 1 through 3 {
         &:nth-child(n + #{$compact-threshold * $i}) {
@@ -90,11 +95,6 @@
           padding: 2px;
         }
       }
-
-      // Tamaño mínimo garantizado
-      min-width: 20px !important;
-      height: 28px !important;
-      font-size: 0.575rem !important;
 
       &:hover {
         transform: scale(1.05);
