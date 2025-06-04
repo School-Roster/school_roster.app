@@ -20,6 +20,7 @@
     selectedSubject,
     type SubjectItem,
     subjects,
+    selectSubjectById,
   } from "$lib/modules/entities/subjectsStore";
   import {
     commitChange,
@@ -114,6 +115,9 @@
     // Verificar si el módulo está ocupado antes de asignar
     const canAssign = await canAssignToModule(groupId, day, moduleIndex);
     if (!canAssign) {
+      const existingAssignment = getLocalAssignment(groupId, day, moduleIndex);
+      selectSubjectById(existingAssignment.subjectId);
+
       addNotification({
         message: "No puedes sobrescribir una asignación existente",
         type: "warning",
@@ -129,6 +133,15 @@
       subject.id == undefined ? -1 : subject.id,
       subject.assigned_teacher.id,
     );
+
+    commitChange({
+      action: "create",
+      day,
+      groupId: parseInt(groupId, 10),
+      moduleIndex: parseInt(moduleIndex, 10),
+      subjectId: subject.id!,
+      teacherId: subject.assigned_teacher?.id!,
+    });
   }
 
   function handleMiddleClick(
@@ -145,6 +158,7 @@
 
     if (groupId && day && moduleIndex) {
       handleAssignClick(e, assignment);
+      /*
       commitChange({
         action: "delete",
         day,
@@ -153,6 +167,7 @@
         subjectId: subject.id!,
         teacherId: subject.assigned_teacher?.id!,
       });
+      */
     }
   }
 

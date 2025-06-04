@@ -31,12 +31,12 @@
     order: 1; // Lo movemos a la izquierda
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     border: 1px solid #ccc;
 
     .color {
       width: 100% !important; // Ocupa todo el ancho disponible
-      height: 30px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -48,7 +48,7 @@
       min-width: 80% !important;
       padding: 10px;
       border-radius: 4px;
-      font-size: 0.8rem;
+      font-size: 0.575rem;
     }
   }
 
@@ -59,12 +59,12 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 3px;
+    gap: 2px;
     align-content: flex-start;
 
     // Estilos responsivos para las materias
-    $base-size: 40px;
-    $compact-threshold: 20; // Cuando hay más de 20 materias
+    $base-size: 28px;
+    $compact-threshold: 1; // Cuando hay más de 20 materias
 
     .subject {
       min-width: $base-size;
@@ -87,7 +87,7 @@
           min-width: $base-size - ($i * 5px);
           height: $base-size - ($i * 5px);
           font-size: 0.8rem - ($i * 0.1rem);
-          padding: 3px;
+          padding: 2px;
         }
       }
 
@@ -286,6 +286,8 @@
           background-color: $white-hard;
           cursor: pointer;
           transition: background 0.2s ease;
+          position: relative; // Necesario para contener absolutamente el subject-pill
+          overflow: hidden; // Oculta cualquier contenido que se desborde
 
           body.dark & {
             border-right: 1px solid $black-hard;
@@ -313,14 +315,39 @@
           }
 
           .subject-pill {
-            height: 100%;
-            width: 100%;
+            /*
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 2px;
             font-size: 0.675rem;
             font-weight: 500;
+          */
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(
+              0.5rem,
+              1.5vw,
+              0.6rem
+            ); // Tamaño responsive con límites
+            padding: 2px;
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            // Para texto muy largo que necesita varias líneas
+            &.multiline {
+              white-space: normal;
+              display: -webkit-box;
+              -webkit-line-clamp: 2; // Máximo 2 líneas
+              -webkit-box-orient: vertical;
+              line-height: 1.2;
+            }
           }
           &.has-subject {
             background-color: rgba(255, 0, 0, 0.1);

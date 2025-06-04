@@ -181,8 +181,8 @@
         <span><strong>Materia:</strong> {$selectedSubject.name}</span>
         {#if $selectedSubject.assigned_teacher}
           <span>
-            <strong>Profesor:</strong> 
-            {$selectedSubject.assigned_teacher.name} 
+            <strong>Profesor:</strong>
+            {$selectedSubject.assigned_teacher.name}
             {$selectedSubject.assigned_teacher.father_lastname}
           </span>
         {/if}

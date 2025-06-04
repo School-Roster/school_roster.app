@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { invoke } from "@tauri-apps/api";
 import { emit } from "@tauri-apps/api/event";
 import { type SimpleTeacherItem } from "./teachersStore";
@@ -127,5 +127,12 @@ export async function importSubjectsFromXlsx(
   } catch (error) {
     console.error("Hubo un error importando las materias:", error);
     throw error;
+  }
+}
+
+export function selectSubjectById(id: number) {
+  const subject = get(subjectsWithTeachers).find(s => s.id === id);
+  if (subject) {
+    selectedSubject.set(subject);
   }
 }
