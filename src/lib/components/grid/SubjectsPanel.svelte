@@ -9,6 +9,7 @@
   import { getContrastColor } from "$lib/utilities/helpers";
   import { listen } from "@tauri-apps/api/event";
   import { saveAssignment } from "$lib/modules/entities/assignments";
+  import { commitChange } from "$lib/stores/AssignmentUndoRedo";
   import { teacherHoursStore } from "$lib/modules/entities/assignments";
 
   let teacherHours: Record<number, number> = {};
@@ -36,14 +37,14 @@
     })();
 
     // Agrega el evento global para los handlers
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return (): void => {
       cleanup?.();
       // Limpia las funciones
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
       removeGhostElement();
     };
   });
@@ -78,9 +79,9 @@
 
     if (dropTarget && draggedSubject) {
       // Get drop target information
-      const groupId = dropTarget.getAttribute('data-group-id');
-      const day = dropTarget.getAttribute('data-day');
-      const moduleIndex = dropTarget.getAttribute('data-module-index');
+      const groupId = dropTarget.getAttribute("data-group-id");
+      const day = dropTarget.getAttribute("data-day");
+      const moduleIndex = dropTarget.getAttribute("data-module-index");
 
       // Call saveAssignment directly
       if (groupId && day && moduleIndex) {
@@ -89,13 +90,21 @@
           day,
           parseInt(moduleIndex, 10),
           draggedSubject.id,
-          draggedSubject.assigned_teacher?.id
+          draggedSubject.assigned_teacher?.id,
         );
 
+        commitChange({
+          action: "create",
+          day,
+          groupId: parseInt(groupId, 10),
+          moduleIndex: parseInt(moduleIndex, 10),
+          subjectId: draggedSubject.id!,
+          teacherId: draggedSubject.assigned_teacher?.id!,
+        });
         // Provide visual feedback
-        dropTarget.classList.add('flash-highlight');
+        dropTarget.classList.add("flash-highlight");
         setTimeout(() => {
-          dropTarget.classList.remove('flash-highlight');
+          dropTarget.classList.remove("flash-highlight");
         }, 300);
       }
     }
@@ -113,7 +122,7 @@
 
     // Find the first element with class 'module-cell'
     for (const el of elements) {
-      if (el.classList.contains('module-cell')) {
+      if (el.classList.contains("module-cell")) {
         return el as HTMLElement;
       }
     }
@@ -125,18 +134,18 @@
   function createGhostElement(e: MouseEvent, subject: SubjectItem) {
     removeGhostElement(); // Remove any existing ghost
 
-    ghostElement = document.createElement('div');
-    ghostElement.className = 'subject-ghost';
+    ghostElement = document.createElement("div");
+    ghostElement.className = "subject-ghost";
     ghostElement.textContent = subject.shorten;
     ghostElement.style.backgroundColor = subject.color;
     ghostElement.style.color = getContrastColor(subject.color);
-    ghostElement.style.position = 'fixed';
-    ghostElement.style.pointerEvents = 'none';
-    ghostElement.style.padding = '8px';
-    ghostElement.style.borderRadius = '4px';
-    ghostElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-    ghostElement.style.zIndex = '9999';
-    ghostElement.style.opacity = '0.8';
+    ghostElement.style.position = "fixed";
+    ghostElement.style.pointerEvents = "none";
+    ghostElement.style.padding = "8px";
+    ghostElement.style.borderRadius = "4px";
+    ghostElement.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    ghostElement.style.zIndex = "9999";
+    ghostElement.style.opacity = "0.8";
 
     // Position at cursor
     ghostElement.style.left = `${e.clientX + 10}px`;
@@ -157,27 +166,10 @@
   $: assignedSubjects = $subjectsWithTeachers.filter(
     (item) => item.assigned_teacher,
   );
+  $: isCompactSubjects = $subjectsWithTeachers.length > 20;
 </script>
 
-<div class="subjects-container">
-  <section class="items">
-    {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
-      <div
-        class="subject"
-        role="button"
-        tabindex="0"
-        style="background-color: {item.color}; color: {getContrastColor(item.color)}"
-        on:mousedown={(e) => handleMouseDown(e, item)}
-        on:click={() => ($selectedSubject = item)}
-        on:keydown={(e) => e.key === "Enter" && ($selectedSubject = item)}
-        class:dragging={isDragging && draggedSubject?.id === item.id}
-      >
-        {item.shorten}
-        <!-- Ya no se muestran las horas en el ícono que se arrastra -->
-      </div>
-    {/each}
-  </section>
-
+<div class="subjects-container" class:compact={isCompactSubjects}>
   {#if $selectedSubject}
     <div class="subjects-details">
       <div
@@ -189,10 +181,10 @@
         {$selectedSubject.shorten}
       </div>
       <div class="details">
-        <span>Nombre de la materia: {$selectedSubject.name}</span>
+        <span><strong>Materia:</strong> {$selectedSubject.name}</span>
         {#if $selectedSubject.assigned_teacher}
           <span>
-            Profesor asignado:
+            <strong>Profesor:</strong>
             {$selectedSubject.assigned_teacher.name}
             {$selectedSubject.assigned_teacher.father_lastname}
             ({teacherHours[$selectedSubject.assigned_teacher.id] || 0} horas activas)
@@ -201,4 +193,22 @@
       </div>
     </div>
   {/if}
+  <section class="items">
+    {#each assignedSubjects as item (item.id + "-" + item.assigned_teacher?.id)}
+      <div
+        class="subject"
+        role="button"
+        tabindex="0"
+        style="background-color: {item.color}; color: {getContrastColor(
+          item.color,
+        )}"
+        on:mousedown={(e) => handleMouseDown(e, item)}
+        on:keydown={(e) => e.key === "Enter" && ($selectedSubject = item)}
+        class:dragging={isDragging && draggedSubject?.id === item.id}
+        on:click|stopPropagation={() => ($selectedSubject = item)}
+      >
+        {item.shorten}
+      </div>
+    {/each}
+  </section>
 </div>

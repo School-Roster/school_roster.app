@@ -13,6 +13,7 @@
   export let createWindow: (windowName: string) => void;
 
   let showModal = false;
+  let showGenerateModal = false;
 
   async function handleConfirm() {
     showModal = false;
@@ -20,6 +21,14 @@
     await deleteAll();
     window.location.reload();
     window.dispatchEvent(new CustomEvent("showWelcomeScreenAgain"));
+  }
+
+  async function handleGenerateConfirm() {
+    showGenerateModal = false;
+    generateSchedule();
+  }
+  async function handleGenerateCancel() {
+    showGenerateModal = false;
   }
 
   async function handleCancel() {
@@ -48,7 +57,7 @@
       data-name={item.name}
       on:click={() => {
         if (item.menu == "generate") {
-          generateSchedule();
+          showGenerateModal = true;
         } else if (item.menu != "submenu") {
           createWindow(item.menu);
         }
@@ -107,6 +116,16 @@
   message="¿Deseas guardar el horario antes de continuar?"
   confirmText="Guardar"
   cancelText="No guardar"
+/>
+
+<ConfirmModal
+  isOpen={showGenerateModal}
+  onConfirm={handleGenerateConfirm}
+  onCancel={handleGenerateCancel}
+  title="Está a punto de generar un nuevo horario"
+  message="Esta acción eliminará todas las asignaciones previas en el horario. Le recomendamos guardar los cambios antes de continuar. ¿Desea continuar de todos modos?"
+  confirmText="Continuar"
+  cancelText="Cancelar"
 />
 
 <style>

@@ -395,3 +395,31 @@ pub async fn has_teachers(pool: tauri::State<'_, AppState>) -> Result<bool, Stri
 
     Ok(row.is_some())
 }
+
+/// Funcion para comprobar si el profesor esta ocupado en el dia y modulo dados
+#[tauri::command]
+pub async fn check_teacher_availability(
+    teacher_id: i32,
+    day: String,
+    module_index: i32,
+    pool: tauri::State<'_, AppState>,
+) -> Result<bool, String> {
+    let row: Option<(i32,)> = sqlx::query_as(
+        "SELECT 1 FROM assignments 
+         WHERE teacher_id = ? AND day = ? AND module_index = ? 
+         LIMIT 1",
+    )
+    .bind(teacher_id)
+    .bind(day)
+    .bind(module_index)
+    .fetch_optional(&pool.db)
+    .await
+    .map_err(|e| {
+        format!(
+            "Error con la base de datos (check_teacher_availability): {}",
+            e
+        )
+    })?;
+
+    Ok(row.is_none())
+}

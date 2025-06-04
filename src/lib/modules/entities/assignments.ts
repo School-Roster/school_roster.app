@@ -1,5 +1,7 @@
+import { addNotification } from "$lib/stores/notificationsStore";
 import { invoke } from "@tauri-apps/api";
 import { writable, type Writable } from "svelte/store";
+import { derived } from "svelte/store";
 
 /**
   * Interfaz para los datos de los grupos
@@ -108,7 +110,7 @@ export async function handleAssignClick(
 
 export async function deleteAssignment(assign_id: unknown): Promise<void> {
   try {
-    await invoke("delete_assignment", {assign_id})
+    await invoke("delete_assignment", { assign_id })
     await loadAssignments()
     console.log("Deleted assignment with id:", assign_id);
   } catch (e) {
@@ -124,6 +126,26 @@ export async function saveAssignment(
   teacherId: number
 ): Promise<void> {
   try {
+
+    const moduleAvailable = await canAssignToModule(groupId, day, moduleIndex);
+    if (!moduleAvailable) {
+      addNotification({
+        message: "El módulo ya está ocupado por otra materia",
+        type: "error",
+        timeout: 1000
+      });
+      return;
+    }
+
+    const teacherAvailable = await isTeacherAvailable(teacherId, day, moduleIndex);
+    if (!teacherAvailable) {
+      addNotification({
+        message: "Profesor tiene este modulo del dia ocupado",
+        type: "error",
+        timeout: 1500
+      });
+      return;
+    }
     await invoke("save_assignment", {
       group_id: groupId,
       day,
@@ -152,7 +174,7 @@ export async function saveAssignment(
     console.error("Failed to save assignment:", error);
   }
 }
-import { derived } from "svelte/store";
+
 
 export const teacherHoursStore = derived(assignmentsStore, ($assignmentsStore) => {
   const hoursMap: Record<number, number> = {};
@@ -167,3 +189,32 @@ export const teacherHoursStore = derived(assignmentsStore, ($assignmentsStore) =
 
   return hoursMap;
 });
+
+// Funcion para checar si el profesor no tiene el modulo ocupado (el mismo dia)
+export async function isTeacherAvailable(
+  teacherId: number,
+  day: string,
+  moduleIndex: number
+): Promise<boolean> {
+  try {
+    const response = await invoke("check_teacher_availability", {
+      teacherId,
+      day,
+      moduleIndex,
+    });
+    return response as boolean;
+  } catch (error) {
+    console.error("Error comprobando disponibilidad del profesor:", error);
+    return false;
+  }
+}
+
+/// Funcion que impide sustituir una materia dentro de un modulo
+export async function canAssignToModule(
+  groupId: number,
+  day: string,
+  moduleIndex: number
+): Promise<boolean> {
+  const assignment = getLocalAssignment(groupId, day, moduleIndex);
+  return !assignment; // Devuelve true si el módulo está vacío
+}
