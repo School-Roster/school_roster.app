@@ -1,7 +1,7 @@
 [package]
 name = "school_roster"
-version = "0.1.2"
-description = "A fast school roster app"
+version = "1.0.0"
+description = "Organizador de horarios rapido y eficiente"
 authors = ["Victor Rodriguez <awtGerry@gmail.com>"]
 edition = "2021"
 
@@ -23,17 +23,14 @@ tauri = { version = "1", features = [ "path-all", "fs-all", "dialog-all", "windo
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 reqwest = { version = "0.12.15", features = [ "json" ] }
 tokio = { version = "1.40.0", features = ["time", "rt", "macros"] }
-# sqlx = { version = "0.8.1", features = ["sqlite", "runtime-tokio", "macros"] }
 sqlx = { version = "0.6.3", features = ["sqlite", "runtime-tokio-native-tls", "macros"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 futures = "0.3.30"
 rfd = "0.9"
-# calamine = "0.26.1"
 bincode = "1.3.3"
 thiserror = "2.0.12"
 chrono = "0.4.40"
-# zip = "=0.6.6"
 
 time = "0.3.36"
 tract-onnx = "0.21.12"

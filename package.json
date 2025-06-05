@@ -1,6 +1,6 @@
 {
   "name": "school_roster",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "School Roster made with SvelteKit and Tauri",
   "type": "module",
   "scripts": {
