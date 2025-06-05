@@ -4,10 +4,13 @@
   import ToggleDarkTheme from "../buttons/ToggleDarkTheme.svelte";
   import { WebviewWindow } from "@tauri-apps/api/window";
   import { onMount } from "svelte";
-  import { getCurrent } from "@tauri-apps/api/window";
   import {
     configStore,
     loadConfig,
+    schoolStore,
+    loadSchoolInfo,
+    saveSchoolInfo,
+    selectSchoolLogo,
     saveConfig,
   } from "$lib/modules/config/configStore";
 
@@ -22,6 +25,11 @@
   let breakDuration = 30;
   let breakPositions = [2];
 
+  // Configuracion de la escuela
+  let schoolName = "";
+  let schoolLogoPath: string | null = null;
+  let isSelectingLogo = false;
+
   // Status variables
   let isLoading = true;
   let isSaving = false;
@@ -30,6 +38,11 @@
   // Load configuration on component mount
   onMount(async () => {
     await loadConfig();
+    await loadSchoolInfo();
+    schoolStore.subscribe((info) => {
+      schoolName = info.name;
+      schoolLogoPath = info.logo_path;
+    });
     configStore.subscribe((config) => {
       selectedDays = [...config.days];
       moduleCount = config.modulesPerDay;
@@ -42,6 +55,22 @@
       isLoading = false;
     });
   });
+
+  async function handleLogoSelect() {
+    isSelectingLogo = true;
+    try {
+      const path = await selectSchoolLogo();
+      if (path) {
+        schoolLogoPath = path;
+      }
+    } finally {
+      isSelectingLogo = false;
+    }
+  }
+
+  async function saveSchoolConfiguration() {
+    await saveSchoolInfo(schoolName, schoolLogoPath);
+  }
 
   // Watch for changes in break count to update positions
   $: if (breakCount !== breakPositions.length) {
@@ -120,12 +149,48 @@
 
 <section class="config-card">
   <h2>Configuración</h2>
+  <p>Escuela: {$schoolStore.name}</p>
 
   {#if isLoading}
     <div class="loading">Cargando configuración...</div>
   {:else}
     <!-- Days Configuration -->
     <div class="config-section">
+      <h3>Información de la Escuela</h3>
+
+      <div class="form-group">
+        <label for="school-name">Nombre de la escuela</label>
+        <input
+          id="school-name"
+          type="text"
+          bind:value={schoolName}
+          placeholder="Ingrese el nombre de la escuela"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Logo de la escuela</label>
+        <div class="logo-selector">
+          {#if schoolLogoPath}
+            <div class="logo-preview">
+              <img src={schoolLogoPath} alt="Logo de la escuela" />
+              <button on:click={() => (schoolLogoPath = null)}>×</button>
+            </div>
+          {:else}
+            <button
+              on:click={handleLogoSelect}
+              disabled={isSelectingLogo}
+              class="btn-select-logo"
+            >
+              {isSelectingLogo ? "Seleccionando..." : "Seleccionar logo"}
+            </button>
+          {/if}
+        </div>
+      </div>
+
+      <button on:click={saveSchoolConfiguration} class="btn-save-school">
+        Guardar información
+      </button>
       <h3>Días de clase</h3>
       <div class="days-grid">
         {#each days as day}

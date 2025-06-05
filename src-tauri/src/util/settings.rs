@@ -1,6 +1,12 @@
 use crate::db::AppState;
+use rfd::FileDialog;
 use serde::{Deserialize, Serialize};
 use sqlx::Row;
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
+use tauri::api::dialog::FileDialogBuilder;
+use tauri::api::path::app_data_dir;
 use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -20,6 +26,12 @@ pub struct Config {
     pub break_duration: u32,
     #[serde(rename = "breakPositions")]
     pub break_positions: Vec<u32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SchoolInfo {
+    pub name: String,
+    pub logo_path: Option<String>,
 }
 
 impl Default for Config {
@@ -89,4 +101,76 @@ pub async fn save_config(
         .map_err(|e| format!("Failed to emit event: {}", e))?;
 
     Ok(())
+}
+
+/// Funcion para conseguir la informacion registrada de la escuela
+#[tauri::command]
+pub async fn get_school_info(pool: tauri::State<'_, AppState>) -> Result<SchoolInfo, String> {
+    let school = sqlx::query("SELECT name, logo_path FROM school WHERE id = 1")
+        .fetch_one(&pool.db)
+        .await
+        .map_err(|e| format!("Error getting school info: {}", e))?;
+
+    Ok(SchoolInfo {
+        name: school.get("name"),
+        logo_path: school.get("logo_path"),
+    })
+}
+
+/// Funcion para guardar (sobrescribir) nueva informacion de la escuela
+#[tauri::command]
+pub async fn save_school_info(
+    pool: tauri::State<'_, AppState>,
+    name: String,
+    logo_path: Option<String>,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    sqlx::query("UPDATE school SET name = ?1, logo_path = ?2 WHERE id = 1")
+        .bind(name)
+        .bind(logo_path)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Failed saving school info: {}", e))?;
+
+    app.emit_all("school_info_updated", ())
+        .map_err(|e| format!("Failed to emit event: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+#[allow(unused)]
+pub async fn select_school_logo(window: tauri::Window) -> Result<Option<String>, String> {
+    // Definir las extensiones de imagen soportadas
+    let image_extensions = ["png", "jpg", "jpeg", "bmp", "webp", "svg"];
+
+    // Crear un canal para recibir el resultado del diálogo
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    // let (tx, rx) = std::sync::mpsc::channel();
+
+    // Abrir el diálogo de archivos
+    FileDialogBuilder::new()
+        .add_filter("Imágenes", &image_extensions)
+        .set_title("Seleccionar logo de la escuela")
+        .pick_file(move |path_option| {
+            let _ = tx.send(path_option);
+        });
+
+    // Esperar el resultado del diálogo
+    match rx.await {
+        Ok(path_option) => {
+            match path_option {
+                Some(path) => {
+                    // Validar que el archivo existe
+                    if path.exists() {
+                        Ok(Some(path.to_string_lossy().into_owned()))
+                    } else {
+                        Err("El archivo seleccionado no existe".to_string())
+                    }
+                }
+                None => Ok(None), // Usuario canceló la selección
+            }
+        }
+        Err(_) => Err("Error interno al abrir el diálogo de archivos".to_string()),
+    }
 }

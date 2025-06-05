@@ -76,7 +76,6 @@ pub fn constraints_satisfied(
 
         if creates_dead_module {
             // No es ideal, pero no es un rechazo estrictio.
-            // TODO: Se podria implementar en un sistema de puntuacion, por ahora asi.
             return false;
         }
 

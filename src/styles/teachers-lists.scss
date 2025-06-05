@@ -1,0 +1,225 @@
+// @use "../variables" as *;
+@import "variables";
+
+.student-lists {
+  padding: 20px;
+  margin: 0 auto;
+  background-color: $white-background;
+  color: $black-hard;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+  width: 100%;
+  height: 100vh;
+
+  body.dark & {
+    background-color: $black;
+    color: $white-hard;
+  }
+
+  h2 {
+    color: $primary-color;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: $secondary-font;
+  }
+
+  .controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-right: 50px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+
+    .select-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+      flex-grow: 1;
+      min-width: 250px;
+
+      label {
+        font-weight: 500;
+        color: $black-hard;
+        opacity: 0.8;
+        body.dark & {
+          color: $white-hard;
+        }
+      }
+
+      .custom-select {
+        padding: 10px;
+        border: 1px solid $white-overlay;
+        border-radius: 5px;
+        background: $white-hard;
+        color: $blue;
+        font-size: 12px;
+        transition: all 0.3s;
+
+        body.dark & {
+          border: 1px solid $black-overlay;
+          background: $black-hard;
+          color: $other-color;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba($primary-color, 0.25);
+        }
+      }
+    }
+
+    .export-button {
+      padding: 10px 20px;
+      background: $other-color;
+      color: $black-hard;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-weight: 600;
+      height: fit-content;
+
+      &:hover:not(:disabled) {
+        background: lighten($other-color, 5%);
+        transform: translateY(-1px);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        background: desaturate($other-color, 50%);
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .loading,
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    color: map-get($theme, fg-color);
+    opacity: 0.8;
+  }
+
+  .groups-info {
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba($black, 0.1);
+    margin-right: 40px;
+    background: $white-overlay;
+
+    body.dark & {
+      background: $black-hard;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: $primary-color;
+      font-family: $secondary-font;
+      border-bottom: 1px solid $white-overlay;
+      padding-bottom: 10px;
+
+      body.dark & {
+        color: $white-overlay;
+      }
+    }
+
+    .groups-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+
+      .group-card {
+        background: map-get($theme, nav-bg-color);
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid $white-overlay;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 4px 12px rgba($black, 0.1);
+        }
+
+        h4 {
+          margin: 0 0 10px 0;
+          color: $black-hard;
+          font-family: $primary-font;
+        }
+
+        p {
+          margin: 5px 0;
+          font-size: 14px;
+          color: $black-hard;
+          opacity: 0.9;
+
+          strong {
+            color: $primary-color;
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .summary {
+      padding-top: 15px;
+      border-top: 1px solid $white-overlay;
+
+      p {
+        margin: 5px 0;
+        font-size: 16px;
+        color: $black-hard;
+
+        body.dark & {
+          color: $white-hard;
+        }
+
+        strong {
+          color: $other-color;
+        }
+      }
+    }
+  }
+}
+
+/* Modo oscuro */
+body.dark {
+  .student-lists {
+    .custom-select {
+      border-color: lighten($black-hard, 10%);
+    }
+
+    .groups-info {
+      box-shadow: 0 2px 8px rgba($black, 0.3);
+
+      .group-card {
+        border-color: lighten($black-hard, 10%);
+      }
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .student-lists {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .groups-list {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}

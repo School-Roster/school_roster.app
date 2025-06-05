@@ -3,6 +3,7 @@ use futures::TryStreamExt; // Para poder usar try_next() en los streams
 use serde::{Deserialize, Serialize};
 use sqlx::error::Error as SqlxError;
 use sqlx::{sqlite::SqliteRow, FromRow, Row};
+use tauri::api::dialog::blocking::FileDialogBuilder;
 
 use crate::class::subjects::SubjectWithTeacher;
 
@@ -415,30 +416,86 @@ pub async fn update_group(
 pub async fn create_students(
     pool: tauri::State<'_, AppState>,
     students: Vec<Student>,
-    group_id: i16,
-) -> Result<(), String> {
+    groupid: i32,
+) -> Result<usize, String> {
+    // Retorna número de estudiantes insertados
+    if students.is_empty() {
+        return Err("No students provided".to_string());
+    }
+
     let mut tx = pool
         .db
         .begin()
         .await
-        .map_err(|e| format!("Failed to start transaction! {}", e))?;
+        .map_err(|e| format!("Failed to start transaction: {}", e))?;
 
+    let mut count = 0;
     for student in students {
-        sqlx::query(
-            "INSERT INTO students (name, father_lastname, mother_lastname, group_id) VALUES (?1, ?2, ?3, ?4)",
+        // Validación básica
+        if student.name.trim().is_empty() || student.father_lastname.trim().is_empty() {
+            continue; // O podrías retornar error
+        }
+
+        let result = sqlx::query(
+            "INSERT INTO students (name, father_lastname, mother_lastname, group_id) 
+             VALUES (?, ?, ?, ?)",
         )
         .bind(student.name)
         .bind(student.father_lastname)
-        .bind(student.mother_lastname)
-        .bind(group_id)
+        .bind(student.mother_lastname.unwrap_or_default()) // Manejo de Option
+        .bind(groupid)
         .execute(&mut tx)
-        .await
-        .map_err(|e| format!("Error creating student, error: {}", e))?;
+        .await;
+
+        match result {
+            Ok(_) => count += 1,
+            Err(e) => {
+                tx.rollback().await.ok();
+                return Err(format!("Error creating student: {}", e));
+            }
+        }
     }
 
     tx.commit()
         .await
         .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
-    Ok(())
+    Ok(count)
+}
+
+// Función para obtener estudiantes por grupo
+#[tauri::command]
+pub async fn get_students_by_group(
+    group_id: i32,
+    pool: tauri::State<'_, AppState>,
+) -> Result<Vec<Student>, String> {
+    let students = sqlx::query_as::<_, Student>(
+        r#"
+        SELECT id, name, father_lastname, mother_lastname, group_id
+        FROM students
+        WHERE group_id = ?1
+        ORDER BY father_lastname, mother_lastname, name
+        "#,
+    )
+    .bind(group_id)
+    .fetch_all(&pool.db)
+    .await
+    .map_err(|e| format!("Failed to fetch students: {}", e))?;
+
+    Ok(students)
+}
+
+// Función para guardar archivo Excel con diálogo
+#[tauri::command]
+pub async fn save_excel_file(default_name: String) -> Result<Option<String>, String> {
+    let file_path = FileDialogBuilder::new()
+        .set_title("Guardar listas de estudiantes")
+        .set_file_name(&default_name)
+        .add_filter("Excel files", &["xlsx"])
+        .save_file();
+
+    match file_path {
+        Some(path) => Ok(Some(path.to_string_lossy().to_string())),
+        None => Ok(None),
+    }
 }

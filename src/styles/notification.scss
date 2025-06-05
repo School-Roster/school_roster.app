@@ -45,7 +45,6 @@
   padding: 15px;
   border-radius: 5px;
   color: white;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: all 0.3s ease;
   transform: translateX(0);
@@ -74,8 +73,8 @@
   }
 
   &.info {
-    background-color: $other-color;
-    color: $black-overlay;
+    background-color: $white-overlay;
+    color: $black-hard;
   }
 
   .message {

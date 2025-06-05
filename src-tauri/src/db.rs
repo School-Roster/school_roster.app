@@ -28,6 +28,8 @@ pub async fn connect(app: &App) -> Result<DbPool, Box<dyn std::error::Error>> {
 
     let db_path = setup_db_path(app)?;
 
+    println!("Database path: {}", db_path.display());
+
     create_database_file(&db_path)?;
 
     let pool = SqlitePoolOptions::new()
