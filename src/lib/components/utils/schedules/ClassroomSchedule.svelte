@@ -5,6 +5,7 @@
   } from "$lib/modules/entities/assignments";
   import { teachers, loadTeachers } from "$lib/modules/entities/teachersStore";
   import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
+  import { classrooms, loadClassrooms } from "$lib/modules/entities/classroomStore";
   import { onMount } from "svelte";
   import jsPDF from "jspdf";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -14,7 +15,7 @@
   import html2canvas from "html2canvas";
   import { addNotification } from "$lib/stores/notificationsStore";
 
-  let selectedGroupId: number | null = null;
+  let selectedClassroomId: number | null = null;
   let schoolName = "";
   let schoolLogoPath: string | null = null;
 
@@ -71,6 +72,7 @@
     await loadAssignments();
     await loadTeachers();
     await loadGroups();
+    await loadClassrooms();
     await loadSchoolInfo();
     schoolStore.subscribe((info) => {
       schoolName = info.name;
@@ -85,6 +87,13 @@
   $: assignmentsMap = $assignmentsStore;
   $: teachersList = $teachers;
   $: groupsList = $groups;
+  $: classroomList = $classrooms;
+
+  function getClassroomName(id: number): string {
+    const classroom = classroomList.find((c) => c.id === id);
+    if (!classroom) return "Aula no encontrada";
+    return `${classroom.building_id || ''}${classroom.building_number}`;
+  }
 
   function getTeacher(id: number): string {
     const teacher = teachersList.find((t) => t.id === id);
@@ -93,14 +102,19 @@
       : "Maestro no encontrado";
   }
 
-  $: groupSchedule = selectedGroupId
+  function getGroup(id: number): string {
+    const group = groupsList.find((g) => g.id === id);
+    return group ? `${group.grade}${group.group}` : "Grupo no encontrado";
+  }
+
+  $: classroomSchedule = selectedClassroomId
     ? Array.from(assignmentsMap.values()).filter(
-        (a) => a.groupId === selectedGroupId,
+        (a) => a.classroomId === selectedClassroomId,
       )
     : [];
 
   function findAssignment(dayIndex: number, moduleIndex: number) {
-    return groupSchedule.find((a) => {
+    return classroomSchedule.find((a) => {
       const dayKey = a.day.toLowerCase();
       return dayMap[dayKey] === dayIndex && a.moduleIndex === moduleIndex;
     });
@@ -108,18 +122,19 @@
 
   async function generatePDF() {
     console.log("Generando PDF...");
-    const selectedGroup = groupsList.find(
-      (group) => group.id === selectedGroupId,
+    const selectedClassroom = classroomList.find(
+      (classroom) => classroom.id === selectedClassroomId,
     );
 
-    if (!selectedGroup) return;
+    if (!selectedClassroom) return;
 
     try {
-      /*
+    /*
       const orientation = confirm("¿Usar orientación horizontal?") 
         ? "landscape" 
         : "portrait";
       */
+
       const orientation = "portrait";
 
       // 1. Crear un elemento off-screen para renderizar
@@ -160,11 +175,21 @@
       
       doc.setFontSize(14);
       doc.text(
-        `Grupo: ${selectedGroup.grade}${selectedGroup.group}`,
+        `Aula: ${getClassroomName(selectedClassroom.id!)}${selectedClassroom.building_type ? ` (${selectedClassroom.building_type})` : ''}`,
         105,
         25,
         { align: "center" }
       );
+
+      if (selectedClassroom.capacity) {
+        doc.setFontSize(12);
+        doc.text(
+          `Capacidad: ${selectedClassroom.capacity} alumnos`,
+          105,
+          32,
+          { align: "center" }
+        );
+      }
 
       // 4. Optimizar imagen para PDF
       const imgData = canvas.toDataURL('image/jpeg', 0.85);
@@ -176,7 +201,7 @@
         imgData,
         'JPEG',
         10,
-        35,
+        selectedClassroom.capacity ? 40 : 35, // Ajustar posición según contenido
         pdfWidth,
         pdfHeight
       );
@@ -214,11 +239,15 @@
 </script>
 
 <div class="select-container">
-  <label for="group-select">Selecciona un grupo</label>
-  <select id="group-select" class="custom-select" bind:value={selectedGroupId}>
+  <label for="classroom-select">Selecciona un aula</label>
+  <select id="classroom-select" class="custom-select" bind:value={selectedClassroomId}>
     <option disabled selected value={null}>Selecciona</option>
-    {#each groupsList as group}
-      <option value={group.id}>{group.grade} {group.group}</option>
+    {#each classroomList as classroom}
+      <option value={classroom.id}>
+        {classroom.building_id || ''}{classroom.building_number}
+        {classroom.building_type ? ` (${classroom.building_type})` : ''}
+        {classroom.capacity ? ` - ${classroom.capacity} alumnos` : ''}
+      </option>
     {/each}
   </select>
   <button class="custom-select" on:click={generatePDF}>Descargar PDF</button>
@@ -234,8 +263,8 @@
     <div class="time">{hora}</div>
     {#each days as day, dayIndex}
       <div class="cell">
-        {#key `${selectedGroupId}-${dayIndex + 1}-${index}`}
-          {#if selectedGroupId}
+        {#key `${selectedClassroomId}-${dayIndex + 1}-${index}`}
+          {#if selectedClassroomId}
             {@const assignment = findAssignment(dayIndex + 1, index)}
             {#if assignment}
               <div
@@ -243,6 +272,7 @@
                 style="color: black;"
               >
                 <div>{assignment.subject_name}</div>
+                <div>Grupo: {getGroup(assignment.groupId)}</div>
                 <div>Profesor: {getTeacher(assignment.teacherId)}</div>
               </div>
             {/if}

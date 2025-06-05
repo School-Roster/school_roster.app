@@ -6,7 +6,7 @@
   import { createEventDispatcher, type EventDispatcher } from "svelte";
 
   import { ClassType } from "$lib/utilities/helpers";
-  import { importGroupsFromXlsx } from "$lib/modules/entities/groupsStore";
+  import { importGroupsFromXlsx, importStudentsFromXlsx } from "$lib/modules/entities/groupsStore";
   import { importClassroomsFromXlsx } from "$lib/modules/entities/classroomStore";
   import { importSubjectsFromXlsx } from "$lib/modules/entities/subjectsStore";
   import { importTeachersFromXlsx } from "$lib/modules/entities/teachersStore";
@@ -23,6 +23,8 @@
     required?: boolean;
     type?: string;
   }> = [];
+
+  export let groupId: number | null = null;
 
   let showPreview: boolean = false;
   let errorMessage: string | null = null;
@@ -164,6 +166,9 @@
           break;
         case ClassType.Subjects:
           await importSubjectsFromXlsx(processedData.headerMappings, processedData.data);
+          break;
+        case ClassType.Students:
+          await importStudentsFromXlsx(processedData.headerMappings, processedData.data, groupId == null ? -1 : groupId, false);
           break;
         default:
           throw new Error("Unsupported import type");

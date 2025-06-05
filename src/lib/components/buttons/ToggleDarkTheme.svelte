@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { addNotification } from "$lib/stores/notificationsStore";
   import "$styles/global.scss";
 
   let selectedTheme = localStorage.getItem("theme") || "system";
@@ -13,6 +14,11 @@
       document.body.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+    addNotification({
+        message: "Se necesita reiniciar el programa para que todos los cambios surtan efecto",
+        type: "warning",
+        timeout: 2000
+    });
   };
 
   const applySystemTheme = () => {

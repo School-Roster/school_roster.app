@@ -187,11 +187,8 @@ nav {
 
         &:hover {
           border-radius: 10px;
-          background-color: $primary-color;
+          background-color: $white-overlay;
           @include theme(color, bg-color);
-          img {
-            filter: invert(1);
-          }
         }
       }
 
@@ -236,7 +233,10 @@ nav {
       gap: 0.5rem;
       cursor: pointer;
       text-align: left;
-      color: white;
+      color: $black-overlay;
+      body.dark & {
+        color: $white-overlay;
+      }
     }
   }
 

@@ -21,12 +21,13 @@ simplemente llama a la vista deseada.
   /* Utilidad */
   import SettingsView from "$lib/components/utils/Settings.svelte";
   import NotFoundView from "$lib/components/utils/NotFound.svelte";
-  // import MappingView from '$lib/components/utils/Mapping.svelte';
+  import MappingView from "$lib/components/utils/Mapping.svelte";
+  import TeachersList from "$lib/components/utils/TeachersLists.svelte";
 
   /* Vistas previas */
   import TeacherSchedule from "$lib/components/utils/schedules/TeacherSchedule.svelte";
   import GroupSchedule from "$lib/components/utils/schedules/GroupSchedule.svelte";
-  import SubjectSchedule from "$lib/components/utils/schedules/SubjectSchedule.svelte";
+  // import SubjectSchedule from "$lib/components/utils/schedules/SubjectSchedule.svelte";
 
   let view: any;
   switch (data.page) {
@@ -45,17 +46,20 @@ simplemente llama a la vista deseada.
     case "classroom":
       view = ClassroomView;
       break;
-    // case 'mapping':
-    // view = MappingView;
-    // break;
+    case "mapping":
+      view = MappingView;
+      break;
     case "teacherSchedule":
       view = TeacherSchedule;
       break;
     case "groupSchedule":
       view = GroupSchedule;
       break;
-    case "subjectSchedule":
-      view = SubjectSchedule;
+    case "classroomSchedule":
+      view = ClassroomSchedule;
+      break;
+    case "teachersLists":
+      view = TeachersLists;
       break;
     case "login":
       view = loginView;
@@ -72,6 +76,8 @@ simplemente llama a la vista deseada.
    * Carga el tema de la aplicación
    **/
   import { onMount } from "svelte";
+    import ClassroomSchedule from "$lib/components/utils/schedules/ClassroomSchedule.svelte";
+    import TeachersLists from "$lib/components/utils/TeachersLists.svelte";
 
   const applySystemTheme = () => {
     const darkModeMediaQuery = window.matchMedia(

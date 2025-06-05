@@ -21,22 +21,17 @@ export const itemData = [
     ],
   },
   {
-    it: 0, name: "Vista previa", icon: "/icons/eye.svg", menu: "todo",
+    it: 0, name: "Vista previa", icon: "/icons/eye.svg", menu: "submenu",
     submenu: [
       { name: "Vista previa profesor", icon: "/icons/preview.svg", menu: "teacherSchedule", submenu: []},
       { name: "Vista previa grupo", icon: "/icons/preview.svg", menu: "groupSchedule", submenu: []},
-      { name: "Vista previa materia", icon: "/icons/preview.svg", menu: "subjectSchedule", submenu: []},
-      { name: "Vista previa aula", icon: "/icons/preview.svg", menu: "todo"},
+      { name: "Vista previa aula", icon: "/icons/preview.svg", menu: "classroomSchedule"},
     ],
   },
   {
-    it: 0, name: "Imprimir", icon: "/icons/print.svg", menu: "todo",
+    it: 0, name: "Exportar listas", icon: "/icons/print.svg", menu: "submenu",
     submenu: [
-      { name: "Horario profesores", icon: "/icons/pdf.svg", menu: "todo"},
-      { name: "Horario grupos", icon: "/icons/pdf.svg", menu: "todo"},
-      { name: "Horario materias", icon: "/icons/pdf.svg", menu: "todo"},
-      { name: "Horario aulas", icon: "/icons/pdf.svg", menu: "todo"},
-      { name: "Descargar todo", icon: "/icons/pdf.svg", menu: "todo"},
+      { name: "Exportar listas de profesores", icon: "/icons/pdf.svg", menu: "teachersLists"},
     ],
   },
 

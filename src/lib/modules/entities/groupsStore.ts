@@ -15,7 +15,7 @@ import type { SubjectItem } from "./subjectsStore";
   */
 export interface GroupItem {
   id?: number,
-  grade: number | null ,
+  grade: number | null,
   group: string,
   career: string,
   students: number | null,
@@ -160,26 +160,47 @@ export async function importStudentsFromXlsx(
   data: Array<Record<string, any>>,
   group_id: number,
   lastNamesCombined: boolean = false
-): Promise<void> {
-  const students = data.map(row => {
-    let father_lastname = row.father_lastname || '';
-    let mother_lastname = row.mother_lastname || '';
+): Promise<number> {  // Retorna número de estudiantes importados
+  console.log("Importing students for group:", group_id);
 
-    // If lastnames are combined, split them
-    if (lastNamesCombined && row.father_lastname) {
-      const lastnames = row.father_lastname.split(' ');
+  if (!group_id || group_id <= 0) {
+    throw new Error('Invalid group ID');
+  }
+
+  const students = data.map(row => {
+    let father_lastname = String(row.father_lastname || '').trim();
+    let mother_lastname = String(row.mother_lastname || '').trim();
+
+    if (lastNamesCombined && father_lastname) {
+      const lastnames = father_lastname.split(' ');
       father_lastname = lastnames[0] || '';
-      mother_lastname = lastnames[1] || '';
+      mother_lastname = lastnames.slice(1).join(' ') || '';
     }
 
     return {
-      name: row.name || '',
+      name: String(row.name || '').trim(),
       father_lastname,
-      mother_lastname,
+      mother_lastname: mother_lastname || undefined,  // Undefined será NULL en la BD
       group_id
     };
-  });
+  }).filter(student =>
+    student.name && student.father_lastname
+  );
 
-  await invoke('create_students', { students, group_id });
-  await loadGroups();
+  if (students.length === 0) {
+    throw new Error('No valid students to import after filtering');
+  }
+
+  try {
+    const count = await invoke<number>('create_students', {
+      students,
+      groupid: group_id
+    });
+    console.log(`Successfully imported ${count} students`);
+    await loadGroups();
+    return count;
+  } catch (error) {
+    console.error('Error in create_students:', error);
+    throw new Error(`Failed to import students: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

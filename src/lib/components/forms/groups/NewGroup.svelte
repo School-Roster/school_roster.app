@@ -211,7 +211,9 @@
     <div class="form-field">
       <button
         class="import-students-btn"
-        on:click={() => (showStudentImport = true)}
+        on:click={() => {
+          showStudentImport = true;
+        }}
       >
         Importar estudiantes
       </button>
@@ -226,6 +228,7 @@
 
         <ImportExcel
           defaultClass={ClassType.Students}
+          groupId={item?.id}
           availableData={[
             { name: "Nombre", key: "name", required: true },
             {
@@ -249,6 +252,7 @@
     background-color: #4caf50;
     color: white;
     padding: 8px 16px;
+    margin-left: 4px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -264,6 +268,7 @@
     padding: 15px;
     background-color: #f5f5f5;
     border-radius: 4px;
+    color: black;
   }
 
   .checkbox-label {
