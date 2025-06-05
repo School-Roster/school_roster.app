@@ -45,6 +45,9 @@ async fn main() {
             crate::class::classrooms::delete_classroom,
             crate::class::classrooms::delete_classrooms,
             crate::class::classrooms::update_classroom,
+            crate::class::classrooms::remove_classroom_assignment,
+            crate::class::classrooms::assign_classroom_to_assignment,
+            crate::class::classrooms::check_classroom_availability,
             // Utils
             crate::util::assignments::get_all_assignments,
             crate::util::assignments::get_assignment,

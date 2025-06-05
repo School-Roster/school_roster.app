@@ -14,6 +14,7 @@
     editTeacher,
     type TeacherItem,
   } from "$lib/modules/entities/teachersStore";
+  import { addNotification } from "$lib/stores/notificationsStore";
 
   let t: TeacherItem = {
     name: "",
@@ -70,10 +71,19 @@
 
   const handleSubmit = (): void => {
     if (item) {
-      console.log(t);
       editTeacher(t, selectedSubjects);
+      addNotification({
+        message: "Edicion del profesor exitoso: El profesor ha sido modificado en el sistema.",
+        type: "success",
+        timeout: 1500,
+      });
     } else {
       addTeacher(t, selectedSubjects);
+      addNotification({
+        message: "Registro exitoso: Profesor agregado al sistema.",
+        type: "success",
+        timeout: 1500,
+      });
       // Limpiamos los campos
       t.name = "";
       t.father_lastname = "";

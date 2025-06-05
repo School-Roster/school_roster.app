@@ -5,75 +5,78 @@ simplemente llama a la vista deseada.
 ---------------------->
 
 <script lang="ts">
-	import type { PageData } from './$types';
-	export let data: PageData;
+  import type { PageData } from "./$types";
+  export let data: PageData;
+
+  import Notification from "$lib/components/utils/Notification.svelte";
 
   /* Formularios */
-  import SubjectsView from '$lib/components/forms/subjects/SubjectsView.svelte';
-  import TeachersView from '$lib/components/forms/teachers/TeachersView.svelte';
-  import GroupsView from '$lib/components/forms/groups/GroupsView.svelte';
-  import ClassroomView from '$lib/components/forms/classrooms/ClassroomView.svelte';
-  import loginView from'$lib/components/forms/login/login-view.svelte';
-  import AiScheduler from '$lib/components/utils/AIScheduler.svelte';
+  import SubjectsView from "$lib/components/forms/subjects/SubjectsView.svelte";
+  import TeachersView from "$lib/components/forms/teachers/TeachersView.svelte";
+  import GroupsView from "$lib/components/forms/groups/GroupsView.svelte";
+  import ClassroomView from "$lib/components/forms/classrooms/ClassroomView.svelte";
+  import loginView from "$lib/components/forms/login/login-view.svelte";
+  import AiScheduler from "$lib/components/utils/AIScheduler.svelte";
 
   /* Utilidad */
-  import SettingsView from '$lib/components/utils/Settings.svelte';
-  import NotFoundView from '$lib/components/utils/NotFound.svelte';
+  import SettingsView from "$lib/components/utils/Settings.svelte";
+  import NotFoundView from "$lib/components/utils/NotFound.svelte";
   // import MappingView from '$lib/components/utils/Mapping.svelte';
 
   /* Vistas previas */
-  import TeacherSchedule from '$lib/components/utils/schedules/TeacherSchedule.svelte';
-  import GroupSchedule from '$lib/components/utils/schedules/GroupSchedule.svelte';
-  import SubjectSchedule from '$lib/components/utils/schedules/SubjectSchedule.svelte';
- 
+  import TeacherSchedule from "$lib/components/utils/schedules/TeacherSchedule.svelte";
+  import GroupSchedule from "$lib/components/utils/schedules/GroupSchedule.svelte";
+  import SubjectSchedule from "$lib/components/utils/schedules/SubjectSchedule.svelte";
+
   let view: any;
   switch (data.page) {
-    case 'subjects':
+    case "subjects":
       view = SubjectsView;
       break;
-    case 'teachers':
+    case "teachers":
       view = TeachersView;
       break;
-    case 'settings':
+    case "settings":
       view = SettingsView;
       break;
-    case 'groups':
+    case "groups":
       view = GroupsView;
       break;
-    case 'classroom':
+    case "classroom":
       view = ClassroomView;
       break;
     // case 'mapping':
-      // view = MappingView;
-      // break;
-    case 'teacherSchedule':
+    // view = MappingView;
+    // break;
+    case "teacherSchedule":
       view = TeacherSchedule;
       break;
-    case 'groupSchedule':
+    case "groupSchedule":
       view = GroupSchedule;
       break;
-    case 'subjectSchedule':
+    case "subjectSchedule":
       view = SubjectSchedule;
       break;
-    case 'login':
+    case "login":
       view = loginView;
       break;
-    case 'ai':
+    case "ai":
       view = AiScheduler;
       break;
     default:
       view = NotFoundView;
       break;
-    
   }
 
   /**
-    * Carga el tema de la aplicación
-  **/
+   * Carga el tema de la aplicación
+   **/
   import { onMount } from "svelte";
 
   const applySystemTheme = () => {
-    const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const darkModeMediaQuery = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    );
     if (darkModeMediaQuery.matches) {
       document.body.classList.add("dark");
     } else {
@@ -90,7 +93,7 @@ simplemente llama a la vista deseada.
     } else {
       applySystemTheme();
     }
-  }
+  };
 
   onMount(() => {
     applyTheme();
@@ -98,3 +101,6 @@ simplemente llama a la vista deseada.
 </script>
 
 <svelte:component this={view} />
+
+<slot />
+<Notification />

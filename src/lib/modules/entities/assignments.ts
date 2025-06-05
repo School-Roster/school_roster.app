@@ -218,3 +218,46 @@ export async function canAssignToModule(
   const assignment = getLocalAssignment(groupId, day, moduleIndex);
   return !assignment; // Devuelve true si el módulo está vacío
 }
+
+// Funcion para agregar un aula a un modulo/grupo/profesor
+export async function assignClassroom(
+  assignmentId: number,
+  classroomId: number
+): Promise<void> {
+  try {
+    await invoke("assign_classroom_to_assignment", {
+      assignmentId,
+      classroomId
+    });
+    await loadAssignments();
+    addNotification({
+      message: "Aula asignada correctamente",
+      type: "success",
+      timeout: 1000
+    });
+  } catch (error) {
+    addNotification({
+      message: `Error al asignar aula: ${error}`,
+      type: "error",
+      timeout: 3000
+    });
+  }
+}
+
+/// Funcion para verificar la disponibilidad de un aula
+export async function checkClassroomAvailability(
+  classroomId: number,
+  day: string,
+  moduleIndex: number
+): Promise<boolean> {
+  try {
+    return await invoke("check_classroom_availability", {
+      classroomId,
+      day,
+      moduleIndex
+    });
+  } catch (error) {
+    console.error("Error checking classroom:", error);
+    return false;
+  }
+}

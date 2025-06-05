@@ -4,6 +4,7 @@
     editClassroom,
     type ClassroomItem,
   } from "$lib/modules/entities/classroomStore";
+  import { addNotification } from "$lib/stores/notificationsStore";
   import { onMount } from "svelte";
 
   let cr: ClassroomItem = {
@@ -34,7 +35,17 @@
   const handleSubmit = (): void => {
     if (item) {
       editClassroom(cr);
+      addNotification({
+        message: "Editar aula exitoso: Aula modificada en el sistema.",
+        type: "success",
+        timeout: 1500,
+      });
     } else {
+      addNotification({
+        message: "Registro exitoso: Aula agregada al sistema.",
+        type: "success",
+        timeout: 1500,
+      });
       addClassroom(cr);
     }
     // Limpiamos los campos
