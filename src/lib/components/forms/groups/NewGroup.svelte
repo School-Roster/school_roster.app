@@ -18,6 +18,7 @@
   import ImportExcel from "$lib/components/utils/excel/ImportExcel.svelte";
   import { importStudentsFromXlsx } from "$lib/modules/entities/groupsStore";
   import { ClassType } from "$lib/utilities/helpers";
+  import { addNotification } from "$lib/stores/notificationsStore";
 
   let g: GroupItem = {
     grade: null,
@@ -64,10 +65,18 @@
   const handleSubmit = (): void => {
     if (item) {
       editGroup(g, selectedSubjects);
+      addNotification({
+        message: "Edicion del grupo exitoso: El grupo ha sido modificado en el sistema.",
+        type: "success",
+        timeout: 1500,
+      });
     } else {
       addGroup(g, selectedSubjects);
-      // Limpiamos los campos
-      // TODO: Limpiar campos solo cuado (addGroup) es satisfactorio
+      addNotification({
+        message: "Registro exitoso: Grupo agregado al sistema.",
+        type: "success",
+        timeout: 1500,
+      });
       g.grade = null;
       g.group = "";
       g.career = "";

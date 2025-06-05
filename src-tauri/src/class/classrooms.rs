@@ -1,4 +1,5 @@
 use crate::db::AppState;
+use crate::util::assignments::Assignment;
 use serde::{Deserialize, Serialize};
 use sqlx::error::Error as SqlxError;
 use sqlx::{sqlite::SqliteRow, FromRow, Row};
@@ -192,6 +193,80 @@ pub async fn update_classroom(
     .execute(&pool.db)
     .await
     .map_err(|e| format!("Failed to update classroom: {}", e))?;
+
+    Ok(())
+}
+
+/// Funcion para asignar un aula a la asignacion en dia/modulo
+#[tauri::command]
+pub async fn assign_classroom_to_assignment(
+    assignment_id: i32,
+    classroom_id: i32,
+    pool: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    sqlx::query("UPDATE assignments SET classroom_id = ?1 WHERE id = ?2")
+        .bind(classroom_id)
+        .bind(assignment_id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error asignando aula: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn check_classroom_availability(
+    classroom_id: i32,
+    day: String,
+    module_index: i32,
+    pool: tauri::State<'_, AppState>,
+) -> Result<bool, String> {
+    let exists: Option<(i32,)> = sqlx::query_as(
+        "SELECT 1 FROM assignments 
+         WHERE classroom_id = $1 AND day = $2 AND module_index = $3
+         LIMIT 1",
+    )
+    .bind(classroom_id)
+    .bind(day)
+    .bind(module_index)
+    .fetch_optional(&pool.db)
+    .await
+    .map_err(|e| format!("Error verificando aula: {}", e))?;
+
+    Ok(exists.is_none())
+}
+
+#[tauri::command]
+pub async fn get_classroom_assignment(
+    classroom_id: i32,
+    day: String,
+    module_index: i32,
+    pool: tauri::State<'_, AppState>,
+) -> Result<Option<Assignment>, String> {
+    sqlx::query_as::<_, Assignment>(
+        "SELECT * FROM assignments 
+         WHERE classroom_id = ?1 AND day = ?2 AND module_index = ?3
+         LIMIT 1",
+    )
+    .bind(classroom_id)
+    .bind(day)
+    .bind(module_index)
+    .fetch_optional(&pool.db)
+    .await
+    .map_err(|e| format!("Error verificando aula: {}", e))
+}
+
+/// Funcion para remover un aula de dia+modulo
+#[tauri::command]
+pub async fn remove_classroom_assignment(
+    assignment_id: i32,
+    pool: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    sqlx::query("UPDATE assignments SET classroom_id = NULL WHERE id = ?1")
+        .bind(assignment_id)
+        .execute(&pool.db)
+        .await
+        .map_err(|e| format!("Error removiendo aula: {}", e))?;
 
     Ok(())
 }

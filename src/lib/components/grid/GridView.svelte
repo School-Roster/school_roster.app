@@ -3,8 +3,9 @@
   import "$styles/tutorial.scss";
   import { groups, loadGroups } from "$lib/modules/entities/groupsStore";
   import { getContrastColor } from "$lib/utilities/helpers";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
+  import { get } from "svelte/store";
   import {
     assignmentsStore,
     saveAssignment,
@@ -19,7 +20,6 @@
     loadSubjectsWithTeachers,
     selectedSubject,
     type SubjectItem,
-    subjects,
     selectSubjectById,
   } from "$lib/modules/entities/subjectsStore";
   import {
@@ -28,9 +28,8 @@
     redoChange,
     undoChange,
   } from "$lib/stores/AssignmentUndoRedo";
-
-  import { get } from "svelte/store";
   import { configStore, loadConfig } from "$lib/modules/config/configStore";
+  import ClassroomContextMenu from "./ClassroomContextMenu.svelte";
   import NavbarTutorial from "../utils/tutorials/NavbarTutorial.svelte";
   import GridTutorial from "../utils/tutorials/GridTutorial.svelte";
   import { addNotification } from "$lib/stores/notificationsStore";
@@ -41,6 +40,43 @@
     navbar: false,
     grid: false,
   };
+
+  export let contextMenu = {
+    show: false,
+    x: 0,
+    y: 0,
+    assignment: null,
+    day: "",
+    moduleIndex: 0,
+  };
+
+  function handleContextMenu(
+    e: MouseEvent,
+    assignment: any,
+    day: string,
+    moduleIndex: number,
+  ) {
+    e.preventDefault();
+
+    contextMenu = {
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      assignment,
+      day,
+      moduleIndex,
+    };
+  }
+
+  function closeContextMenu() {
+    contextMenu.show = false;
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      closeContextMenu();
+    }
+  }
 
   // Close tutorial menu when clicking outside
   function handleClickOutside(event: MouseEvent) {
@@ -58,9 +94,14 @@
 
   onMount(() => {
     document.addEventListener("click", handleClickOutside);
+    window.addEventListener("keydown", handleKeydown);
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
+  });
+  
+  onDestroy(() => {
+    window.removeEventListener("keydown", handleKeydown);
   });
 
   // Load configuration on mount and use reactive values
@@ -116,6 +157,7 @@
     const canAssign = await canAssignToModule(groupId, day, moduleIndex);
     if (!canAssign) {
       const existingAssignment = getLocalAssignment(groupId, day, moduleIndex);
+      //@ts-ignore
       selectSubjectById(existingAssignment.subjectId);
 
       addNotification({
@@ -326,6 +368,9 @@
                   <div
                     class="module-cell"
                     class:has-subject={assignment}
+                    on:contextmenu={(e) =>
+                      assignment &&
+                      handleContextMenu(e, assignment, day, moduleIndex)}
                     data-group-id={group.id}
                     data-day={day}
                     data-module-index={moduleIndex}
@@ -366,3 +411,30 @@
     {/each}
   </div>
 </section>
+
+<!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
+{#if contextMenu.show}
+  <div
+    class="context-menu-overlay"
+    on:click|self={closeContextMenu}
+    on:contextmenu|preventDefault={closeContextMenu}
+    style={`left: ${contextMenu.x}px; top: ${contextMenu.y}px`}
+  >
+    <ClassroomContextMenu
+      assignment={contextMenu.assignment}
+      day={contextMenu.day}
+      moduleIndex={contextMenu.moduleIndex}
+    />
+  </div>
+{/if}
+
+<style lang="scss">
+  .context-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+  }
+</style>

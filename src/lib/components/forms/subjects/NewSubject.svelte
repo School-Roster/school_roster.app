@@ -11,11 +11,8 @@
   import { onMount } from "svelte";
   import TooltipIcon from "$lib/components/buttons/TooltipIcon.svelte";
   import { get } from "svelte/store";
-	/*
-    TODO: Generar un color que pueda usarse sin cambiarlo para no perder el tiempo
-    NOTE: Tendremos en cuenta los colores registrados en la base de datos
-      para que no se repitan y darle al usuario una recomendación de color
-  */
+  import { addNotification } from "$lib/stores/notificationsStore";
+
   let subject: SubjectItem = {
     name: "",
     shorten: "",
@@ -78,8 +75,18 @@
   const handleSubmit = (): void => {
     if (item) {
       editSubject(subject);
+      addNotification({
+        message: "Edicion de la materia exitoso: La materia se ha modificado en el sistema.",
+        type: "success",
+        timeout: 1500,
+      });
     } else {
       addSubject(subject);
+      addNotification({
+        message: "Registro exitoso: Materia agregada al sistema.",
+        type: "success",
+        timeout: 1500,
+      });
 
       usedColors.update((colors) => {
         if (!colors.includes(subject.color)) {
