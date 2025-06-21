@@ -1,56 +1,210 @@
-/* schedule_preview.scss */
+/* schedule_preview.scss - Mejorado */
 @import "variables";
 @import "mixins";
 
-.select-container {
-  margin: 1rem 0;
-  color: $black-hard;
+/* ========== General Layout ========== */
+.print-controls {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  margin: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  @media print {
+    display: none;
+  }
+}
+
+.select-container {
+  display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  align-items: flex-end;
+  justify-content: flex-start;
+  min-width: 200px;
+
+  @media (max-width: 1366px) {
+    padding: 1rem;
+    min-width: 300px;
+    max-width: 300px;
+  }
+
+  > * {
+    flex: 1 1 auto;
+  }
 
   body.dark & {
     color: $white-hard;
   }
 }
 
-label {
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
+.print-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  border-radius: 5px;
 }
 
+.option-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  label {
+    margin-right: 1rem;
+  }
+
+  .select-wrapper {
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding: 0.25rem 1.5rem 0.25rem 1.5rem;
+      color: $black-hard;
+      background-color: #fff;
+      border: 1px solid $white-overlay;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:hover {
+        border-color: $other-color;
+      }
+
+      &:focus {
+        border-color: $red;
+        outline: none;
+      }
+
+      option {
+        color: #333;
+      }
+    }
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* ========== Dropdown Styles ========== */
+.dropdown {
+  position: relative;
+  min-width: 180px;
+  width: 100%;
+  max-width: 240px;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border: 1px solid $black-overlay;
+  padding: 8px;
+  width: 120px;
+
+  img {
+    filter: $filter-black;
+    margin-right: 8px;
+  }
+
+  body.dark & {
+    border: 1px solid $white-overlay;
+    img {
+      filter: $filter-white;
+    }
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border: 1px solid #ccc;
+  background: white;
+  color: black;
+  z-index: 100;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+
+  img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: $black-hard;
+
+  body.dark & {
+    color: $white-hard;
+  }
+}
+
+/* ========== Select & Button Styles ========== */
 .custom-select {
   padding: 0.75rem 1.5rem;
-  background-color: $primary-color;
+  background-color: $black;
   border: none;
-  border-radius: 0.5rem;
-  color: white;
-  font-size: 1rem;
+  border-radius: 5px;
+  color: $white-hard;
   appearance: none;
   outline: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 200px;
-  text-align: center;
+  min-width: 40px;
+  max-width: 90%;
+  width: 100%;
+  text-align: left;
 
   &:hover {
-    background-color: darken($primary-color, 10%);
+    background-color: lighten($black, 10%);
     transform: translateY(-2px);
+  }
+
+  body.dark & {
+    background-color: $primary-color;
+    color: $white-hard;
+
+    &:hover {
+      background-color: lighten($primary-color, 10%);
+      transform: translateY(-2px);
+    }
   }
 }
 
+/* ========== Schedule Grid ========== */
 .grid-container {
   display: grid;
   grid-template-columns: 120px repeat(5, 1fr);
   gap: 2px;
   margin: 1rem auto;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  overflow: hidden;
   max-width: 100%;
   overflow-x: auto;
-  font-family: Arial, sans-serif;
-  will-change: transform; // Optimización para el navegador
+  font-family: Helvetica, Arial, sans-serif;
+  will-change: transform;
   backface-visibility: hidden;
 
   @media print {
@@ -59,12 +213,95 @@ label {
   }
 
   .time-block {
-    contain: content; // Limita el alcance del renderizado
+    contain: content;
   }
 }
 
+/* ========== Teacher Schedule Styles (para PDF) ========== */
+.teacher-schedule {
+  page-break-inside: avoid;
+  margin-bottom: 15px;
+  width: 100%;
+  box-sizing: border-box;
+
+  .teacher-header {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    background-color: #f8f9fa;
+    padding: 6px 4px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+  }
+
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(5, 1fr);
+    gap: 1px;
+    font-size: 8px;
+    border: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box;
+
+    .time-header-cell,
+    .day-header-cell,
+    .time-cell {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .time-header-cell {
+      font-size: 7px;
+      padding: 2px;
+    }
+
+    .day-header-cell {
+      padding: 4px 2px;
+      font-size: 7px;
+    }
+
+    .time-cell {
+      padding: 2px 1px;
+      font-size: 6px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+
+    .subject-cell {
+      min-height: 25px;
+      padding: 1px;
+      background-color: white;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6px;
+
+      .time-block-compact {
+        font-size: 6px;
+        text-align: center;
+        line-height: 1.1;
+        background-color: #e8f4fc;
+        padding: 1px;
+        border-radius: 2px;
+        width: 100%;
+        word-break: break-word;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
+/* ========== Headers y Celdas Regulares ========== */
 .header {
-  background-color: #f5f5f5;
+  background-color: white;
   text-align: center;
   padding: 32px 8px;
   font-weight: bold;
@@ -73,29 +310,31 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 1rem;
 
   @media print {
-    background-color: #f5f5f5 !important;
+    background-color: white !important;
+    color: black !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 }
 
 .time {
-  background-color: #f5f5f5;
+  background-color: white;
   text-align: center;
   padding: 12px 8px;
   font-weight: bold;
-  color: #333;
+  color: black;
   border: 1px solid #ddd;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 0.875rem;
 
   @media print {
-    background-color: #f5f5f5 !important;
+    background-color: white !important;
+    color: black !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -127,7 +366,7 @@ label {
   justify-content: center;
   align-items: center;
   color: #333;
-  font-size: 11px;
+  font-size: 0.725rem;
   text-align: center;
   word-break: break-word;
 
@@ -138,7 +377,7 @@ label {
   }
 }
 
-/* Mejoras para impresión */
+/* ========== Print Enhancements ========== */
 @media print {
   body {
     margin: 0;
@@ -147,14 +386,20 @@ label {
     color: black;
   }
 
-  .select-container {
-    display: none;
+  .select-container,
+  .print-controls {
+    display: none !important;
   }
 
   .grid-container {
     width: 100%;
     margin: 0;
     padding: 0;
+  }
+
+  .teacher-schedule {
+    page-break-inside: avoid;
+    margin-bottom: 10px;
   }
 }
 
