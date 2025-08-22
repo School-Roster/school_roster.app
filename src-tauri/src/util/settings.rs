@@ -122,9 +122,10 @@ pub async fn get_school_info(pool: tauri::State<'_, AppState>) -> Result<SchoolI
 pub async fn save_school_info(
     pool: tauri::State<'_, AppState>,
     name: String,
-    logo_path: Option<String>,
+    logo_path: String,
     app: tauri::AppHandle,
 ) -> Result<(), String> {
+    println!("Logo path: {}", logo_path);
     sqlx::query("UPDATE school SET name = ?1, logo_path = ?2 WHERE id = 1")
         .bind(name)
         .bind(logo_path)
@@ -140,15 +141,11 @@ pub async fn save_school_info(
 
 #[tauri::command]
 #[allow(unused)]
-pub async fn select_school_logo(window: tauri::Window) -> Result<Option<String>, String> {
-    // Definir las extensiones de imagen soportadas
+pub async fn select_school_logo(app: tauri::AppHandle) -> Result<Option<String>, String> {
     let image_extensions = ["png", "jpg", "jpeg", "bmp", "webp", "svg"];
 
-    // Crear un canal para recibir el resultado del diálogo
     let (tx, rx) = tokio::sync::oneshot::channel();
-    // let (tx, rx) = std::sync::mpsc::channel();
 
-    // Abrir el diálogo de archivos
     FileDialogBuilder::new()
         .add_filter("Imágenes", &image_extensions)
         .set_title("Seleccionar logo de la escuela")
@@ -156,21 +153,55 @@ pub async fn select_school_logo(window: tauri::Window) -> Result<Option<String>,
             let _ = tx.send(path_option);
         });
 
-    // Esperar el resultado del diálogo
     match rx.await {
-        Ok(path_option) => {
-            match path_option {
-                Some(path) => {
-                    // Validar que el archivo existe
-                    if path.exists() {
-                        Ok(Some(path.to_string_lossy().into_owned()))
-                    } else {
-                        Err("El archivo seleccionado no existe".to_string())
-                    }
-                }
-                None => Ok(None), // Usuario canceló la selección
+        Ok(Some(path)) if path.exists() => {
+            // Validate file size (max 5MB)
+            let metadata = fs::metadata(&path).map_err(|e| e.to_string())?;
+            if metadata.len() > 5 * 1024 * 1024 {
+                return Err("El archivo es demasiado grande (máximo 5MB)".to_string());
             }
+
+            // Get app data directory
+            let app_data_dir = app_data_dir(&app.config())
+                .ok_or("No se pudo obtener el directorio de datos de la aplicación")?;
+
+            // Create resources directory if it doesn't exist
+            let logo_dir = app_data_dir.join("school_logos");
+            fs::create_dir_all(&logo_dir).map_err(|e| e.to_string())?;
+
+            let filename = format!(
+                "{}",
+                path.file_name()
+                    .ok_or("Nombre de archivo inválido")?
+                    .to_string_lossy()
+            );
+
+            let dest_path = logo_dir.join(&filename);
+
+            // Copy the file
+            fs::copy(&path, &dest_path).map_err(|e| e.to_string())?;
+
+            // Clean up old logos (keep last 5)
+            let entries = fs::read_dir(&logo_dir).map_err(|e| e.to_string())?;
+            let mut logos: Vec<_> = entries.filter_map(|e| e.ok()).collect();
+
+            logos.sort_by(|a, b| {
+                b.metadata()
+                    .unwrap()
+                    .modified()
+                    .unwrap()
+                    .cmp(&a.metadata().unwrap().modified().unwrap())
+            });
+
+            for old_logo in logos.into_iter().skip(5) {
+                let _ = fs::remove_file(old_logo.path());
+            }
+
+            // Return full path
+            Ok(Some(dest_path.to_string_lossy().into_owned()))
         }
-        Err(_) => Err("Error interno al abrir el diálogo de archivos".to_string()),
+        Ok(None) => Ok(None),
+        Err(_) => Err("Error al abrir el diálogo".to_string()),
+        _ => Err("Archivo no existe".to_string()),
     }
 }
