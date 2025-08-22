@@ -1,6 +1,6 @@
 [package]
 name = "school_roster"
-version = "1.0.0"
+version = "1.0.1"
 description = "Organizador de horarios rapido y eficiente"
 authors = ["Victor Rodriguez <awtGerry@gmail.com>"]
 edition = "2021"
