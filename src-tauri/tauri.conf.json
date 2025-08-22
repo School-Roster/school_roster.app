@@ -16,6 +16,16 @@
         "all": false,
         "open": true
       },
+      "protocol": {
+        "asset": true,
+        "assetScope": [
+          "**",
+          "$APPCACHE/**",
+          "$RESOURCE/**",
+          "$APPDATA/**",
+          "$APPDATA/school_logos/**"
+        ]
+      },
       "dialog": {
         "all": true,
         "open": true,
@@ -34,7 +44,9 @@
           "$APPDATA",
           "$APPDATA/**",
           "$APPDATA/models",
-          "$APPDATA/models/**"
+          "$APPDATA/models/**",
+          "$APPDATA/school_logos",
+          "$APPDATA/school_logos/**"
         ],
         "readFile": true,
         "writeFile": true,
@@ -94,7 +106,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: file: data:;"
     },
     "bundle": {
       "active": true,

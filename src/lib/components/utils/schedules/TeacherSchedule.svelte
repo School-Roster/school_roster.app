@@ -13,7 +13,7 @@
   import { onMount } from "svelte";
   import jsPDF from "jspdf";
   import { invoke } from "@tauri-apps/api/tauri";
-  import { writeBinaryFile } from "@tauri-apps/api/fs";
+  import { readBinaryFile, writeBinaryFile } from "@tauri-apps/api/fs";
   import { schoolStore } from "$lib/modules/config/configStore";
 
   import "$styles/schedule_preview.scss";
@@ -23,7 +23,7 @@
 
   let selectedTeacherId: number | null = null;
   let schoolName = "";
-  let schoolLogoPath: string | null = null;
+  let schoolLogoPath: string;
 
   // Nuevas variables para configuración de impresión
   let printOrientation: "portrait" | "landscape" = "portrait";
@@ -260,6 +260,15 @@
     };
   }
 
+  // Helper para agregar la imagen al pdf
+  async function loadImageAsBase64(path: string): Promise<string> {
+    const imageBytes = await readBinaryFile(path);
+    const base64String = btoa(
+      imageBytes.reduce((data, byte) => data + String.fromCharCode(byte), ""),
+    );
+    return `data:image/jpeg;base64,${base64String}`;
+  }
+
   // Función para generar PDF de un solo profesor
   async function generatePDF() {
     if (!selectedTeacherId) return;
@@ -276,6 +285,7 @@
       });
 
       // Encabezado
+
       doc.setFontSize(16);
       doc.text(
         schoolName ? `Escuela: ${schoolName}` : "Horario escolar",
@@ -308,6 +318,10 @@
         undefined,
         "FAST",
       );
+
+      // Convertir la imagen a base64
+      const base64Logo = await loadImageAsBase64(schoolLogoPath);
+      doc.addImage(base64Logo, 'JPEG', 18, 5, 15, 15);
 
       const pdfOutput = doc.output("arraybuffer");
       const path = await invoke<string | null>("export_pdf_file");

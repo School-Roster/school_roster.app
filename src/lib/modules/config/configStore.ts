@@ -54,7 +54,7 @@ export async function saveConfig(config: Config) {
 export async function loadSchoolInfo() {
   try {
     const info = await invoke<SchoolInfo>('get_school_info');
-    console.log(info);
+    console.log("School data:", info);
     schoolStore.set(info);
   } catch (error) {
     console.error('Error loading school info:', error);
@@ -62,11 +62,12 @@ export async function loadSchoolInfo() {
 }
 
 
-export async function saveSchoolInfo(name: string, logo_path: string | null) {
+export async function saveSchoolInfo(name: string, logoPath: string) {
   try {
-    await invoke('save_school_info', { name, logo_path });
+    console.log("Sent path: ", logoPath);
+    await invoke('save_school_info', { name, logoPath });
     //@ts-ignore
-    schoolStore.set({ name, logo_path });
+    schoolStore.set({ name, logo_path: logoPath });
   } catch (error) {
     console.error('Error saving school info:', error);
   }

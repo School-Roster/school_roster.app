@@ -13,6 +13,7 @@
     selectSchoolLogo,
     saveConfig,
   } from "$lib/modules/config/configStore";
+  import { convertFileSrc } from "@tauri-apps/api/tauri";
 
   // Configuration variables (loaded from store)
   let days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sabado"];
@@ -34,6 +35,9 @@
   let isLoading = true;
   let isSaving = false;
   let showSuccessMessage = false;
+
+  // Computed property for the logo source
+  $: logoSrc = schoolLogoPath ? convertFileSrc(schoolLogoPath) : null;
 
   // Load configuration on component mount
   onMount(async () => {
@@ -61,15 +65,23 @@
     try {
       const path = await selectSchoolLogo();
       if (path) {
+        // Store the raw path, let the reactive statement handle conversion
         schoolLogoPath = path;
       }
+    } catch (error) {
+      console.error("Error selecting logo:", error);
     } finally {
       isSelectingLogo = false;
     }
   }
 
   async function saveSchoolConfiguration() {
-    await saveSchoolInfo(schoolName, schoolLogoPath);
+    try {
+      schoolLogoPath = schoolLogoPath == null ? "" : schoolLogoPath
+      await saveSchoolInfo(schoolName, schoolLogoPath);
+    } catch (error) {
+      console.error("Error saving school configuration:", error);
+    }
   }
 
   // Watch for changes in break count to update positions
@@ -140,6 +152,7 @@
     });
     await win.show();
   }
+  
   $: if (hasBreaks && breakCount > breakPositions.length) {
     for (let i = breakPositions.length; i < breakCount; i++) {
       breakPositions.push(i); // Default: break after module i
@@ -149,7 +162,6 @@
 
 <section class="config-card">
   <h2>Configuración</h2>
-  <p>Escuela: {$schoolStore.name}</p>
 
   {#if isLoading}
     <div class="loading">Cargando configuración...</div>
@@ -169,11 +181,22 @@
       </div>
 
       <div class="form-group">
+        <!-- svelte-ignore a11y-label-has-associated-control -->
         <label>Logo de la escuela</label>
         <div class="logo-selector">
-          {#if schoolLogoPath}
+          {#if logoSrc}
             <div class="logo-preview">
-              <img src={schoolLogoPath} alt="Logo de la escuela" />
+              <img 
+                src={logoSrc} 
+                alt="Logo de la escuela" 
+                on:error={(e) => {
+                  console.error("Error loading image:", e);
+                  console.log("Failed to load image from:", logoSrc);
+                }}
+                on:load={() => {
+                  console.log("Image loaded successfully from:", logoSrc);
+                }}
+              />
               <button on:click={() => (schoolLogoPath = null)}>×</button>
             </div>
           {:else}
@@ -191,9 +214,11 @@
       <button on:click={saveSchoolConfiguration} class="btn-save-school">
         Guardar información
       </button>
+      
       <h3>Días de clase</h3>
       <div class="days-grid">
         {#each days as day}
+          <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
           <div
             class="day-option {selectedDays.includes(day) ? 'selected' : ''}"
             on:click={() => handleDayToggle(day)}
@@ -279,6 +304,7 @@
 
             {#if breakCount > 0 && moduleCount > 0}
               <div class="break-positions">
+                <!-- svelte-ignore a11y-label-has-associated-control -->
                 <label>Posición de los descansos</label>
                 <div class="break-slots">
                   {#each Array(Math.min(breakCount, moduleCount - 1)) as _, i}
@@ -324,11 +350,16 @@
     </div>
 
     <!-- School Mapping -->
+    <!--
+    TODO: Regresar configuracion de la escuela cuando:
+      - Se guarde las posiciones de edificios y asignaciones
+      - Se implemente al algoritmo
     <div class="config-section">
       <h3>Mapear Escuela</h3>
       <button on:click={() => createWindow("mapping")} class="btn-mapping">
         Mapear escuela
       </button>
     </div>
+    -->
   {/if}
 </section>
