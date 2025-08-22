@@ -4064,7 +4064,7 @@ dependencies = [
 
 [[package]]
 name = "school_roster"
-version = "0.1.2"
+version = "1.0.0"
 dependencies = [
  "bincode",
  "chrono",

@@ -1,8 +1,9 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # Pin to latest
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
+
   outputs =
     {
       self,
@@ -13,6 +14,7 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+
         libraries = with pkgs; [
           webkitgtk
           gtk3
